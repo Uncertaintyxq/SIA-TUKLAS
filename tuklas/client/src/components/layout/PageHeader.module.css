@@ -1,0 +1,33 @@
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--s-3) var(--s-4);
+  margin-bottom: var(--s-5);
+}
+
+.text {
+  display: grid;
+  gap: var(--s-2);
+  max-width: var(--measure);
+}
+
+.title {
+  font-size: var(--fs-h1);
+  font-weight: 800;
+}
+
+.description {
+  color: var(--text-soft);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+}
+
+:global([data-appearance='classic']) .title {
+  color: var(--action-text);
+}

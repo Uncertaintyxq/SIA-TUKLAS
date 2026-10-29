@@ -1,0 +1,218 @@
+/* An announcement: a ruled sheet like a notebook entry. Pinned ones carry a faint gold wash, not a stripe. */
+.card {
+  display: grid;
+  gap: var(--s-2);
+  padding: var(--s-4);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sheet);
+  background: var(--sheet);
+  box-shadow: var(--lift-1);
+  scroll-margin-top: 96px;
+}
+
+.pinned {
+  border-color: color-mix(in srgb, var(--gold) 55%, var(--rule));
+  background: color-mix(in srgb, var(--gold) 7%, var(--sheet));
+}
+
+.card:target {
+  box-shadow: var(--focus);
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-1) var(--s-2);
+}
+
+.when {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: var(--fs-tiny);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-faint);
+}
+
+.title {
+  font-size: 20px;
+  font-stretch: 105%;
+  font-weight: 750;
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+}
+
+.body {
+  margin-top: var(--s-1);
+}
+
+/* ---------- Attachments ---------- */
+.files {
+  display: grid;
+  gap: var(--s-1);
+  margin: var(--s-1) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.file {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding-left: var(--s-3);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-control);
+  background: var(--sheet-sunken);
+}
+
+.fileIcon {
+  flex: none;
+  color: var(--blue-text);
+}
+
+.fileName {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.meta {
+  color: var(--text-faint);
+  font-size: var(--fs-small);
+}
+
+.icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: var(--tap);
+  height: var(--tap);
+  border-radius: var(--radius-control);
+  color: var(--text-faint);
+}
+
+.icon:hover {
+  background: var(--tab);
+  color: var(--text);
+}
+
+/* ---------- Author tools and read receipts ---------- */
+.foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2);
+  margin: var(--s-1) calc(var(--s-2) * -1) calc(var(--s-2) * -1);
+  padding-top: var(--s-2);
+  border-top: 1px dashed var(--rule);
+}
+
+.receiptsToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: var(--tap);
+  padding: 0 var(--s-2);
+  border: 0;
+  border-radius: var(--radius-control);
+  background: none;
+  color: var(--text-soft);
+  font-size: var(--fs-small);
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.receiptsToggle:hover {
+  background: var(--tab);
+  color: var(--text);
+}
+
+.chevron {
+  transition: transform var(--t-base) var(--ease-out);
+}
+
+.receiptsToggle[aria-expanded='true'] .chevron {
+  transform: rotate(180deg);
+}
+
+.meter {
+  width: 64px;
+  height: 6px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--sheet-sunken);
+  box-shadow: inset 0 0 0 1px var(--rule);
+  appearance: none;
+  overflow: hidden;
+}
+
+.meter::-webkit-progress-bar {
+  background: transparent;
+}
+
+.meter::-webkit-progress-value {
+  border-radius: var(--radius-pill);
+  background: var(--ok);
+}
+
+.meter::-moz-progress-bar {
+  border-radius: var(--radius-pill);
+  background: var(--ok);
+}
+
+.tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1);
+}
+
+.receipts {
+  display: grid;
+  flex-basis: 100%;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--s-3);
+  padding: var(--s-3);
+  border-radius: var(--radius-control);
+  background: var(--sheet-sunken);
+}
+
+.receiptsHead {
+  margin-bottom: var(--s-2);
+  font-size: var(--fs-small);
+  font-stretch: var(--label-stretch);
+  color: var(--text-soft);
+}
+
+.receiptsLoading {
+  flex-basis: 100%;
+  height: 96px;
+  border-radius: var(--radius-control);
+}
+
+.people {
+  display: grid;
+  gap: var(--s-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.edit {
+  display: grid;
+  gap: var(--s-3);
+}
+
+@media (max-width: 560px) {
+  .card {
+    padding: var(--s-3);
+  }
+
+  .title {
+    font-size: 18px;
+  }
+}

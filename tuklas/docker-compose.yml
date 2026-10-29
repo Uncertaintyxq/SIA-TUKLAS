@@ -1,0 +1,23 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: tuklas-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: tuklas_root
+      MYSQL_DATABASE: tuklas
+      MYSQL_USER: tuklas
+      MYSQL_PASSWORD: tuklas
+    ports:
+      - "3306:3306"
+    volumes:
+      - tuklas-mysql:/var/lib/mysql
+      - ./database/docker-init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-utuklas", "-ptuklas"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+
+volumes:
+  tuklas-mysql:

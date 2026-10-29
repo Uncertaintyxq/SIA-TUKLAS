@@ -1,0 +1,136 @@
+.root {
+  position: relative;
+}
+
+.trigger {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  width: 100%;
+  min-height: var(--tap);
+  padding: var(--s-1) var(--s-2) var(--s-1) var(--s-1);
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.trigger:hover,
+.trigger[aria-expanded='true'] {
+  background: var(--tab);
+  border-color: var(--rule);
+}
+
+.who {
+  display: grid;
+  min-width: 0;
+  line-height: 1.25;
+}
+
+.name {
+  overflow: hidden;
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.role {
+  font-size: var(--fs-tiny);
+  color: var(--text-faint);
+}
+
+.panel {
+  position: absolute;
+  z-index: 40;
+  width: 280px;
+  display: grid;
+  gap: var(--s-3);
+  padding: var(--s-3);
+  border: 1px solid var(--vellum-edge);
+  border-radius: var(--radius-sheet);
+  background: var(--vellum-strong);
+  backdrop-filter: var(--vellum-blur);
+  -webkit-backdrop-filter: var(--vellum-blur);
+  box-shadow: var(--lift-3);
+}
+
+.panel[data-placement='down'] {
+  top: calc(100% + var(--s-2));
+  right: 0;
+  transform-origin: top right;
+}
+
+.panel[data-placement='up'] {
+  bottom: calc(100% + var(--s-2));
+  left: 0;
+  transform-origin: bottom left;
+}
+
+.section {
+  display: grid;
+  gap: var(--s-1);
+}
+
+.heading {
+  font-family: var(--font-display);
+  font-stretch: var(--label-stretch);
+  font-size: var(--fs-tiny);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.actions {
+  display: grid;
+  gap: 2px;
+  padding-top: var(--s-2);
+  border-top: 1px solid var(--rule);
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: var(--tap);
+  padding: 0 var(--s-2);
+  border: 0;
+  border-radius: var(--radius-control);
+  background: none;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+}
+
+.item:hover {
+  background: var(--tab);
+}
+
+.item:disabled {
+  opacity: 0.55;
+}
+
+/* Collapsed rail on medium screens: avatar only */
+@media (max-width: 1100px) {
+  .inRail .who {
+    display: none;
+  }
+
+  .inRail .trigger {
+    justify-content: center;
+    padding: var(--s-1);
+  }
+}
+
+/* In the compact phone header the trigger is avatar-only */
+@media (max-width: 860px) {
+  .who {
+    display: none;
+  }
+
+  .trigger {
+    width: auto;
+    padding: var(--s-1);
+  }
+}

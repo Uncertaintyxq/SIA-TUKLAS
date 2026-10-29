@@ -1,0 +1,146 @@
+.button {
+  --btn-bg: var(--sheet);
+  --btn-fg: var(--text);
+  --btn-edge: var(--rule-strong);
+  --btn-hover: var(--sheet-sunken);
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  min-height: var(--tap);
+  padding: 0 var(--s-3);
+  border: 1px solid var(--btn-edge);
+  border-radius: var(--radius-control);
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  font-weight: 600;
+  font-size: var(--fs-body);
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  transition:
+    background-color var(--t-fast) var(--ease-out),
+    border-color var(--t-fast) var(--ease-out),
+    box-shadow var(--t-fast) var(--ease-out),
+    transform var(--t-fast) var(--ease-out);
+}
+
+.button:hover {
+  background: var(--btn-hover);
+}
+
+.button:active:not(:disabled) {
+  transform: translateY(1px) scale(0.985);
+}
+
+.button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.button svg {
+  flex: none;
+}
+
+.primary {
+  --btn-bg: var(--action);
+  --btn-fg: var(--on-action);
+  --btn-edge: var(--action);
+  --btn-hover: var(--action-hover);
+
+  box-shadow: var(--lift-2);
+}
+
+.ink {
+  --btn-bg: var(--ink);
+  --btn-fg: #ffffff;
+  --btn-edge: var(--ink);
+  --btn-hover: #000000;
+}
+
+:global([data-theme='dark']) .ink {
+  --btn-bg: var(--n-1);
+  --btn-fg: var(--ink);
+  --btn-edge: var(--n-1);
+  --btn-hover: #ffffff;
+}
+
+.ghost {
+  --btn-bg: transparent;
+  --btn-edge: transparent;
+  --btn-hover: var(--tab);
+}
+
+.danger {
+  --btn-fg: var(--bad);
+  --btn-edge: color-mix(in srgb, var(--bad) 35%, transparent);
+  --btn-hover: var(--bad-tint);
+}
+
+.ok {
+  --btn-bg: var(--ok);
+  --btn-fg: #ffffff;
+  --btn-edge: var(--ok);
+  --btn-hover: color-mix(in srgb, var(--ok) 88%, black);
+}
+
+:global([data-theme='dark']) .ok {
+  --btn-fg: var(--ink);
+}
+
+.lg {
+  min-height: 52px;
+  padding: 0 var(--s-4);
+  font-size: 16px;
+}
+
+.block {
+  width: 100%;
+}
+
+.spin {
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Classic: bevelled gradient buttons */
+:global([data-appearance='classic']) .button {
+  background: linear-gradient(#ffffff, #e6e3ee);
+  border-color: #a9a3bf;
+  font-weight: 700;
+  box-shadow: none;
+}
+
+:global([data-appearance='classic']) .primary {
+  background: linear-gradient(#8467c9, var(--purple-deep));
+  border-color: #4a2f8a;
+  color: #ffffff;
+}
+
+:global([data-appearance='classic']) .ink {
+  background: linear-gradient(#4a4a4a, #111111);
+  color: #ffffff;
+}
+
+:global([data-appearance='classic']) .ok {
+  background: linear-gradient(#2ba06c, #187048);
+  color: #ffffff;
+}
+
+:global([data-appearance='classic']) .ghost {
+  background: transparent;
+  border-color: transparent;
+}
+
+:global([data-appearance='classic'][data-theme='dark']) .button:not(.primary, .ink, .ok, .ghost) {
+  background: linear-gradient(#2c2838, #211e2b);
+  border-color: var(--rule-strong);
+}

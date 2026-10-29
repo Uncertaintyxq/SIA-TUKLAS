@@ -1,0 +1,63 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  flex: none;
+  min-height: 24px;
+  padding: 0 var(--s-2);
+  border-radius: var(--radius-pill);
+  font-size: var(--fs-tiny);
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.badge svg {
+  flex: none;
+}
+
+/* Gold and blue fail as text on white, so they tint the fill and the text uses the dark shade. */
+.neutral {
+  background: var(--sheet-sunken);
+  color: var(--text-soft);
+  box-shadow: inset 0 0 0 1px var(--rule);
+}
+
+.purple {
+  background: var(--lavender);
+  color: var(--purple-deep);
+}
+
+.blue {
+  background: color-mix(in srgb, var(--blue) 20%, var(--sheet));
+  color: var(--blue-text);
+}
+
+.gold {
+  background: color-mix(in srgb, var(--gold) 34%, var(--sheet));
+  color: var(--gold-text);
+}
+
+.ok {
+  background: var(--ok-tint);
+  color: var(--ok);
+}
+
+.warn {
+  background: var(--warn-tint);
+  color: var(--warn);
+}
+
+.bad {
+  background: var(--bad-tint);
+  color: var(--bad);
+}
+
+:global([data-theme='dark']) .purple {
+  background: var(--tab-hover);
+  color: var(--action-text);
+}
+
+:global([data-appearance='classic']) .badge {
+  border-radius: 2px;
+}

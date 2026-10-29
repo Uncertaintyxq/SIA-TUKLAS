@@ -1,0 +1,29 @@
+.text {
+  display: grid;
+  gap: var(--s-2);
+  max-width: var(--measure);
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.text h3 {
+  margin-top: var(--s-2);
+  font-size: var(--fs-h3);
+}
+
+.text ul,
+.text ol {
+  display: grid;
+  gap: var(--s-1);
+  margin: 0;
+  padding-left: var(--s-4);
+}
+
+.text li::marker {
+  color: var(--text-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.text strong {
+  font-weight: 700;
+}

@@ -1,0 +1,314 @@
+.skeleton {
+  height: 320px;
+  border-radius: var(--radius-sheet);
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  align-items: start;
+  gap: var(--s-4);
+}
+
+.main,
+.side {
+  display: grid;
+  gap: var(--s-3);
+  min-width: 0;
+}
+
+.list,
+.members {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.deadline,
+.file,
+.member {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-2) var(--s-3) var(--s-2) var(--s-4);
+  border-top: 1px solid var(--rule);
+}
+
+.deadline:first-child,
+.file:first-child,
+.member:first-child {
+  border-top: 0;
+}
+
+.member {
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.memberTools {
+  display: flex;
+  align-items: center;
+  gap: var(--s-1);
+}
+
+/* The role picker sits in a tight row: its label stays for screen readers only. */
+.roleSelect {
+  min-width: 150px;
+}
+
+.roleSelect label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.due {
+  flex: none;
+  min-width: 92px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-small);
+  font-weight: 700;
+  color: var(--action-text);
+}
+
+.past .due,
+.past .deadlineTitle {
+  color: var(--text-faint);
+}
+
+.deadlineText,
+.fileText {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+
+.deadlineTitle {
+  font-weight: 650;
+}
+
+.rel {
+  color: var(--text-faint);
+  font-size: var(--fs-small);
+}
+
+.fileIcon {
+  flex: none;
+  color: var(--blue-text);
+}
+
+.fileName {
+  overflow: hidden;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.iconButton {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: var(--tap);
+  height: var(--tap);
+  border: 0;
+  border-radius: var(--radius-control);
+  background: none;
+  color: var(--text-faint);
+  cursor: pointer;
+}
+
+.iconButton:hover {
+  background: var(--tab);
+  color: var(--text);
+}
+
+.inlineForm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--s-2);
+  padding: var(--s-3) var(--s-4);
+  border-top: 1px solid var(--rule);
+  background: var(--sheet-sunken);
+  border-radius: 0 0 var(--radius-sheet) var(--radius-sheet);
+}
+
+.grow {
+  flex: 1 1 220px;
+}
+
+.addMember {
+  padding: var(--s-3) var(--s-4);
+  border-top: 1px solid var(--rule);
+}
+
+.upload {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: var(--tap);
+  padding: 0 var(--s-3);
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius-control);
+  background: var(--sheet);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.upload:hover {
+  border-color: var(--action);
+}
+
+.upload:focus-within {
+  box-shadow: var(--focus);
+}
+
+.stack {
+  display: grid;
+  gap: var(--s-3);
+}
+
+.announce {
+  justify-self: start;
+}
+
+/* ---------- Chat ---------- */
+.chat {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  height: min(72vh, 680px);
+  min-height: 420px;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sheet);
+  background: var(--sheet);
+  box-shadow: var(--lift-1);
+  overflow: hidden;
+}
+
+.channelBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-1) var(--s-2);
+  padding: var(--s-2);
+  border-bottom: 1px solid var(--rule);
+  background: var(--sheet-sunken);
+}
+
+.channels {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  gap: var(--s-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.channel {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 36px;
+  padding: 0 var(--s-2);
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  background: none;
+  color: var(--text-soft);
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.channel:hover {
+  background: var(--tab);
+  color: var(--text);
+}
+
+.channel[aria-pressed='true'] {
+  border-color: var(--rule);
+  background: var(--sheet);
+  color: var(--action-text);
+  box-shadow: var(--lift-1);
+}
+
+.unread {
+  display: grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  margin-left: 2px;
+  padding: 0 4px;
+  border-radius: var(--radius-pill);
+  background: var(--gold);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.newChannel {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.channelInput {
+  width: 140px;
+  min-height: 36px;
+  padding: 0 var(--s-2);
+  border: 1px dashed var(--rule-strong);
+  border-radius: var(--radius-control);
+  background: var(--sheet);
+  font-size: var(--fs-small);
+}
+
+.channelInput::placeholder {
+  color: var(--text-faint);
+}
+
+.channelInput:focus-visible {
+  border-style: solid;
+  border-color: var(--action);
+}
+
+.iconButton:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.chatBody {
+  min-height: 0;
+}
+
+/* ---------- Activity ---------- */
+.activity {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-2) var(--s-3) var(--s-2) var(--s-4);
+  border-top: 1px solid var(--rule);
+}
+
+.activity:first-child {
+  border-top: 0;
+}
+
+.activityText {
+  flex: 1;
+  min-width: 0;
+}
+
+@media (max-width: 1080px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 860px) {
+  .chat {
+    height: calc(100dvh - 240px);
+  }
+}

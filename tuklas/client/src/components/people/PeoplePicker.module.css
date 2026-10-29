@@ -1,0 +1,52 @@
+.picker {
+  display: grid;
+  gap: var(--s-1);
+}
+
+.results {
+  display: grid;
+  margin: 0;
+  padding: var(--s-1);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-control);
+  background: var(--sheet-sunken);
+  list-style: none;
+}
+
+.result {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2);
+  padding: var(--s-1) var(--s-1) var(--s-1) var(--s-2);
+  border-radius: calc(var(--radius-control) - 2px);
+}
+
+.result:hover {
+  background: var(--sheet);
+}
+
+.add {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  flex: none;
+  min-height: var(--tap);
+  padding: 0 var(--s-3);
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius-control);
+  background: var(--sheet);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.add:hover {
+  border-color: var(--action);
+  color: var(--action-text);
+}
+
+.none {
+  padding: var(--s-2);
+  color: var(--text-faint);
+  font-size: var(--fs-small);
+}

@@ -1,0 +1,1074 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tuklas — From Defense to Discovery</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --purple:#6C4AB6; --purple-600:#5A3BA0; --purple-50:#F4F0FF;
+  --gold:#FFCB57; --gold-700:#8A6200;
+  --blue:#53C0E8; --blue-700:#1F6F8E;
+  --lav:#ECE6FF; --off:#F8F9FD; --ink:#222221;
+  --muted:#6B6A75; --line:#E8E6EF; --card:#FFFFFF;
+  --ok:#1F8A5B; --ok-bg:#E6F6EE; --warn:#9A5B00; --warn-bg:#FFF3D6; --bad:#B4232C; --bad-bg:#FDE8E9;
+  --radius:10px; --radius-sm:6px;
+  --shadow:0 1px 2px rgba(34,34,33,.04),0 1px 1px rgba(34,34,33,.03);
+  --shadow-lg:0 12px 32px rgba(34,34,33,.14);
+  --font:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --fs:14px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:var(--font);font-size:var(--fs);color:var(--ink);background:var(--off);line-height:1.5;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--purple);text-decoration:none}
+a:hover{text-decoration:underline}
+[hidden]{display:none!important}
+h1,h2,h3,h4{margin:0;line-height:1.25;letter-spacing:-.01em}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* ---------- Buttons & inputs ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:36px;padding:0 14px;border-radius:var(--radius-sm);border:1px solid var(--line);background:var(--card);cursor:pointer;font-weight:500;white-space:nowrap;transition:background .12s,border-color .12s,box-shadow .12s}
+.btn:hover{background:#F6F5FA}
+.btn:focus-visible,.input:focus-visible,.chip:focus-visible,.nav-item:focus-visible{outline:none;box-shadow:0 0 0 3px rgba(108,74,182,.28)}
+.btn-primary{background:var(--purple);border-color:var(--purple);color:#fff}
+.btn-primary:hover{background:var(--purple-600)}
+.btn-outline{border-color:var(--purple);color:var(--purple);background:#fff}
+.btn-outline:hover{background:var(--purple-50)}
+.btn-dark{background:var(--ink);border-color:var(--ink);color:#fff}
+.btn-dark:hover{background:#000}
+.btn-ghost{border-color:transparent;background:transparent}
+.btn-danger{color:var(--bad);border-color:#F1C7CA}
+.btn-danger:hover{background:var(--bad-bg)}
+.btn-ok{background:var(--ok);border-color:var(--ok);color:#fff}
+.btn-ok:hover{filter:brightness(.95);background:var(--ok)}
+.btn-sm{height:30px;padding:0 10px;font-size:13px}
+.btn-block{width:100%}
+.label{display:block;font-size:12px;font-weight:600;margin:0 0 6px;color:#3a3a40}
+.input{width:100%;height:38px;padding:0 12px;border:1px solid var(--line);border-radius:var(--radius-sm);background:#fff;transition:border-color .12s,box-shadow .12s}
+textarea.input{height:auto;min-height:96px;padding:10px 12px;resize:vertical}
+.input:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(108,74,182,.18);outline:none}
+.field{margin-bottom:14px}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.row{display:flex;gap:12px;flex-wrap:wrap}
+.row>.field{flex:1 1 180px}
+
+/* ---------- Badges ---------- */
+.badge{display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 8px;border-radius:999px;font-size:12px;font-weight:500;background:#F1F0F5;color:#4a4a52;white-space:nowrap}
+.b-research{background:var(--lav);color:var(--purple-600)}
+.b-literary{background:#E3F5FC;color:var(--blue-700)}
+.b-gold{background:#FFF4D9;color:var(--gold-700)}
+.b-ok{background:var(--ok-bg);color:var(--ok)}
+.b-warn{background:var(--warn-bg);color:var(--warn)}
+.b-bad{background:var(--bad-bg);color:var(--bad)}
+.b-student{background:var(--lav);color:var(--purple-600)}
+.b-educator{background:#E3F5FC;color:var(--blue-700)}
+.b-admin{background:var(--ink);color:#fff}
+.dot{width:6px;height:6px;border-radius:50%;background:currentColor;display:inline-block}
+
+/* ---------- Login ---------- */
+.login{display:grid;grid-template-columns:1fr 1fr;min-height:100vh}
+.brand-panel{background:var(--purple);color:#fff;padding:56px clamp(24px,6vw,88px);display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden}
+.brand-panel::after{content:"";position:absolute;right:-120px;bottom:-120px;width:360px;height:360px;border-radius:50%;background:radial-gradient(circle,rgba(255,203,87,.18),transparent 70%)}
+.logo{display:inline-flex;align-items:center;gap:10px;font-weight:700;font-size:18px}
+.logo-badge{width:30px;height:30px;border-radius:7px;background:var(--gold);color:var(--ink);display:grid;place-items:center;font-weight:800;font-size:16px}
+.brand-panel h1{font-size:clamp(30px,3.6vw,44px);font-weight:700;margin:28px 0 14px;max-width:12ch}
+.brand-panel p{max-width:44ch;opacity:.86;margin:0 0 22px;font-size:15px}
+.gold-pill{display:inline-flex;align-self:flex-start;background:var(--gold);color:var(--ink);font-weight:600;font-size:12px;padding:5px 12px;border-radius:999px}
+.brand-points{margin-top:40px;display:grid;gap:10px;font-size:13px;opacity:.9}
+.brand-points div{display:flex;gap:10px;align-items:center}
+.brand-points span{width:22px;height:22px;border-radius:6px;background:rgba(255,255,255,.14);display:grid;place-items:center;font-size:12px}
+.form-side{display:grid;place-items:center;padding:40px 20px;background:var(--off)}
+.login-card{width:100%;max-width:400px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:32px;box-shadow:var(--shadow)}
+.login-card h2{font-size:22px}
+.login-card .sub{color:var(--muted);margin:4px 0 22px}
+.continue{margin:20px 0 6px;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:10px}
+.continue::before,.continue::after{content:"";flex:1;height:1px;background:var(--line)}
+.role-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.create{text-align:center;margin-top:20px;color:var(--muted);font-size:13px}
+.linkbtn{background:none;border:0;padding:0;color:var(--purple);font-weight:600;cursor:pointer}
+.linkbtn:hover{text-decoration:underline}
+
+/* ---------- Shell ---------- */
+.shell{display:grid;grid-template-columns:248px 1fr;min-height:100vh}
+.sidebar{background:#FBFAFE;border-right:1px solid var(--line);padding:18px 12px;display:flex;flex-direction:column;gap:4px;position:sticky;top:0;height:100vh}
+.sidebar .logo{padding:4px 10px 16px;color:var(--ink)}
+.me{display:flex;align-items:center;gap:10px;padding:10px;border-radius:var(--radius);border:1px solid var(--line);background:#fff;margin-bottom:12px}
+.me .who{min-width:0}
+.me .name{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nav-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;padding:12px 10px 4px}
+.nav-item{display:flex;align-items:center;gap:10px;width:100%;padding:8px 10px;border-radius:var(--radius-sm);border:0;background:none;cursor:pointer;text-align:left;color:#3a3a40;font-weight:500}
+.nav-item:hover{background:#F0EEF6}
+.nav-item.active{background:var(--lav);color:var(--purple-600)}
+.nav-item .ico{width:18px;text-align:center;opacity:.8}
+.nav-item .count{margin-left:auto;font-size:11px;background:var(--purple);color:#fff;border-radius:999px;padding:1px 7px}
+.sidebar-foot{margin-top:auto;display:grid;gap:6px}
+.main{min-width:0;padding:28px clamp(16px,3vw,40px) 60px}
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:22px}
+.page-head h1{font-size:24px}
+.page-head p{margin:4px 0 0;color:var(--muted)}
+.topbar{display:none}
+
+.layout-feed{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:24px;align-items:start}
+.rail{position:sticky;top:20px;display:grid;gap:16px}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.card-pad{padding:18px}
+.card-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line)}
+.card-head h3{font-size:14px;font-weight:600}
+.stack{display:grid;gap:14px}
+.muted{color:var(--muted)}
+.small{font-size:12px}
+
+.avatar{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-weight:600;font-size:13px;flex:none;color:#fff;background:var(--purple)}
+.avatar.educator{background:var(--blue);color:var(--ink)}
+.avatar.admin{background:var(--ink)}
+.avatar.lg{width:84px;height:84px;font-size:28px;border:4px solid #fff;box-shadow:var(--shadow)}
+
+.post-head{display:flex;gap:10px;align-items:center}
+.post-head .meta{min-width:0;flex:1}
+.post-head .meta b{font-weight:600}
+.post-title{font-size:16px;font-weight:600;margin:12px 0 6px}
+.clamp{display:-webkit-box;-webkit-line-clamp:3;line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.tag{font-size:12px;color:var(--muted);background:#F5F4F8;border-radius:4px;padding:2px 7px}
+.seal{display:flex;align-items:center;gap:8px;margin-top:14px;padding-top:12px;border-top:1px dashed var(--line);font-size:12px;color:var(--ok)}
+.seal svg{flex:none}
+
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{height:30px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:#fff;cursor:pointer;font-size:13px;font-weight:500;color:#45454c}
+.chip:hover{border-color:#cfcbe0}
+.chip.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:16px}
+.search{position:relative;flex:1 1 220px;max-width:320px}
+.search .input{padding-left:32px}
+.search svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted)}
+
+.notice{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:var(--radius);background:var(--purple-50);border:1px solid #E1D8FA;color:#3d2d70;font-size:13px}
+.notice.gold{background:#FFF8E6;border-color:#F7E2A8;color:#5c4300}
+
+.ad{padding:14px 16px;border-top:1px solid var(--line)}
+.ad:first-of-type{border-top:0}
+.ad .kicker{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
+.ad h4{font-size:14px;margin:4px 0}
+.ad-date{display:flex;gap:12px;align-items:flex-start}
+.cal{width:44px;flex:none;border:1px solid var(--line);border-radius:8px;overflow:hidden;text-align:center;background:#fff}
+.cal .m{background:var(--purple);color:#fff;font-size:10px;font-weight:600;text-transform:uppercase;padding:2px 0}
+.cal .d{font-size:17px;font-weight:700;padding:2px 0}
+
+/* Portfolio */
+.cover{height:132px;border-radius:var(--radius) var(--radius) 0 0;background:linear-gradient(120deg,var(--purple) 0%,#8B6BD1 60%,var(--gold) 140%)}
+.profile-top{padding:0 22px 20px;margin-top:-42px;display:flex;gap:18px;align-items:flex-end;flex-wrap:wrap}
+.profile-top .info{flex:1;min-width:200px;padding-top:48px}
+.profile-top h1{font-size:22px}
+.stats{display:flex;gap:22px;padding:14px 22px;border-top:1px solid var(--line);flex-wrap:wrap}
+.stats b{display:block;font-size:18px}
+.layout-profile{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:20px;align-items:start;margin-top:20px}
+.work{padding:16px 18px;border-top:1px solid var(--line)}
+.work:first-child{border-top:0}
+.cred{display:flex;gap:12px;padding:12px 18px;border-top:1px solid var(--line)}
+.cred:first-child{border-top:0}
+.cred-ico{width:34px;height:34px;flex:none;border-radius:8px;display:grid;place-items:center;background:var(--lav);color:var(--purple-600);font-size:15px}
+.cred-ico.gold{background:#FFF4D9;color:var(--gold-700)}
+.empty{padding:28px 18px;text-align:center;color:var(--muted);font-size:13px}
+
+/* Stepper */
+.steps{display:flex;gap:0;margin:14px 0 2px;flex-wrap:wrap}
+.step{flex:1 1 0;min-width:90px;display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--muted)}
+.step .bar{height:4px;border-radius:2px;background:var(--line);margin-right:4px}
+.step.done{color:var(--ink)}
+.step.done .bar{background:var(--purple)}
+.step.current .bar{background:var(--gold)}
+.step.current{color:var(--ink);font-weight:600}
+.step.fail .bar{background:var(--bad)}
+
+/* Kanban */
+.kanban{display:grid;grid-template-columns:repeat(3,minmax(240px,1fr));gap:16px;overflow-x:auto;padding-bottom:6px}
+.col{background:#F3F2F8;border-radius:var(--radius);padding:10px;min-height:200px}
+.col-head{display:flex;align-items:center;gap:8px;padding:4px 6px 10px;font-weight:600;font-size:13px}
+.col-head .n{color:var(--muted);font-weight:500}
+.kcard{display:block;width:100%;text-align:left;background:#fff;border:1px solid var(--line);border-radius:8px;padding:12px;margin-bottom:8px;cursor:pointer;box-shadow:var(--shadow)}
+.kcard:hover{border-color:#cdc4ea}
+.kcard h4{font-size:13.5px;margin:6px 0}
+
+/* Tables / queue */
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:16px;overflow-x:auto}
+.tab{border:0;background:none;padding:10px 12px;cursor:pointer;font-weight:500;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.tab.on{color:var(--ink);border-color:var(--purple)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:20px}
+.kpi{padding:14px 16px}
+.kpi .v{font-size:24px;font-weight:700;font-variant-numeric:tabular-nums}
+.qitem{display:flex;gap:14px;align-items:flex-start;padding:16px 18px;border-top:1px solid var(--line);flex-wrap:wrap}
+.qitem:first-child{border-top:0}
+.qitem .body{flex:1;min-width:220px}
+.qitem .acts{display:flex;gap:6px;flex-wrap:wrap}
+
+.grid-events{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.event-card{overflow:hidden;display:flex;flex-direction:column}
+.event-band{height:8px}
+.band-colloquium{background:var(--purple)}
+.band-innovation{background:var(--blue)}
+.band-cpgarcia{background:var(--gold)}
+
+/* Comments */
+.thread{display:grid;gap:10px;margin:12px 0}
+.cmt{display:flex;gap:10px}
+.cmt .bubble{background:#F6F5FA;border-radius:8px;padding:8px 12px;flex:1}
+.cmt .avatar{width:28px;height:28px;font-size:11px}
+
+/* Modal & toast */
+.overlay{position:fixed;inset:0;background:rgba(20,18,30,.42);display:grid;place-items:center;padding:20px;z-index:50;animation:fade .15s}
+.modal{background:#fff;border-radius:14px;width:100%;max-width:620px;max-height:calc(100vh - 40px);overflow:auto;box-shadow:var(--shadow-lg);animation:pop .16s}
+.modal-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:18px 22px;border-bottom:1px solid var(--line);position:sticky;top:0;background:#fff;z-index:1}
+.modal-head h2{font-size:17px}
+.modal-body{padding:20px 22px}
+.modal-foot{display:flex;justify-content:flex-end;gap:8px;padding:14px 22px;border-top:1px solid var(--line);flex-wrap:wrap}
+.x{width:32px;height:32px;border-radius:6px;border:0;background:none;cursor:pointer;font-size:20px;color:var(--muted)}
+.x:hover{background:#F2F1F6}
+#toasts{position:fixed;bottom:20px;right:20px;display:grid;gap:8px;z-index:60}
+.toast{background:var(--ink);color:#fff;padding:10px 14px;border-radius:8px;box-shadow:var(--shadow-lg);font-size:13px;animation:pop .18s;max-width:340px}
+.toast.err{background:var(--bad)}
+@keyframes fade{from{opacity:0}}
+@keyframes pop{from{opacity:0;transform:translateY(6px) scale(.98)}}
+
+/* ---------- Classic appearance (early-2000s professional network) ---------- */
+[data-appearance="classic"]{--font:Verdana,Tahoma,"Segoe UI",sans-serif;--fs:12px;--radius:3px;--radius-sm:2px;--off:#E9E7EF;--line:#C9C4D8;--shadow:none}
+[data-appearance="classic"] body{background:var(--off)}
+[data-appearance="classic"] a{text-decoration:underline}
+[data-appearance="classic"] .sidebar{background:linear-gradient(#fff,#F1EEF8)}
+[data-appearance="classic"] .card-head{background:linear-gradient(#F4F1FB,#E3DCF4);padding:7px 12px}
+[data-appearance="classic"] .card-head h3{font-size:12px;color:var(--purple-600)}
+[data-appearance="classic"] .btn{height:26px;padding:0 10px;background:linear-gradient(#fff,#E6E3EE);border-color:#A9A3BF}
+[data-appearance="classic"] .btn-primary{background:linear-gradient(#8467C9,var(--purple-600));color:#fff;border-color:#4A2F8A}
+[data-appearance="classic"] .btn-dark{background:linear-gradient(#444,#111);color:#fff}
+[data-appearance="classic"] .btn-ok{background:linear-gradient(#2BA06C,#187048);color:#fff}
+[data-appearance="classic"] .badge,[data-appearance="classic"] .chip{border-radius:2px}
+[data-appearance="classic"] .chip.on{background:var(--purple-600);border-color:var(--purple-600)}
+[data-appearance="classic"] .avatar{border-radius:3px}
+[data-appearance="classic"] .cover{background:repeating-linear-gradient(135deg,var(--purple-600) 0 12px,var(--purple) 12px 24px);height:80px}
+[data-appearance="classic"] .page-head h1{font-size:18px;color:var(--purple-600)}
+[data-appearance="classic"] .nav-item.active{background:var(--purple-600);color:#fff}
+[data-appearance="classic"] .input{height:26px;border-radius:2px;box-shadow:inset 0 1px 2px rgba(0,0,0,.08)}
+[data-appearance="classic"] .login-card,[data-appearance="classic"] .modal{border-radius:4px}
+
+/* ---------- Responsive ---------- */
+@media (max-width:1080px){
+  .layout-feed,.layout-profile{grid-template-columns:1fr}
+  .rail{position:static}
+}
+@media (max-width:860px){
+  .login{grid-template-columns:1fr}
+  .brand-panel{padding:36px 24px;min-height:auto}
+  .brand-panel h1{margin-top:20px}
+  .brand-points{display:none}
+  .shell{grid-template-columns:1fr}
+  .sidebar{position:fixed;inset:0 auto 0 0;width:270px;z-index:40;transform:translateX(-100%);transition:transform .2s;box-shadow:var(--shadow-lg)}
+  .shell.nav-open .sidebar{transform:none}
+  .scrim{position:fixed;inset:0;background:rgba(20,18,30,.35);z-index:35}
+  .topbar{display:flex;align-items:center;gap:10px;padding:10px 16px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:30}
+  .main{padding:20px 16px 48px}
+}
+@media (max-width:520px){
+  .role-row{grid-template-columns:1fr}
+  .login-card{padding:24px 20px}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="toasts" aria-live="polite"></div>
+
+<script>
+(() => {
+'use strict';
+
+/* =========================================================
+   Data layer — localStorage-backed simulation of the
+   Laravel/MySQL tables (users, works, events, opportunities,
+   academic_background, honors).
+   ========================================================= */
+const DB_KEY = 'tuklas.db.v1';
+const PREF_KEY = 'tuklas.prefs.v1';
+const DAY = 864e5;
+const ago = d => Date.now() - d * DAY;
+const ahead = d => Date.now() + d * DAY;
+
+function seed() {
+  return {
+    users: [
+      { id:'u1', name:'Andrea Villanueva', role:'student', email:'andrea@tuklas.edu', program:'BS Computer Science · 4th year', headline:'Building resilient tech for disaster-prone communities.' },
+      { id:'u2', name:'Paolo Reyes', role:'student', email:'paolo@tuklas.edu', program:'AB Literature · 3rd year', headline:'Poet and essayist writing about coastal memory.' },
+      { id:'u3', name:'Kim Dela Cruz', role:'student', email:'kim@tuklas.edu', program:'BS Biology · 4th year', headline:'Ethnobotany and natural vector control.' },
+      { id:'u4', name:'Dr. Maria Santos', role:'educator', email:'msantos@tuklas.edu', program:'Research Adviser · College of Computing', headline:'Disaster informatics, applied ML, and mentorship.' },
+      { id:'u5', name:'Prof. Ramon Aquino', role:'educator', email:'raquino@tuklas.edu', program:'Research Adviser · Dept. of Literature', headline:'Philippine poetics and creative non-fiction.' },
+      { id:'u6', name:'Lea Mercado', role:'admin', email:'admin@tuklas.edu', program:'Office of Research & Publications', headline:'Keeping Tuklas accurate, fair and academic.' }
+    ],
+    works: [
+      { id:'w1', authorId:'u1', adviserId:'u4', type:'research', title:'Offline-First Flood Alert Mesh for Barangay Responders',
+        abstract:'We designed and field-tested a LoRa-based mesh network that relays flood-level readings between barangay halls without cellular coverage. Across a six-week pilot in three riverside barangays, alert delivery reached 97.4% with a median latency of 11 seconds, outperforming SMS broadcast during two typhoon events.',
+        tags:['IoT','Disaster Risk Reduction','LoRa'], status:'approved', createdAt:ago(40), approvedAt:ago(12), approvedBy:'u4',
+        comments:[{ by:'u4', text:'Strong methodology. Please add the latency distribution chart to the appendix.', at:ago(20) },{ by:'u1', text:'Added as Appendix C. Thank you, Dr. Santos!', at:ago(15) }] },
+      { id:'w2', authorId:'u2', adviserId:'u5', type:'literary', title:'Salinlahi: Poems on Coastal Memory',
+        abstract:'A chapbook of fourteen poems in English and Hiligaynon tracing three generations of a fishing family in Iloilo. The collection explores displacement, inherited language and the shoreline as an archive.',
+        tags:['Poetry','Hiligaynon','Memory'], status:'approved', createdAt:ago(30), approvedAt:ago(6), approvedBy:'u5', comments:[] },
+      { id:'w3', authorId:'u3', adviserId:'u4', type:'research', title:'Mangrove Leaf Extract as a Natural Larvicide Against Aedes aegypti',
+        abstract:'Ethanolic extracts of Rhizophora mucronata leaves were tested on third-instar Aedes aegypti larvae. The LC50 at 24 hours was 412 ppm, suggesting a low-cost, locally sourced complement to chemical larvicides for dengue-endemic communities.',
+        tags:['Public Health','Ethnobotany','Dengue'], status:'approved', createdAt:ago(50), approvedAt:ago(3), approvedBy:'u6', comments:[] },
+      { id:'w4', authorId:'u1', adviserId:'u4', type:'research', title:'Predicting First-Year Dropout Risk from LMS Activity Logs',
+        abstract:'Using anonymized learning-management-system logs from 2,300 first-year students, we compare gradient boosting and logistic regression for early dropout prediction by week 5 of the semester, with attention to fairness across campuses.',
+        tags:['Machine Learning','Education'], status:'submitted', createdAt:ago(2), comments:[] },
+      { id:'w5', authorId:'u2', adviserId:'u5', type:'literary', title:'The Weight of Salt (Essay)',
+        abstract:'A personal essay about my grandmother’s salt farm and the slow disappearance of the trade in Guimaras.',
+        tags:['Creative Non-fiction'], status:'revision', createdAt:ago(9),
+        comments:[{ by:'u5', text:'The opening is beautiful but the middle section loses the thread. Consider cutting the market scene and returning to the salt beds sooner.', at:ago(4) }] },
+      { id:'w6', authorId:'u3', adviserId:'u4', type:'research', title:'Microplastic Load in Bivalves Sold at Three Iloilo Wet Markets',
+        abstract:'We quantify microplastic particles in Perna viridis and Crassostrea iredalei purchased from three public markets, identifying polymer types via FTIR spectroscopy.',
+        tags:['Environmental Science','Food Safety'], status:'submitted', createdAt:ago(1), comments:[] }
+    ],
+    opportunities: [
+      { id:'o1', adviserId:'u4', kind:'mentorship', title:'Undergraduate Research Assistants — Disaster Informatics Lab',
+        description:'Two slots for 3rd–4th year students interested in sensor networks and early-warning systems. Weekly mentorship, co-authorship on publications, and a stipend under the Office of Research.',
+        deadline:ahead(18), slots:2, createdAt:ago(5) },
+      { id:'o2', adviserId:'u5', kind:'call', title:'Call for Submissions: Tinig Student Literary Folio, Vol. 7',
+        description:'Poetry, fiction and creative non-fiction in English, Filipino or any Philippine language. Selected works will be published in print and featured on Tuklas portfolios.',
+        deadline:ahead(25), slots:null, createdAt:ago(8) }
+    ],
+    events: [
+      { id:'e1', category:'colloquium', title:'Research Colloquium: Data for Disaster Resilience', date:ahead(9), venue:'AVR 2, Main Building', postedBy:'u4', status:'approved',
+        description:'Student presenters share completed theses on early-warning systems, mapping and community response. Open to all programs.', createdAt:ago(7) },
+      { id:'e2', category:'cpgarcia', title:'C.P. Garcia Event 2026', date:ahead(21), venue:'University Gymnasium', postedBy:'u6', status:'approved',
+        description:'The annual celebration of scholarship and service, featuring research awards, exhibits and the recognition of outstanding faculty mentors.', createdAt:ago(14) },
+      { id:'e3', category:'innovation', title:'School Innovation Expo', date:ahead(33), venue:'Engineering Atrium', postedBy:'u6', status:'approved',
+        description:'Prototypes, posters and live demos from capstone teams across engineering, computing and the sciences.', createdAt:ago(10) },
+      { id:'e4', category:'colloquium', title:'Literature Colloquium: Writing the Regions', date:ahead(14), venue:'Library Function Hall', postedBy:'u5', status:'pending',
+        description:'Readings and a panel on writing in regional languages, with student and faculty authors.', createdAt:ago(1) }
+    ],
+    background: [
+      { id:'b1', userId:'u1', degree:'BS Computer Science (in progress)', school:'University of Iloilo', year:'2027' },
+      { id:'b2', userId:'u1', degree:'STEM Strand, Senior High School — With High Honors', school:'Iloilo National High School', year:'2023' },
+      { id:'b3', userId:'u2', degree:'AB Literature (in progress)', school:'University of Iloilo', year:'2028' },
+      { id:'b4', userId:'u3', degree:'BS Biology (in progress)', school:'University of Iloilo', year:'2027' },
+      { id:'b5', userId:'u4', degree:'PhD Computer Science', school:'University of the Philippines Diliman', year:'2016' },
+      { id:'b6', userId:'u4', degree:'MS Computer Science', school:'Ateneo de Manila University', year:'2011' },
+      { id:'b7', userId:'u5', degree:'MFA Creative Writing', school:'De La Salle University', year:'2009' }
+    ],
+    honors: [
+      { id:'h1', userId:'u1', kind:'award', title:'Best Undergraduate Paper — Regional ICT Congress', issuer:'PSITE Region VI', year:'2026', verified:true },
+      { id:'h2', userId:'u1', kind:'grant', title:'DOST-SEI Undergraduate Scholarship', issuer:'DOST Science Education Institute', year:'2023', verified:true },
+      { id:'h3', userId:'u1', kind:'certification', title:'AWS Certified Cloud Practitioner', issuer:'Amazon Web Services', year:'2026', verified:false },
+      { id:'h4', userId:'u2', kind:'award', title:'Palanca Awards — Kabataan Essay, 2nd Prize', issuer:'Carlos Palanca Foundation', year:'2025', verified:true },
+      { id:'h5', userId:'u3', kind:'grant', title:'Student Research Grant', issuer:'Office of Research', year:'2026', verified:false },
+      { id:'h6', userId:'u4', kind:'award', title:'Outstanding Research Mentor', issuer:'University of Iloilo', year:'2025', verified:true }
+    ]
+  };
+}
+
+function load(key, fallback) {
+  try { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : fallback(); }
+  catch { return fallback(); }
+}
+function persist() {
+  try { localStorage.setItem(DB_KEY, JSON.stringify(db)); localStorage.setItem(PREF_KEY, JSON.stringify(prefs)); } catch {}
+}
+
+let db = load(DB_KEY, seed);
+let prefs = load(PREF_KEY, () => ({ appearance:'modern' }));
+const state = { userId: prefs.userId || null, view: 'feed', param: null, modal: null, filter: 'all', query: '', tab: 'research', eventFilter: 'all', navOpen: false };
+
+const uid = p => p + Math.random().toString(36).slice(2, 9);
+const user = id => db.users.find(u => u.id === id);
+const me = () => user(state.userId);
+
+/* =========================================================
+   Helpers
+   ========================================================= */
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+const initials = n => n.replace(/^(Dr\.|Prof\.)\s*/, '').split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase();
+const roleLabel = { student:'Student', educator:'Educator', admin:'Admin' };
+const typeLabel = { research:'Research', literary:'Literary work' };
+const catLabel = { colloquium:'Research Colloquium', innovation:'School Innovation', cpgarcia:'C.P. Garcia Event' };
+const kindLabel = { mentorship:'Mentorship', grant:'Research Grant', call:'Call for Submissions' };
+const honorIcon = { award:'★', grant:'◆', certification:'✓' };
+const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+function rel(t) {
+  const s = (Date.now() - t) / 1000;
+  if (s < 60) return 'just now';
+  if (s < 3600) return Math.floor(s / 60) + 'm ago';
+  if (s < 86400) return Math.floor(s / 3600) + 'h ago';
+  if (s < 86400 * 30) return Math.floor(s / 86400) + 'd ago';
+  return fmtDate(t);
+}
+function fmtDate(t) { const d = new Date(t); return `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`; }
+function toISO(t) { const d = new Date(t); return d.toISOString().slice(0, 10); }
+
+const avatar = (u, cls = '') => `<div class="avatar ${u.role} ${cls}" aria-hidden="true">${esc(initials(u.name))}</div>`;
+const roleBadge = u => `<span class="badge b-${u.role}">${roleLabel[u.role]}</span>`;
+const typeBadge = t => `<span class="badge b-${t}">${typeLabel[t]}</span>`;
+const statusBadge = s => ({
+  submitted:'<span class="badge b-gold"><span class="dot"></span>Awaiting review</span>',
+  revision:'<span class="badge b-warn"><span class="dot"></span>Revision requested</span>',
+  approved:'<span class="badge b-ok"><span class="dot"></span>Approved · Public</span>',
+  rejected:'<span class="badge b-bad"><span class="dot"></span>Not approved</span>',
+  pending:'<span class="badge b-gold"><span class="dot"></span>Pending admin review</span>'
+}[s] || '');
+const sealIcon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 2.1 3.2-.3.8 3.1 2.8 1.6-1.2 3 1.2 3-2.8 1.6-.8 3.1-3.2-.3L12 22l-2.4-2.1-3.2.3-.8-3.1L2.8 15.5l1.2-3-1.2-3 2.8-1.6.8-3.1 3.2.3z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg>';
+const searchIcon = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>';
+
+function toast(msg, err) {
+  const el = document.createElement('div');
+  el.className = 'toast' + (err ? ' err' : '');
+  el.textContent = msg;
+  document.getElementById('toasts').appendChild(el);
+  setTimeout(() => el.remove(), 3200);
+}
+
+/* Governance rules (mirror of backend policies) */
+const isPublic = w => w.status === 'approved';
+const canSeeWork = (w, viewer) => isPublic(w) || w.authorId === viewer.id || w.adviserId === viewer.id || viewer.role === 'admin';
+const canPostEvents = u => u.role === 'educator' || u.role === 'admin';
+
+/* =========================================================
+   Views
+   ========================================================= */
+function viewLogin() {
+  return `
+  <main class="login">
+    <section class="brand-panel">
+      <div class="logo"><span class="logo-badge">T</span>Tuklas</div>
+      <h1>From Defense to Discovery</h1>
+      <p>A research and academic engagement hub for students, educators and administrators.</p>
+      <span class="gold-pill">Academic engagement hub</span>
+      <div class="brand-points">
+        <div><span>◎</span>Public portfolios for research and literary works</div>
+        <div><span>✓</span>Adviser- and panel-approved publications only</div>
+        <div><span>◆</span>Academic events, colloquiums and the C.P. Garcia event</div>
+      </div>
+    </section>
+    <section class="form-side">
+      <div class="login-card">
+        <h2>Welcome back</h2>
+        <p class="sub">Log in to continue to your workspace.</p>
+        <form data-form="login" novalidate>
+          <div class="field">
+            <label class="label" for="email">Email address</label>
+            <input class="input" id="email" name="email" type="email" placeholder="you@tuklas.edu" autocomplete="username" required>
+          </div>
+          <div class="field">
+            <label class="label" for="password">Password</label>
+            <input class="input" id="password" name="password" type="password" placeholder="Password" autocomplete="current-password" required>
+          </div>
+          <button class="btn btn-primary btn-block" type="submit">Log in</button>
+        </form>
+        <div class="continue">Continue as</div>
+        <div class="role-row">
+          <button class="btn btn-outline" data-action="demo" data-role="student">Student</button>
+          <button class="btn btn-outline" data-action="demo" data-role="educator">Educator</button>
+          <button class="btn btn-dark" data-action="demo" data-role="admin">Admin</button>
+        </div>
+        <p class="create">New to Tuklas? <button class="linkbtn" data-action="modal" data-modal="signup">Create your account</button></p>
+      </div>
+    </section>
+  </main>`;
+}
+
+function navItems(u) {
+  const reviewCount = db.works.filter(w => w.adviserId === u.id && w.status === 'submitted').length;
+  const adminCount = db.works.filter(w => w.status === 'submitted').length + db.events.filter(e => e.status === 'pending').length + db.honors.filter(h => !h.verified).length;
+  const items = [
+    { v:'feed', ico:'◫', label:'Community feed' },
+    { v:'portfolio', ico:'◎', label:'My portfolio', param:u.id }
+  ];
+  if (u.role === 'student') items.push({ v:'research', ico:'✎', label:'My research' });
+  if (u.role === 'educator') {
+    items.push({ v:'review', ico:'▦', label:'Review board', count:reviewCount });
+    items.push({ v:'post', ico:'+', label:'Post opportunity' });
+  }
+  items.push({ v:'events', ico:'◆', label:'Academic events' });
+  if (u.role === 'admin') items.push({ v:'admin', ico:'⚑', label:'Approval queue', count:adminCount });
+  return items;
+}
+
+function viewShell() {
+  const u = me();
+  const nav = navItems(u).map(i => {
+    const active = state.view === i.v && (i.v !== 'portfolio' || state.param === u.id);
+    return `<button class="nav-item ${active ? 'active' : ''}" data-action="nav" data-view="${i.v}" ${i.param ? `data-param="${i.param}"` : ''} ${active ? 'aria-current="page"' : ''}>
+      <span class="ico">${i.ico}</span>${i.label}${i.count ? `<span class="count">${i.count}</span>` : ''}</button>`;
+  }).join('');
+  const classic = prefs.appearance === 'classic';
+  return `
+  <div class="shell ${state.navOpen ? 'nav-open' : ''}">
+    ${state.navOpen ? '<div class="scrim" data-action="close-nav"></div>' : ''}
+    <aside class="sidebar" aria-label="Main navigation">
+      <div class="logo"><span class="logo-badge">T</span>Tuklas</div>
+      <div class="me">${avatar(u)}<div class="who"><div class="name">${esc(u.name)}</div>${roleBadge(u)}</div></div>
+      <div class="nav-label">Workspace</div>
+      ${nav}
+      <div class="sidebar-foot">
+        <button class="nav-item" data-action="appearance"><span class="ico">◐</span>Appearance: ${classic ? 'Classic' : 'Modern'}</button>
+        <button class="nav-item" data-action="reset"><span class="ico">↺</span>Reset demo data</button>
+        <button class="nav-item" data-action="logout"><span class="ico">⎋</span>Log out</button>
+      </div>
+    </aside>
+    <div>
+      <div class="topbar">
+        <button class="btn btn-ghost btn-sm" data-action="open-nav" aria-label="Open menu">☰</button>
+        <div class="logo" style="font-size:16px"><span class="logo-badge" style="width:24px;height:24px;font-size:13px">T</span>Tuklas</div>
+      </div>
+      <main class="main">${viewBody()}</main>
+    </div>
+  </div>`;
+}
+
+function viewBody() {
+  switch (state.view) {
+    case 'portfolio': return viewPortfolio(user(state.param) || me());
+    case 'research': return viewMyResearch();
+    case 'review': return viewReview();
+    case 'post': return viewPost();
+    case 'events': return viewEvents();
+    case 'admin': return viewAdmin();
+    default: return viewFeed();
+  }
+}
+
+/* ---------- Community feed ---------- */
+function workCard(w) {
+  const a = user(w.authorId), adv = user(w.approvedBy);
+  return `
+  <article class="card card-pad">
+    <div class="post-head">
+      <button class="linkbtn" data-action="nav" data-view="portfolio" data-param="${a.id}" aria-label="View ${esc(a.name)}'s portfolio">${avatar(a)}</button>
+      <div class="meta">
+        <div><button class="linkbtn" style="color:var(--ink)" data-action="nav" data-view="portfolio" data-param="${a.id}">${esc(a.name)}</button> <span class="muted small">· ${esc(a.program)}</span></div>
+        <div class="muted small">Published ${rel(w.approvedAt)}</div>
+      </div>
+      ${typeBadge(w.type)}
+    </div>
+    <h3 class="post-title">${esc(w.title)}</h3>
+    <p class="clamp muted" style="margin:0">${esc(w.abstract)}</p>
+    <div class="tags">${w.tags.map(t => `<span class="tag">#${esc(t)}</span>`).join('')}</div>
+    <div class="seal">${sealIcon}<span>Approved by ${adv ? esc(adv.name) : 'academic panel'}${adv && adv.role === 'admin' ? ' for the Academic Panel' : ''}</span>
+      <button class="btn btn-ghost btn-sm" style="margin-left:auto" data-action="modal" data-modal="work" data-id="${w.id}">Read abstract</button></div>
+  </article>`;
+}
+
+function oppCard(o) {
+  const a = user(o.adviserId);
+  return `
+  <article class="card card-pad" style="border-left:3px solid var(--blue)">
+    <div class="post-head">
+      ${avatar(a)}
+      <div class="meta">
+        <div><button class="linkbtn" style="color:var(--ink)" data-action="nav" data-view="portfolio" data-param="${a.id}">${esc(a.name)}</button> <span class="muted small">posted an opportunity</span></div>
+        <div class="muted small">${rel(o.createdAt)}</div>
+      </div>
+      <span class="badge b-educator">${kindLabel[o.kind]}</span>
+    </div>
+    <h3 class="post-title">${esc(o.title)}</h3>
+    <p class="muted" style="margin:0">${esc(o.description)}</p>
+    <div class="tags"><span class="tag">Deadline: ${fmtDate(o.deadline)}</span>${o.slots ? `<span class="tag">${o.slots} slot${o.slots > 1 ? 's' : ''}</span>` : ''}</div>
+  </article>`;
+}
+
+function eventAds(limit = 3) {
+  const evs = db.events.filter(e => e.status === 'approved' && e.date > Date.now() - DAY).sort((a, b) => a.date - b.date).slice(0, limit);
+  if (!evs.length) return '<div class="empty">No upcoming academic events.</div>';
+  return evs.map(e => {
+    const d = new Date(e.date);
+    return `<div class="ad"><div class="ad-date">
+      <div class="cal"><div class="m">${months[d.getMonth()]}</div><div class="d">${d.getDate()}</div></div>
+      <div><div class="kicker">${catLabel[e.category]}</div><h4>${esc(e.title)}</h4><div class="muted small">${esc(e.venue)}</div></div>
+    </div></div>`;
+  }).join('');
+}
+
+function viewFeed() {
+  const q = state.query.trim().toLowerCase();
+  const match = (...s) => !q || s.join(' ').toLowerCase().includes(q);
+  let items = [];
+  if (state.filter !== 'opps') items = items.concat(db.works.filter(isPublic).filter(w => state.filter === 'all' || w.type === state.filter)
+    .filter(w => match(w.title, w.abstract, w.tags.join(' '), user(w.authorId).name)).map(w => ({ t:w.approvedAt, html:workCard(w) })));
+  if (state.filter === 'all' || state.filter === 'opps') items = items.concat(db.opportunities.filter(o => match(o.title, o.description, user(o.adviserId).name)).map(o => ({ t:o.createdAt, html:oppCard(o) })));
+  items.sort((a, b) => b.t - a.t);
+  const chip = (k, l) => `<button class="chip ${state.filter === k ? 'on' : ''}" data-action="filter" data-filter="${k}" aria-pressed="${state.filter === k}">${l}</button>`;
+  const u = me();
+  return `
+  <div class="page-head"><div><h1>Community feed</h1><p>Approved research, literary works and adviser opportunities from across the university.</p></div>
+    ${u.role === 'student' ? '<button class="btn btn-primary" data-action="modal" data-modal="submit">Submit research</button>' : ''}
+    ${u.role === 'educator' ? '<button class="btn btn-primary" data-action="nav" data-view="post">Post opportunity</button>' : ''}</div>
+  <div class="layout-feed">
+    <div>
+      <div class="toolbar">
+        <div class="chips" role="group" aria-label="Filter feed">${chip('all','All')}${chip('research','Research')}${chip('literary','Literary works')}${chip('opps','Opportunities')}</div>
+        <label class="search"><span class="sr-only">Search feed</span>${searchIcon}<input class="input" data-input="query" value="${esc(state.query)}" placeholder="Search titles, tags, people"></label>
+      </div>
+      <div class="stack">${items.length ? items.map(i => i.html).join('') : '<div class="card empty">Nothing matches your search yet.</div>'}</div>
+    </div>
+    <aside class="rail">
+      <div class="notice">${sealIcon}<div><b>Quality first.</b> Student research appears here only after approval by a research adviser or the academic panel.</div></div>
+      <section class="card">
+        <div class="card-head"><h3>Academic events</h3><span class="muted small">Sponsored</span></div>
+        ${eventAds()}
+        <div style="padding:10px 16px;border-top:1px solid var(--line)"><button class="linkbtn small" data-action="nav" data-view="events">See all events →</button></div>
+      </section>
+    </aside>
+  </div>`;
+}
+
+/* ---------- Portfolio ---------- */
+function viewPortfolio(p) {
+  const u = me(), own = p.id === u.id;
+  const works = db.works.filter(w => w.authorId === p.id && (own ? true : isPublic(w))).sort((a, b) => (b.approvedAt || b.createdAt) - (a.approvedAt || a.createdAt));
+  const mentored = p.role === 'educator' ? db.works.filter(w => w.approvedBy === p.id && isPublic(w)) : [];
+  const bg = db.background.filter(b => b.userId === p.id);
+  const honors = db.honors.filter(h => h.userId === p.id && (own || h.verified || u.role === 'admin'));
+  const pubCount = works.filter(isPublic).length;
+
+  const workRow = w => `
+    <div class="work">
+      <div class="row" style="justify-content:space-between;align-items:center;gap:8px">${typeBadge(w.type)}${own || !isPublic(w) ? statusBadge(w.status) : `<span class="muted small">${fmtDate(w.approvedAt)}</span>`}</div>
+      <h4 style="font-size:15px;margin:8px 0 4px"><button class="linkbtn" style="color:var(--ink);text-align:left" data-action="modal" data-modal="work" data-id="${w.id}">${esc(w.title)}</button></h4>
+      <p class="muted clamp" style="margin:0">${esc(w.abstract)}</p>
+      ${isPublic(w) ? `<div class="seal">${sealIcon}Approved by ${esc(user(w.approvedBy)?.name || 'academic panel')}</div>` : ''}
+    </div>`;
+
+  return `
+  <section class="card">
+    <div class="cover"></div>
+    <div class="profile-top">
+      ${avatar(p, 'lg')}
+      <div class="info">
+        <div class="row" style="align-items:center;gap:8px"><h1>${esc(p.name)}</h1>${roleBadge(p)}</div>
+        <div class="muted">${esc(p.program)}</div>
+        <p style="margin:6px 0 0">${esc(p.headline)}</p>
+      </div>
+      <div class="row" style="gap:8px">
+        ${own ? '<button class="btn" data-action="modal" data-modal="profile">Edit profile</button>' : ''}
+        <button class="btn" data-action="share" data-id="${p.id}">Share portfolio</button>
+      </div>
+    </div>
+    <div class="stats">
+      <div><b>${pubCount}</b><span class="muted small">Published works</span></div>
+      ${p.role === 'educator' ? `<div><b>${mentored.length}</b><span class="muted small">Works approved as adviser</span></div>` : ''}
+      <div><b>${honors.filter(h => h.verified).length}</b><span class="muted small">Verified honors</span></div>
+      <div><b>${bg.length}</b><span class="muted small">Degrees & diplomas</span></div>
+    </div>
+  </section>
+
+  <div class="layout-profile">
+    <div class="stack">
+      <section class="card">
+        <div class="card-head"><h3>Research & literary works</h3>${own && u.role === 'student' ? '<button class="btn btn-sm btn-primary" data-action="modal" data-modal="submit">Submit work</button>' : ''}</div>
+        ${works.length ? works.map(workRow).join('') : `<div class="empty">${own ? 'Your approved research and literary works will appear here.' : 'No published works yet.'}</div>`}
+      </section>
+      ${mentored.length ? `<section class="card"><div class="card-head"><h3>Mentored works</h3><span class="muted small">Approved as research adviser</span></div>
+        ${mentored.map(w => `<div class="work"><div class="row" style="gap:8px;align-items:center">${typeBadge(w.type)}<span class="muted small">by ${esc(user(w.authorId).name)}</span></div>
+          <h4 style="font-size:14px;margin:6px 0 0"><button class="linkbtn" style="color:var(--ink);text-align:left" data-action="modal" data-modal="work" data-id="${w.id}">${esc(w.title)}</button></h4></div>`).join('')}</section>` : ''}
+    </div>
+    <div class="stack">
+      <section class="card">
+        <div class="card-head"><h3>Academic background</h3>${own ? '<button class="btn btn-sm" data-action="modal" data-modal="background">Add</button>' : ''}</div>
+        ${bg.length ? bg.map(b => `<div class="cred"><div class="cred-ico">🎓</div><div><b>${esc(b.degree)}</b><div class="muted small">${esc(b.school)} · ${esc(b.year)}</div></div></div>`).join('') : '<div class="empty">No diplomas or degrees listed.</div>'}
+      </section>
+      <section class="card">
+        <div class="card-head"><h3>Honors & awards</h3>${own ? '<button class="btn btn-sm" data-action="modal" data-modal="honor">Add</button>' : ''}</div>
+        ${honors.length ? honors.map(h => `<div class="cred"><div class="cred-ico gold">${honorIcon[h.kind]}</div><div style="flex:1"><b>${esc(h.title)}</b>
+          <div class="muted small">${esc(h.issuer)} · ${esc(h.year)}</div>
+          <div style="margin-top:4px">${h.verified ? '<span class="badge b-ok">Verified</span>' : '<span class="badge b-gold">Pending verification</span>'} <span class="badge">${h.kind[0].toUpperCase() + h.kind.slice(1)}</span></div></div></div>`).join('') : '<div class="empty">No honors, grants or certifications yet.</div>'}
+      </section>
+    </div>
+  </div>`;
+}
+
+/* ---------- Student: My research ---------- */
+function stepper(w) {
+  const s = w.status;
+  const st = (label, cls) => `<div class="step ${cls}"><div class="bar"></div>${label}</div>`;
+  return `<div class="steps">
+    ${st('Submitted', 'done')}
+    ${st(s === 'revision' ? 'Revision requested' : 'Adviser review', s === 'submitted' || s === 'revision' ? 'current' : s === 'rejected' ? 'fail' : 'done')}
+    ${st(s === 'rejected' ? 'Not approved' : 'Approved & public', s === 'approved' ? 'done' : s === 'rejected' ? 'fail' : '')}
+  </div>`;
+}
+
+function viewMyResearch() {
+  const u = me();
+  const works = db.works.filter(w => w.authorId === u.id).sort((a, b) => b.createdAt - a.createdAt);
+  return `
+  <div class="page-head"><div><h1>My research</h1><p>Track submissions from defense to discovery. Works go public once your adviser or the panel approves them.</p></div>
+    <button class="btn btn-primary" data-action="modal" data-modal="submit">Submit new work</button></div>
+  <div class="stack">
+    ${works.length ? works.map(w => `
+      <article class="card card-pad">
+        <div class="row" style="justify-content:space-between;align-items:center">${typeBadge(w.type)}${statusBadge(w.status)}</div>
+        <h3 class="post-title">${esc(w.title)}</h3>
+        <div class="muted small">Adviser: ${esc(user(w.adviserId)?.name || '—')} · Submitted ${rel(w.createdAt)}</div>
+        ${stepper(w)}
+        ${w.status === 'revision' && w.comments.length ? `<div class="notice gold" style="margin-top:12px"><div><b>Adviser feedback:</b> ${esc(w.comments[w.comments.length - 1].text)}</div></div>` : ''}
+        <div class="row" style="margin-top:14px;gap:8px">
+          <button class="btn btn-sm" data-action="modal" data-modal="work" data-id="${w.id}">Open${w.comments.length ? ` · ${w.comments.length} comment${w.comments.length > 1 ? 's' : ''}` : ''}</button>
+          ${w.status === 'revision' ? `<button class="btn btn-sm btn-primary" data-action="modal" data-modal="submit" data-id="${w.id}">Revise & resubmit</button>` : ''}
+        </div>
+      </article>`).join('') : '<div class="card empty">You have no submissions yet. Submit your first research or literary work to start the approval flow.</div>'}
+  </div>`;
+}
+
+/* ---------- Educator: Review board ---------- */
+function viewReview() {
+  const u = me();
+  const mine = db.works.filter(w => w.adviserId === u.id);
+  const cols = [
+    { key:'submitted', label:'Awaiting review', color:'var(--gold)' },
+    { key:'revision', label:'Revision requested', color:'#E89A3C' },
+    { key:'approved', label:'Approved & signed', color:'var(--ok)' }
+  ];
+  return `
+  <div class="page-head"><div><h1>Review board</h1><p>Comment, request revisions, and sign off on your advisees' work. Approval publishes it to their portfolio and the feed.</p></div></div>
+  <div class="kanban">
+    ${cols.map(c => {
+      const ws = mine.filter(w => w.status === c.key).sort((a, b) => b.createdAt - a.createdAt);
+      return `<section class="col" aria-label="${c.label}">
+        <div class="col-head"><span class="dot" style="color:${c.color};width:8px;height:8px"></span>${c.label}<span class="n">${ws.length}</span></div>
+        ${ws.length ? ws.map(w => `<button class="kcard" data-action="modal" data-modal="work" data-id="${w.id}">
+          ${typeBadge(w.type)}<h4>${esc(w.title)}</h4>
+          <div class="row" style="align-items:center;gap:6px;justify-content:space-between"><span class="muted small">${esc(user(w.authorId).name)}</span><span class="muted small">${rel(w.approvedAt || w.createdAt)}</span></div>
+        </button>`).join('') : '<div class="empty small">Nothing here.</div>'}
+      </section>`;
+    }).join('')}
+  </div>`;
+}
+
+/* ---------- Educator: Post opportunity ---------- */
+function viewPost() {
+  const u = me();
+  const mine = db.opportunities.filter(o => o.adviserId === u.id).sort((a, b) => b.createdAt - a.createdAt);
+  return `
+  <div class="page-head"><div><h1>Post an opportunity</h1><p>Invite students to mentorships, research grants, or calls for submissions. Posts appear in the community feed.</p></div></div>
+  <div class="layout-profile" style="margin-top:0">
+    <form class="card card-pad" data-form="opportunity">
+      <div class="field"><label class="label" for="o-kind">Type</label>
+        <select class="input" id="o-kind" name="kind">${Object.entries(kindLabel).map(([k, l]) => `<option value="${k}">${l}</option>`).join('')}</select></div>
+      <div class="field"><label class="label" for="o-title">Title</label><input class="input" id="o-title" name="title" required maxlength="140" placeholder="e.g. Research assistants for the Coastal Ecology Lab"></div>
+      <div class="field"><label class="label" for="o-desc">Description</label><textarea class="input" id="o-desc" name="description" required placeholder="Who should apply, what they will do, and what they gain."></textarea></div>
+      <div class="row">
+        <div class="field"><label class="label" for="o-deadline">Application deadline</label><input class="input" id="o-deadline" name="deadline" type="date" required value="${toISO(ahead(21))}"></div>
+        <div class="field"><label class="label" for="o-slots">Slots (optional)</label><input class="input" id="o-slots" name="slots" type="number" min="1" max="99"></div>
+      </div>
+      <div class="row" style="justify-content:flex-end"><button class="btn btn-primary" type="submit">Publish to feed</button></div>
+    </form>
+    <section class="card">
+      <div class="card-head"><h3>Your postings</h3><span class="muted small">${mine.length}</span></div>
+      ${mine.length ? mine.map(o => `<div class="work"><span class="badge b-educator">${kindLabel[o.kind]}</span><h4 style="font-size:14px;margin:6px 0 2px">${esc(o.title)}</h4>
+        <div class="row" style="justify-content:space-between;align-items:center"><span class="muted small">Closes ${fmtDate(o.deadline)}</span><button class="btn btn-sm btn-danger" data-action="del-opp" data-id="${o.id}">Remove</button></div></div>`).join('') : '<div class="empty">No postings yet.</div>'}
+    </section>
+  </div>`;
+}
+
+/* ---------- Academic events ---------- */
+function viewEvents() {
+  const u = me();
+  const visible = db.events.filter(e => e.status === 'approved' && (state.eventFilter === 'all' || e.category === state.eventFilter)).sort((a, b) => a.date - b.date);
+  const myPending = db.events.filter(e => e.postedBy === u.id && e.status !== 'approved');
+  const chip = (k, l) => `<button class="chip ${state.eventFilter === k ? 'on' : ''}" data-action="efilter" data-filter="${k}" aria-pressed="${state.eventFilter === k}">${l}</button>`;
+  return `
+  <div class="page-head"><div><h1>Academic events</h1><p>Advertising on Tuklas is limited to academic events: research colloquiums, school innovations and the C.P. Garcia event.</p></div>
+    ${canPostEvents(u) ? '<button class="btn btn-primary" data-action="modal" data-modal="event">Promote an event</button>' : ''}</div>
+  <div class="toolbar"><div class="chips">${chip('all','All')}${Object.entries(catLabel).map(([k, l]) => chip(k, l)).join('')}</div></div>
+  ${myPending.length ? `<section class="card" style="margin-bottom:16px"><div class="card-head"><h3>Your submitted ads</h3></div>
+    ${myPending.map(e => `<div class="qitem"><div class="body"><b>${esc(e.title)}</b><div class="muted small">${catLabel[e.category]} · ${fmtDate(e.date)}</div></div>${statusBadge(e.status)}</div>`).join('')}</section>` : ''}
+  <div class="grid-events">
+    ${visible.length ? visible.map(e => {
+      const d = new Date(e.date);
+      return `<article class="card event-card"><div class="event-band band-${e.category}"></div>
+        <div class="card-pad" style="flex:1;display:flex;flex-direction:column;gap:10px">
+          <div class="ad-date"><div class="cal"><div class="m">${months[d.getMonth()]}</div><div class="d">${d.getDate()}</div></div>
+            <div><div class="ad kicker" style="padding:0;border:0">${catLabel[e.category]}</div><h3 style="font-size:15px;margin-top:2px">${esc(e.title)}</h3></div></div>
+          <p class="muted" style="margin:0;flex:1">${esc(e.description)}</p>
+          <div class="muted small">📍 ${esc(e.venue)} · Posted by ${esc(user(e.postedBy)?.name || '—')}</div>
+        </div></article>`;
+    }).join('') : '<div class="card empty">No events in this category yet.</div>'}
+  </div>`;
+}
+
+/* ---------- Admin approval queue ---------- */
+function viewAdmin() {
+  const pendingW = db.works.filter(w => w.status === 'submitted' || w.status === 'revision');
+  const pendingE = db.events.filter(e => e.status === 'pending');
+  const pendingH = db.honors.filter(h => !h.verified);
+  const tab = (k, l, n) => `<button class="tab ${state.tab === k ? 'on' : ''}" data-action="tab" data-tab="${k}">${l} <span class="badge">${n}</span></button>`;
+  let list = '';
+  if (state.tab === 'research') {
+    list = pendingW.length ? pendingW.map(w => `<div class="qitem">${avatar(user(w.authorId))}
+      <div class="body"><div class="row" style="gap:6px;align-items:center">${typeBadge(w.type)}${statusBadge(w.status)}</div>
+        <b style="display:block;margin-top:6px">${esc(w.title)}</b>
+        <div class="muted small">${esc(user(w.authorId).name)} · Adviser: ${esc(user(w.adviserId)?.name || '—')} · ${rel(w.createdAt)}</div></div>
+      <div class="acts"><button class="btn btn-sm" data-action="modal" data-modal="work" data-id="${w.id}">Review</button>
+        <button class="btn btn-sm btn-ok" data-action="approve" data-id="${w.id}">Panel approve</button>
+        <button class="btn btn-sm btn-danger" data-action="reject" data-id="${w.id}">Reject</button></div></div>`).join('') : '<div class="empty">No research waiting for the panel.</div>';
+  } else if (state.tab === 'events') {
+    list = pendingE.length ? pendingE.map(e => `<div class="qitem"><div class="cal"><div class="m">${months[new Date(e.date).getMonth()]}</div><div class="d">${new Date(e.date).getDate()}</div></div>
+      <div class="body"><span class="badge b-research">${catLabel[e.category]}</span><b style="display:block;margin-top:6px">${esc(e.title)}</b>
+        <div class="muted small">${esc(e.venue)} · Submitted by ${esc(user(e.postedBy)?.name || '—')}</div><p class="muted small" style="margin:6px 0 0">${esc(e.description)}</p></div>
+      <div class="acts"><button class="btn btn-sm btn-ok" data-action="event-ok" data-id="${e.id}">Approve ad</button><button class="btn btn-sm btn-danger" data-action="event-no" data-id="${e.id}">Reject</button></div></div>`).join('') : '<div class="empty">No event ads awaiting moderation.</div>';
+  } else {
+    list = pendingH.length ? pendingH.map(h => `<div class="qitem"><div class="cred-ico gold">${honorIcon[h.kind]}</div>
+      <div class="body"><b>${esc(h.title)}</b><div class="muted small">${esc(h.issuer)} · ${esc(h.year)} · Claimed by ${esc(user(h.userId)?.name || '—')}</div></div>
+      <div class="acts"><button class="btn btn-sm btn-ok" data-action="honor-ok" data-id="${h.id}">Verify</button><button class="btn btn-sm btn-danger" data-action="honor-no" data-id="${h.id}">Decline</button></div></div>`).join('') : '<div class="empty">All honors and grants are verified.</div>';
+  }
+  return `
+  <div class="page-head"><div><h1>Approval queue</h1><p>Review pending student research, verify honors and grants, and moderate academic event ads.</p></div></div>
+  <div class="kpis">
+    <div class="card kpi"><div class="muted small">Research pending</div><div class="v">${pendingW.length}</div></div>
+    <div class="card kpi"><div class="muted small">Event ads pending</div><div class="v">${pendingE.length}</div></div>
+    <div class="card kpi"><div class="muted small">Honors to verify</div><div class="v">${pendingH.length}</div></div>
+    <div class="card kpi"><div class="muted small">Published works</div><div class="v">${db.works.filter(isPublic).length}</div></div>
+  </div>
+  <div class="tabs" role="tablist">${tab('research','Student research',pendingW.length)}${tab('events','Event ads',pendingE.length)}${tab('honors','Honors & grants',pendingH.length)}</div>
+  <section class="card">${list}</section>`;
+}
+
+/* =========================================================
+   Modals
+   ========================================================= */
+function modalFrame(title, body, foot = '') {
+  return `<div class="overlay" data-action="close-modal-bg"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="m-title">
+    <div class="modal-head"><h2 id="m-title">${title}</h2><button class="x" data-action="close-modal" aria-label="Close">×</button></div>
+    ${body}${foot ? `<div class="modal-foot">${foot}</div>` : ''}</div></div>`;
+}
+
+function viewModal() {
+  const m = state.modal; if (!m) return '';
+  const u = me();
+  if (m.type === 'signup') return modalFrame('Create your account', `
+    <form data-form="signup"><div class="modal-body">
+      <div class="field"><label class="label" for="s-name">Full name</label><input class="input" id="s-name" name="name" required></div>
+      <div class="field"><label class="label" for="s-email">School email</label><input class="input" id="s-email" name="email" type="email" required placeholder="you@tuklas.edu"></div>
+      <div class="row">
+        <div class="field"><label class="label" for="s-role">I am a</label><select class="input" id="s-role" name="role"><option value="student">Student</option><option value="educator">Educator / Research adviser</option></select></div>
+        <div class="field"><label class="label" for="s-prog">Program or department</label><input class="input" id="s-prog" name="program" required placeholder="BS Psychology"></div>
+      </div>
+      <p class="hint">Admin accounts are issued by the Office of Research.</p>
+    </div><div class="modal-foot"><button type="button" class="btn" data-action="close-modal">Cancel</button><button class="btn btn-primary" type="submit">Create account</button></div></form>`);
+
+  if (m.type === 'submit') {
+    const ex = m.id ? db.works.find(w => w.id === m.id) : null;
+    const advisers = db.users.filter(x => x.role === 'educator');
+    return modalFrame(ex ? 'Revise & resubmit' : 'Submit research or literary work', `
+    <form data-form="submit" ${ex ? `data-id="${ex.id}"` : ''}><div class="modal-body">
+      <div class="notice" style="margin-bottom:16px">${sealIcon}<div>Your work stays private until your research adviser or the academic panel approves it.</div></div>
+      <div class="row">
+        <div class="field"><label class="label" for="w-type">Type</label><select class="input" id="w-type" name="type">${Object.entries(typeLabel).map(([k, l]) => `<option value="${k}" ${ex?.type === k ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
+        <div class="field"><label class="label" for="w-adv">Research adviser</label><select class="input" id="w-adv" name="adviserId">${advisers.map(a => `<option value="${a.id}" ${ex?.adviserId === a.id ? 'selected' : ''}>${esc(a.name)}</option>`).join('')}</select></div>
+      </div>
+      <div class="field"><label class="label" for="w-title">Title</label><input class="input" id="w-title" name="title" required maxlength="180" value="${esc(ex?.title || '')}"></div>
+      <div class="field"><label class="label" for="w-abs">Abstract</label><textarea class="input" id="w-abs" name="abstract" required style="min-height:140px">${esc(ex?.abstract || '')}</textarea></div>
+      <div class="field"><label class="label" for="w-tags">Keywords</label><input class="input" id="w-tags" name="tags" value="${esc(ex?.tags.join(', ') || '')}" placeholder="Separate with commas"></div>
+    </div><div class="modal-foot"><button type="button" class="btn" data-action="close-modal">Cancel</button><button class="btn btn-primary" type="submit">${ex ? 'Resubmit for review' : 'Submit for adviser review'}</button></div></form>`);
+  }
+
+  if (m.type === 'work') {
+    const w = db.works.find(x => x.id === m.id);
+    if (!w || !canSeeWork(w, u)) return modalFrame('Not available', '<div class="modal-body muted">This work is not public yet.</div>');
+    const a = user(w.authorId);
+    const isAdviser = w.adviserId === u.id;
+    const canDecide = (isAdviser || u.role === 'admin') && (w.status === 'submitted' || w.status === 'revision');
+    const canComment = isAdviser || u.role === 'admin' || w.authorId === u.id;
+    const thread = w.comments.map(c => { const cu = user(c.by); return `<div class="cmt">${avatar(cu)}<div class="bubble"><div class="small"><b>${esc(cu.name)}</b> <span class="muted">· ${rel(c.at)}</span></div>${esc(c.text)}</div></div>`; }).join('');
+    return modalFrame(esc(w.title), `
+      <div class="modal-body">
+        <div class="row" style="gap:6px;align-items:center;margin-bottom:12px">${typeBadge(w.type)}${statusBadge(w.status)}</div>
+        <div class="post-head" style="margin-bottom:14px">${avatar(a)}<div class="meta"><b>${esc(a.name)}</b><div class="muted small">${esc(a.program)} · Adviser: ${esc(user(w.adviserId)?.name || '—')}</div></div></div>
+        <h4 class="small muted" style="text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Abstract</h4>
+        <p style="margin:0 0 12px">${esc(w.abstract)}</p>
+        <div class="tags">${w.tags.map(t => `<span class="tag">#${esc(t)}</span>`).join('')}</div>
+        ${isPublic(w) ? `<div class="seal">${sealIcon}Digitally signed off by ${esc(user(w.approvedBy)?.name || 'academic panel')} on ${fmtDate(w.approvedAt)}</div>` : ''}
+        ${canComment && !isPublic(w) || w.comments.length && canComment ? `
+          <h4 class="small muted" style="text-transform:uppercase;letter-spacing:.06em;margin:20px 0 0">Review thread</h4>
+          <div class="thread">${thread || '<div class="muted small">No comments yet.</div>'}</div>
+          ${!isPublic(w) && w.status !== 'rejected' ? `<form data-form="comment" data-id="${w.id}" class="row" style="gap:8px;align-items:flex-start">
+            <label class="sr-only" for="c-text">Comment</label><textarea class="input" id="c-text" name="text" required style="min-height:60px;flex:1" placeholder="${isAdviser ? 'Leave feedback for your advisee…' : 'Reply to your adviser…'}"></textarea>
+            <button class="btn" type="submit">Comment</button></form>` : ''}` : ''}
+      </div>`,
+      canDecide ? `<button class="btn btn-danger" data-action="reject" data-id="${w.id}">Reject</button>
+        ${w.status === 'submitted' ? `<button class="btn" data-action="revise" data-id="${w.id}">Request revision</button>` : ''}
+        <button class="btn btn-ok" data-action="approve" data-id="${w.id}">${u.role === 'admin' ? 'Panel approve & publish' : 'Approve & sign off'}</button>` : '');
+  }
+
+  if (m.type === 'event') return modalFrame('Promote an academic event', `
+    <form data-form="event"><div class="modal-body">
+      <div class="notice gold" style="margin-bottom:16px"><div>Only academic events can be advertised. ${u.role === 'admin' ? 'As an admin, your ad publishes immediately.' : 'Your ad will be reviewed by an admin before it appears.'}</div></div>
+      <div class="field"><label class="label" for="e-cat">Category</label><select class="input" id="e-cat" name="category">${Object.entries(catLabel).map(([k, l]) => `<option value="${k}">${l}</option>`).join('')}</select></div>
+      <div class="field"><label class="label" for="e-title">Event title</label><input class="input" id="e-title" name="title" required maxlength="140"></div>
+      <div class="row">
+        <div class="field"><label class="label" for="e-date">Date</label><input class="input" id="e-date" name="date" type="date" required min="${toISO(Date.now())}"></div>
+        <div class="field"><label class="label" for="e-venue">Venue</label><input class="input" id="e-venue" name="venue" required></div>
+      </div>
+      <div class="field"><label class="label" for="e-desc">Description</label><textarea class="input" id="e-desc" name="description" required></textarea></div>
+    </div><div class="modal-foot"><button type="button" class="btn" data-action="close-modal">Cancel</button><button class="btn btn-primary" type="submit">${u.role === 'admin' ? 'Publish ad' : 'Submit for approval'}</button></div></form>`);
+
+  if (m.type === 'background') return modalFrame('Add academic background', `
+    <form data-form="background"><div class="modal-body">
+      <div class="field"><label class="label" for="b-deg">Degree or diploma</label><input class="input" id="b-deg" name="degree" required placeholder="BS Computer Science"></div>
+      <div class="row">
+        <div class="field"><label class="label" for="b-school">School</label><input class="input" id="b-school" name="school" required></div>
+        <div class="field" style="flex:0 1 120px"><label class="label" for="b-year">Year</label><input class="input" id="b-year" name="year" required inputmode="numeric" maxlength="4" pattern="[0-9]{4}"></div>
+      </div>
+    </div><div class="modal-foot"><button type="button" class="btn" data-action="close-modal">Cancel</button><button class="btn btn-primary" type="submit">Add</button></div></form>`);
+
+  if (m.type === 'honor') return modalFrame('Add honor, grant or certification', `
+    <form data-form="honor"><div class="modal-body">
+      <div class="row">
+        <div class="field" style="flex:0 1 180px"><label class="label" for="h-kind">Type</label><select class="input" id="h-kind" name="kind"><option value="award">Award</option><option value="grant">Grant</option><option value="certification">Certification</option></select></div>
+        <div class="field"><label class="label" for="h-title">Title</label><input class="input" id="h-title" name="title" required></div>
+      </div>
+      <div class="row">
+        <div class="field"><label class="label" for="h-issuer">Issued by</label><input class="input" id="h-issuer" name="issuer" required></div>
+        <div class="field" style="flex:0 1 120px"><label class="label" for="h-year">Year</label><input class="input" id="h-year" name="year" required inputmode="numeric" maxlength="4" pattern="[0-9]{4}"></div>
+      </div>
+      <p class="hint">${u.role === 'admin' ? 'Admin entries are verified automatically.' : 'New honors show as “Pending verification” until the Office of Research verifies them. Only verified honors are visible to the public.'}</p>
+    </div><div class="modal-foot"><button type="button" class="btn" data-action="close-modal">Cancel</button><button class="btn btn-primary" type="submit">Add</button></div></form>`);
+
+  if (m.type === 'profile') return modalFrame('Edit profile', `
+    <form data-form="profile"><div class="modal-body">
+      <div class="field"><label class="label" for="p-name">Full name</label><input class="input" id="p-name" name="name" required value="${esc(u.name)}"></div>
+      <div class="field"><label class="label" for="p-prog">Program / position</label><input class="input" id="p-prog" name="program" required value="${esc(u.program)}"></div>
+      <div class="field"><label class="label" for="p-head">Headline</label><input class="input" id="p-head" name="headline" maxlength="140" value="${esc(u.headline)}"></div>
+    </div><div class="modal-foot"><button type="button" class="btn" data-action="close-modal">Cancel</button><button class="btn btn-primary" type="submit">Save</button></div></form>`);
+  return '';
+}
+
+/* =========================================================
+   Render & events
+   ========================================================= */
+const app = document.getElementById('app');
+function render() {
+  document.documentElement.dataset.appearance = prefs.appearance;
+  if (state.userId && !me()) state.userId = null;
+  const focusQuery = document.activeElement?.dataset?.input === 'query';
+  app.innerHTML = (state.userId ? viewShell() : viewLogin()) + viewModal();
+  if (focusQuery) { const el = app.querySelector('[data-input="query"]'); el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+  if (state.modal) { const f = app.querySelector('.modal input:not([type=hidden]), .modal textarea, .modal select'); f && !state.modal.keepFocus && f.focus(); }
+}
+
+function go(view, param = null) {
+  state.view = view; state.param = param; state.modal = null; state.navOpen = false;
+  render(); window.scrollTo(0, 0);
+}
+function login(id) {
+  state.userId = id; prefs.userId = id; persist();
+  toast(`Welcome back, ${user(id).name.split(' ')[0]}.`);
+  go('feed');
+}
+function decide(id, status) {
+  const w = db.works.find(x => x.id === id), u = me();
+  if (!w || !(w.adviserId === u.id || u.role === 'admin')) return;
+  w.status = status;
+  if (status === 'approved') { w.approvedAt = Date.now(); w.approvedBy = u.id; }
+  persist();
+  toast({ approved:'Approved — now public on the feed and portfolio.', revision:'Revision requested. The student has been notified.', rejected:'Marked as not approved.' }[status]);
+  state.modal = null; render();
+}
+
+const actions = {
+  demo: el => login(db.users.find(u => u.role === el.dataset.role).id),
+  nav: el => go(el.dataset.view, el.dataset.param || null),
+  logout: () => { state.userId = null; prefs.userId = null; persist(); state.modal = null; render(); },
+  appearance: () => { prefs.appearance = prefs.appearance === 'classic' ? 'modern' : 'classic'; persist(); render(); toast(`${prefs.appearance === 'classic' ? 'Classic' : 'Modern'} appearance`); },
+  reset: () => { db = seed(); persist(); toast('Demo data restored.'); go('feed'); },
+  modal: el => { state.modal = { type: el.dataset.modal, id: el.dataset.id || null }; render(); },
+  'close-modal': () => { state.modal = null; render(); },
+  'close-modal-bg': (el, e) => { if (e.target === el) actions['close-modal'](); },
+  'open-nav': () => { state.navOpen = true; render(); },
+  'close-nav': () => { state.navOpen = false; render(); },
+  filter: el => { state.filter = el.dataset.filter; render(); },
+  efilter: el => { state.eventFilter = el.dataset.filter; render(); },
+  tab: el => { state.tab = el.dataset.tab; render(); },
+  approve: el => decide(el.dataset.id, 'approved'),
+  revise: el => decide(el.dataset.id, 'revision'),
+  reject: el => decide(el.dataset.id, 'rejected'),
+  'event-ok': el => { db.events.find(e => e.id === el.dataset.id).status = 'approved'; persist(); toast('Event ad approved and live.'); render(); },
+  'event-no': el => { db.events.find(e => e.id === el.dataset.id).status = 'rejected'; persist(); toast('Event ad rejected.'); render(); },
+  'honor-ok': el => { db.honors.find(h => h.id === el.dataset.id).verified = true; persist(); toast('Honor verified.'); render(); },
+  'honor-no': el => { db.honors = db.honors.filter(h => h.id !== el.dataset.id); persist(); toast('Honor declined and removed.'); render(); },
+  'del-opp': el => { db.opportunities = db.opportunities.filter(o => o.id !== el.dataset.id); persist(); toast('Posting removed.'); render(); },
+  share: el => {
+    const link = `${location.origin}${location.pathname}#/portfolio/${el.dataset.id}`;
+    (navigator.clipboard?.writeText(link) || Promise.reject()).then(() => toast('Portfolio link copied.'), () => toast(link));
+  }
+};
+
+const forms = {
+  login: d => {
+    const email = (d.get('email') || '').trim().toLowerCase();
+    if (!email || !d.get('password')) return toast('Enter your email and password, or continue as a demo role.', true);
+    const u = db.users.find(x => x.email.toLowerCase() === email);
+    if (!u) return toast('No account with that email. Try a role below or create an account.', true);
+    login(u.id);
+  },
+  signup: d => {
+    const email = d.get('email').trim().toLowerCase();
+    if (db.users.some(u => u.email.toLowerCase() === email)) return toast('That email already has an account.', true);
+    const u = { id:uid('u'), name:d.get('name').trim(), role:d.get('role'), email, program:d.get('program').trim(), headline:'' };
+    db.users.push(u); persist(); state.modal = null; login(u.id); go('portfolio', u.id);
+  },
+  submit: (d, form) => {
+    const fields = { type:d.get('type'), adviserId:d.get('adviserId'), title:d.get('title').trim(), abstract:d.get('abstract').trim(), tags:d.get('tags').split(',').map(t => t.trim()).filter(Boolean) };
+    const ex = form.dataset.id && db.works.find(w => w.id === form.dataset.id);
+    if (ex) { Object.assign(ex, fields, { status:'submitted' }); ex.comments.push({ by:state.userId, text:'Resubmitted with revisions.', at:Date.now() }); }
+    else db.works.push({ id:uid('w'), authorId:state.userId, status:'submitted', createdAt:Date.now(), comments:[], ...fields });
+    persist(); toast(ex ? 'Resubmitted to your adviser.' : 'Submitted. Your adviser will review it.'); go('research');
+  },
+  comment: (d, form) => {
+    const w = db.works.find(x => x.id === form.dataset.id);
+    w.comments.push({ by:state.userId, text:d.get('text').trim(), at:Date.now() }); persist();
+    state.modal = { ...state.modal, keepFocus:true }; render();
+  },
+  opportunity: d => {
+    db.opportunities.push({ id:uid('o'), adviserId:state.userId, kind:d.get('kind'), title:d.get('title').trim(), description:d.get('description').trim(),
+      deadline:new Date(d.get('deadline')).getTime(), slots:+d.get('slots') || null, createdAt:Date.now() });
+    persist(); toast('Opportunity published to the feed.'); render();
+  },
+  event: d => {
+    const u = me();
+    if (!catLabel[d.get('category')]) return toast('Only academic events can be advertised.', true);
+    db.events.push({ id:uid('e'), category:d.get('category'), title:d.get('title').trim(), date:new Date(d.get('date') + 'T09:00').getTime(), venue:d.get('venue').trim(),
+      description:d.get('description').trim(), postedBy:u.id, status:u.role === 'admin' ? 'approved' : 'pending', createdAt:Date.now() });
+    persist(); state.modal = null; toast(u.role === 'admin' ? 'Event ad published.' : 'Submitted for admin approval.'); render();
+  },
+  background: d => { db.background.push({ id:uid('b'), userId:state.userId, degree:d.get('degree').trim(), school:d.get('school').trim(), year:d.get('year').trim() }); persist(); state.modal = null; render(); },
+  honor: d => { db.honors.push({ id:uid('h'), userId:state.userId, kind:d.get('kind'), title:d.get('title').trim(), issuer:d.get('issuer').trim(), year:d.get('year').trim(), verified:me().role === 'admin' }); persist(); state.modal = null; toast('Added. Pending verification.'); render(); },
+  profile: d => { Object.assign(me(), { name:d.get('name').trim(), program:d.get('program').trim(), headline:d.get('headline').trim() }); persist(); state.modal = null; render(); }
+};
+
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-action]');
+  if (el && actions[el.dataset.action]) actions[el.dataset.action](el, e);
+});
+document.addEventListener('submit', e => {
+  const form = e.target.closest('[data-form]');
+  if (!form) return;
+  e.preventDefault();
+  if (form.dataset.form !== 'login' && !form.checkValidity()) { form.reportValidity(); return; }
+  forms[form.dataset.form]?.(new FormData(form), form);
+});
+document.addEventListener('input', e => {
+  if (e.target.dataset.input === 'query') { state.query = e.target.value; render(); }
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && state.modal) actions['close-modal']();
+});
+
+/* Deep link: #/portfolio/<id> opens a public portfolio once signed in */
+const m = location.hash.match(/^#\/portfolio\/(\w+)/);
+if (m && state.userId && user(m[1])) { state.view = 'portfolio'; state.param = m[1]; }
+render();
+})();
+</script>
+</body>
+</html>

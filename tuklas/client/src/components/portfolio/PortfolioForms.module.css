@@ -1,0 +1,82 @@
+.form {
+  display: grid;
+  gap: var(--s-3);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--s-3);
+}
+
+.photoRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-3);
+}
+
+.photoTools {
+  display: grid;
+  flex: 1 1 220px;
+  justify-items: start;
+  gap: var(--s-1);
+}
+
+.year {
+  max-width: 140px;
+}
+
+.linkRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--s-2);
+  margin: 0;
+  padding: var(--s-3);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-control);
+}
+
+.linkType {
+  flex: 0 1 170px;
+}
+
+.linkUrl {
+  flex: 1 1 220px;
+}
+
+.linkLabel {
+  flex: 1 1 140px;
+}
+
+.removeRow {
+  display: grid;
+  place-items: center;
+  width: var(--tap);
+  height: var(--tap);
+  border: 0;
+  border-radius: var(--radius-control);
+  background: none;
+  color: var(--text-soft);
+  cursor: pointer;
+}
+
+.removeRow:hover {
+  background: var(--bad-tint);
+  color: var(--bad);
+}
+
+.hint {
+  color: var(--text-faint);
+  font-size: var(--fs-small);
+}
+
+.error {
+  padding: var(--s-2) var(--s-3);
+  border-radius: var(--radius-control);
+  background: var(--bad-tint);
+  color: var(--bad);
+  font-size: var(--fs-small);
+  font-weight: 500;
+}

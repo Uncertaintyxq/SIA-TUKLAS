@@ -1,0 +1,159 @@
+.loading {
+  height: 480px;
+  border-radius: var(--radius-sheet);
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  align-items: start;
+  gap: var(--s-4);
+}
+
+.main,
+.side {
+  display: grid;
+  gap: var(--s-3);
+  min-width: 0;
+}
+
+/* The side column follows the reader down a long draft. */
+.side {
+  position: sticky;
+  top: calc(72px + var(--s-3));
+}
+
+.fields {
+  display: grid;
+  gap: var(--s-3);
+}
+
+.removePdf {
+  justify-self: start;
+}
+
+/* ---------- Visibility ---------- */
+.choices {
+  display: grid;
+  gap: var(--s-2);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.choice {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-2);
+  padding: var(--s-2) var(--s-3);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-control);
+  cursor: pointer;
+  transition:
+    border-color var(--t-fast) var(--ease-out),
+    background-color var(--t-fast) var(--ease-out);
+}
+
+.choice:hover {
+  border-color: var(--rule-strong);
+}
+
+.choice[data-checked] {
+  border-color: var(--action);
+  background: color-mix(in srgb, var(--lavender) 45%, var(--sheet));
+}
+
+.choice[data-locked] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.choice:focus-within {
+  box-shadow: var(--focus);
+}
+
+.choice input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.choiceIcon {
+  flex: none;
+  margin-top: 2px;
+  color: var(--text-soft);
+}
+
+.choice[data-checked] .choiceIcon {
+  color: var(--action-text);
+}
+
+.choiceText {
+  display: grid;
+  gap: 2px;
+}
+
+.choiceLabel {
+  font-weight: 700;
+}
+
+.choiceNote {
+  color: var(--text-soft);
+  font-size: var(--fs-small);
+}
+
+.rightNotice {
+  margin-top: var(--s-3);
+}
+
+/* ---------- Co-authors ---------- */
+.chosen {
+  display: grid;
+  gap: var(--s-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chosenItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2);
+  padding-left: var(--s-2);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-control);
+}
+
+.remove {
+  display: grid;
+  place-items: center;
+  width: var(--tap);
+  height: var(--tap);
+  border: 0;
+  border-radius: var(--radius-control);
+  background: none;
+  color: var(--text-faint);
+  cursor: pointer;
+}
+
+.remove:hover {
+  background: var(--tab);
+  color: var(--text);
+}
+
+.actions {
+  display: grid;
+  gap: var(--s-2);
+}
+
+@media (max-width: 1080px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .side {
+    position: static;
+  }
+}

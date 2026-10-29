@@ -1,0 +1,115 @@
+/* Same notebook-entry anatomy as a student work: ruled sheet, badges, Archivo title, mono date. */
+.entry {
+  display: grid;
+  gap: var(--s-2);
+  padding: var(--s-4);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sheet);
+  background: var(--sheet);
+  box-shadow: var(--lift-1);
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-1) var(--s-2);
+}
+
+.pdf {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-faint);
+  font-size: var(--fs-tiny);
+  font-weight: 700;
+}
+
+.date {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: var(--fs-tiny);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-faint);
+}
+
+.title {
+  font-size: 20px;
+  font-stretch: 105%;
+  font-weight: 750;
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+}
+
+.titleLink {
+  color: var(--text);
+  text-decoration: none;
+}
+
+.titleLink:hover {
+  color: var(--action-text);
+  text-decoration: underline;
+}
+
+.by {
+  color: var(--text-soft);
+  font-size: var(--fs-small);
+}
+
+.dept {
+  color: var(--text-faint);
+}
+
+.abstract {
+  display: -webkit-box;
+  max-width: var(--measure);
+  overflow: hidden;
+  color: var(--text-soft);
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 var(--s-2);
+  border-radius: var(--radius-pill);
+  background: var(--sheet-sunken);
+  color: var(--text-soft);
+  font-size: var(--fs-tiny);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.tag:hover {
+  background: var(--tab-hover);
+  color: var(--text);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  margin-top: var(--s-1);
+}
+
+@media (max-width: 560px) {
+  .entry {
+    padding: var(--s-3);
+  }
+
+  .title {
+    font-size: 18px;
+  }
+}

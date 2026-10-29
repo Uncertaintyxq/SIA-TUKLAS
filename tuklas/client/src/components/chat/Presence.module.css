@@ -1,0 +1,26 @@
+.dot {
+  display: inline-block;
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--n-5);
+  box-shadow: 0 0 0 2px var(--sheet);
+}
+
+.online {
+  background: var(--ok);
+}
+
+.line {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-faint);
+  font-size: var(--fs-tiny);
+  font-weight: 600;
+}
+
+.onlineText {
+  color: var(--ok);
+}

@@ -1,0 +1,32 @@
+{
+  "name": "tuklas",
+  "private": true,
+  "type": "module",
+  "description": "Tuklas — From Defense to Discovery. Research and academic engagement hub.",
+  "workspaces": [
+    "server",
+    "client"
+  ],
+  "scripts": {
+    "dev": "concurrently -n server,client -c magenta,yellow \"npm run dev -w server\" \"npm run dev -w client\"",
+    "db:up": "docker compose up -d --wait",
+    "db:down": "docker compose down",
+    "db:local": "npm run db:local -w server",
+    "db:local:stop": "npm run db:local -w server -- stop",
+    "db:reset": "npm run db:reset -w server",
+    "db:sql": "npm run db:sql -w server",
+    "typecheck": "npm run typecheck --workspaces",
+    "lint": "eslint .",
+    "build": "npm run build --workspaces"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "concurrently": "^9.0.0",
+    "eslint": "^9.0.0",
+    "eslint-plugin-react": "^7.37.0",
+    "eslint-plugin-react-hooks": "^5.0.0",
+    "globals": "^16.0.0",
+    "typescript": "^5.9.0",
+    "typescript-eslint": "^8.0.0"
+  }
+}

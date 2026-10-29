@@ -1,0 +1,8 @@
+.filters {
+  margin-bottom: var(--s-4);
+}
+
+/* One reading column, like the feed */
+.column {
+  max-width: 760px;
+}

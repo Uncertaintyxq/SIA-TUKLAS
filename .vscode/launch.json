@@ -1,0 +1,15 @@
+{
+    "configurations": [
+        {
+            "name": "Containers: Node.js Launch",
+            "type": "docker",
+            "request": "launch",
+            "preLaunchTask": "docker-run: debug",
+            "platform": "node",
+            "node": {
+                "package": "${workspaceFolder}/superpowers/tests/brainstorm-server/package.json",
+                "localRoot": "${workspaceFolder}/superpowers/tests/brainstorm-server"
+            }
+        }
+    ]
+}

@@ -1,0 +1,765 @@
+// Single source of truth for the Tuklas database.
+// database/schema.sql is generated from this file (npm run db:sql).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  student
+  educator
+  admin
+}
+
+enum WorkType {
+  research
+  literary
+  innovation
+}
+
+/// draft → submitted → under_review → revision | approved | rejected.
+/// submitted can also go straight to revision | approved | rejected; revision → submitted when the author resubmits.
+/// Only `approved` works (not removed by an admin) are public.
+enum WorkStatus {
+  draft
+  submitted
+  under_review
+  revision
+  approved
+  rejected
+}
+
+enum OpportunityKind {
+  mentorship
+  grant
+  call
+}
+
+/// Advertising is limited to academic events.
+enum EventCategory {
+  colloquium
+  defense
+  fair
+  innovation
+  cpgarcia
+}
+
+/// Shared by events and academic ads: both need an admin before they go public.
+enum EventStatus {
+  pending
+  approved
+  rejected
+}
+
+enum HonorKind {
+  award
+  grant
+  certification
+}
+
+enum LinkType {
+  scholar
+  orcid
+  researchgate
+  linkedin
+  faculty
+  other
+}
+
+enum ReviewDecision {
+  start_review
+  revise
+  approve
+  reject
+}
+
+/// `review` comments are the private thread between authors and adviser; `public` ones are feed discussion.
+enum CommentScope {
+  review
+  public
+}
+
+enum ReactionKind {
+  insightful
+  useful
+  inspiring
+}
+
+enum DefenseStageKind {
+  proposal
+  colloquium
+  final_defense
+  revisions
+  published
+}
+
+enum Verdict {
+  pending
+  passed
+  passed_with_revisions
+  failed
+}
+
+/// Inside a research group: the adviser owns it, mentors are other educators, the leader is a student.
+enum GroupRole {
+  leader
+  member
+  mentor
+}
+
+/// Educator research: drafts are the authors' alone, internal is for signed-in users, public is for everyone.
+enum PublicationVisibility {
+  draft
+  internal
+  public
+}
+
+/// system: everyone (admins only). department: one department. group: one research group.
+enum AnnouncementScope {
+  system
+  department
+  group
+}
+
+/// direct: a 1-on-1 chat. channel: a text channel inside a research group.
+enum ConversationKind {
+  direct
+  channel
+}
+
+model User {
+  id                Int       @id @default(autoincrement())
+  name              String    @db.VarChar(120)
+  /// Public handle: the read-only portfolio lives at /u/<username>.
+  username          String    @unique @db.VarChar(40)
+  email             String    @unique @db.VarChar(191)
+  passwordHash      String    @db.VarChar(100)
+  role              Role
+  /// Educators stay unverified until an admin confirms them. Only verified educators can approve work.
+  verified          Boolean   @default(true)
+  program           String    @db.VarChar(160)
+  headline          String    @default("") @db.VarChar(160)
+  /// Educator rights an admin can grant or revoke. Students never use them; admins always have them.
+  canPublish        Boolean   @default(true)
+  canModerateGroups Boolean   @default(true)
+  canBroadcast      Boolean   @default(true)
+  /// When the person last closed Tuklas (chat shows "last seen")
+  lastSeenAt        DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  profile           Profile?
+  links             AcademicLink[]
+  works             Work[]                   @relation("WorkAuthor")
+  coAuthored        WorkAuthor[]
+  advisedWorks      Work[]                   @relation("WorkAdviser")
+  approvedWorks     Work[]                   @relation("WorkApprover")
+  reviews           Review[]
+  comments          Comment[]
+  reactions         Reaction[]
+  saves             SavedWork[]
+  opportunities     Opportunity[]
+  applications      OpportunityApplication[]
+  events            Event[]
+  registrations     EventRegistration[]
+  ads               Ad[]
+  background        Background[]
+  honors            Honor[]                  @relation("HonorOwner")
+  verifiedHonors    Honor[]                  @relation("HonorVerifier")
+  advisedGroups     ResearchGroup[]
+  groupMemberships  GroupMember[]
+  groupFiles        GroupFile[]
+  groupActivity     GroupActivity[]
+  notifications     Notification[]
+  publications      Publication[]
+  coPublications    PublicationAuthor[]
+  announcements     Announcement[]
+  announcementReads AnnouncementRead[]
+  conversations     ConversationMember[]
+  messages          Message[]
+
+  @@map("users")
+}
+
+/// Portfolio details beyond the basics on User (name, program = position, headline = short bio).
+model Profile {
+  userId     Int      @id
+  /// Post-nominal titles, e.g. "PhD" or "RN, MAN"
+  titles     String   @default("") @db.VarChar(120)
+  department String   @default("") @db.VarChar(160)
+  bioLong    String?  @db.Text
+  photoFile  String?  @db.VarChar(80)
+  photoType  String?  @db.VarChar(40)
+  cvFile     String?  @db.VarChar(80)
+  cvName     String?  @db.VarChar(160)
+  updatedAt  DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("profiles")
+}
+
+model AcademicLink {
+  id     Int      @id @default(autoincrement())
+  userId Int
+  type   LinkType
+  url    String   @db.VarChar(300)
+  /// Display name for `other` links
+  label  String   @default("") @db.VarChar(80)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("academic_links")
+}
+
+model Work {
+  id           Int        @id @default(autoincrement())
+  authorId     Int
+  adviserId    Int
+  type         WorkType
+  title        String     @db.VarChar(180)
+  abstract     String     @db.Text
+  /// Array of keyword strings, e.g. ["IoT", "LoRa"]
+  tags         Json
+  status       WorkStatus @default(draft)
+  pdfFile      String?    @db.VarChar(80)
+  pdfName      String?    @db.VarChar(160)
+  submittedAt  DateTime?
+  approvedAt   DateTime?
+  approvedById Int?
+  /// Set when an admin takes a published work off the feed.
+  removedAt    DateTime?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  author        User           @relation("WorkAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  adviser       User           @relation("WorkAdviser", fields: [adviserId], references: [id], onDelete: Restrict)
+  approvedBy    User?          @relation("WorkApprover", fields: [approvedById], references: [id], onDelete: SetNull)
+  coAuthors     WorkAuthor[]
+  versions      WorkVersion[]
+  reviews       Review[]
+  comments      Comment[]
+  reactions     Reaction[]
+  saves         SavedWork[]
+  defenseStages DefenseStage[]
+
+  @@index([status, approvedAt])
+  @@index([authorId])
+  @@index([adviserId, status])
+  @@map("works")
+}
+
+/// Co-authors beyond the submitting author, in byline order.
+model WorkAuthor {
+  workId Int
+  userId Int
+  order  Int
+
+  work Work @relation(fields: [workId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([workId, userId])
+  @@index([userId])
+  @@map("work_authors")
+}
+
+/// A snapshot taken at every submission, so each resubmission is kept.
+model WorkVersion {
+  id          Int      @id @default(autoincrement())
+  workId      Int
+  version     Int
+  title       String   @db.VarChar(180)
+  abstract    String   @db.Text
+  tags        Json
+  pdfFile     String?  @db.VarChar(80)
+  pdfName     String?  @db.VarChar(160)
+  /// What the author changed in this version
+  note        String   @default("") @db.VarChar(500)
+  submittedAt DateTime @default(now())
+
+  work Work @relation(fields: [workId], references: [id], onDelete: Cascade)
+
+  @@unique([workId, version])
+  @@map("work_versions")
+}
+
+model Review {
+  id         Int            @id @default(autoincrement())
+  workId     Int
+  reviewerId Int
+  decision   ReviewDecision
+  comment    String?        @db.Text
+  /// The version that was reviewed
+  version    Int
+  createdAt  DateTime       @default(now())
+
+  work          Work           @relation(fields: [workId], references: [id], onDelete: Cascade)
+  reviewer      User           @relation(fields: [reviewerId], references: [id], onDelete: Cascade)
+  revisionItems RevisionItem[]
+
+  @@index([workId, createdAt])
+  @@map("reviews")
+}
+
+/// One fix from a "return with comments": the student ticks it, the adviser confirms it before re-approval.
+model RevisionItem {
+  id                 Int     @id @default(autoincrement())
+  reviewId           Int
+  text               String  @db.VarChar(500)
+  doneByStudent      Boolean @default(false)
+  confirmedByAdviser Boolean @default(false)
+
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  @@index([reviewId])
+  @@map("revision_items")
+}
+
+model DefenseStage {
+  id        Int              @id @default(autoincrement())
+  workId    Int
+  stage     DefenseStageKind
+  date      DateTime
+  /// Panel members' names, comma-separated
+  panel     String           @default("") @db.VarChar(300)
+  verdict   Verdict          @default(pending)
+  notes     String           @default("") @db.VarChar(500)
+  createdAt DateTime         @default(now())
+
+  work Work @relation(fields: [workId], references: [id], onDelete: Cascade)
+
+  @@index([workId, date])
+  @@map("defense_stages")
+}
+
+model Comment {
+  id        Int          @id @default(autoincrement())
+  workId    Int
+  authorId  Int
+  scope     CommentScope @default(review)
+  text      String       @db.Text
+  createdAt DateTime     @default(now())
+
+  work   Work @relation(fields: [workId], references: [id], onDelete: Cascade)
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([workId, scope, createdAt])
+  @@map("comments")
+}
+
+/// One reaction per reader per work.
+model Reaction {
+  userId    Int
+  workId    Int
+  kind      ReactionKind
+  createdAt DateTime     @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  work Work @relation(fields: [workId], references: [id], onDelete: Cascade)
+
+  @@id([userId, workId])
+  @@index([workId])
+  @@map("reactions")
+}
+
+/// A reader's library.
+model SavedWork {
+  userId    Int
+  workId    Int
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  work Work @relation(fields: [workId], references: [id], onDelete: Cascade)
+
+  @@id([userId, workId])
+  @@index([workId])
+  @@map("saves")
+}
+
+model Opportunity {
+  id          Int             @id @default(autoincrement())
+  adviserId   Int
+  kind        OpportunityKind
+  title       String          @db.VarChar(140)
+  description String          @db.Text
+  deadline    DateTime
+  slots       Int?
+  createdAt   DateTime        @default(now())
+
+  adviser      User                     @relation(fields: [adviserId], references: [id], onDelete: Cascade)
+  applications OpportunityApplication[]
+
+  @@index([createdAt])
+  @@map("opportunities")
+}
+
+model OpportunityApplication {
+  opportunityId Int
+  userId        Int
+  message       String   @db.VarChar(1000)
+  createdAt     DateTime @default(now())
+
+  opportunity Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([opportunityId, userId])
+  @@index([userId])
+  @@map("opportunity_applications")
+}
+
+model Event {
+  id          Int           @id @default(autoincrement())
+  postedById  Int
+  category    EventCategory
+  title       String        @db.VarChar(140)
+  description String        @db.Text
+  venue       String        @db.VarChar(160)
+  date        DateTime
+  /// Seats; null means open attendance
+  capacity    Int?
+  status      EventStatus   @default(pending)
+  createdAt   DateTime      @default(now())
+
+  postedBy      User                @relation(fields: [postedById], references: [id], onDelete: Cascade)
+  registrations EventRegistration[]
+  ads           Ad[]
+
+  @@index([status, date])
+  @@map("events")
+}
+
+model EventRegistration {
+  eventId   Int
+  userId    Int
+  createdAt DateTime @default(now())
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([eventId, userId])
+  @@index([userId])
+  @@map("event_registrations")
+}
+
+/// An academic ad slot: a promo for an approved event, shown in the feed sidebar between startsAt and endsAt.
+model Ad {
+  id          Int         @id @default(autoincrement())
+  eventId     Int
+  createdById Int
+  headline    String      @db.VarChar(120)
+  imageFile   String?     @db.VarChar(80)
+  imageType   String?     @db.VarChar(40)
+  startsAt    DateTime
+  endsAt      DateTime
+  status      EventStatus @default(pending)
+  createdAt   DateTime    @default(now())
+
+  event     Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  createdBy User  @relation(fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@index([status, startsAt, endsAt])
+  @@map("ads")
+}
+
+model Background {
+  id     Int    @id @default(autoincrement())
+  userId Int
+  degree String @db.VarChar(160)
+  school String @db.VarChar(160)
+  year   String @db.VarChar(4)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("background")
+}
+
+model Honor {
+  id           Int       @id @default(autoincrement())
+  userId       Int
+  kind         HonorKind
+  title        String    @db.VarChar(160)
+  issuer       String    @db.VarChar(160)
+  year         String    @db.VarChar(4)
+  /// Shown as "Pending verification" until an admin verifies it.
+  verified     Boolean   @default(false)
+  verifiedById Int?
+  verifiedAt   DateTime?
+  createdAt    DateTime  @default(now())
+
+  user       User  @relation("HonorOwner", fields: [userId], references: [id], onDelete: Cascade)
+  verifiedBy User? @relation("HonorVerifier", fields: [verifiedById], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([verified])
+  @@map("honors")
+}
+
+model ResearchGroup {
+  id          Int      @id @default(autoincrement())
+  adviserId   Int
+  name        String   @db.VarChar(120)
+  description String   @default("") @db.VarChar(1000)
+  createdAt   DateTime @default(now())
+
+  adviser       User            @relation(fields: [adviserId], references: [id], onDelete: Cascade)
+  members       GroupMember[]
+  files         GroupFile[]
+  deadlines     GroupDeadline[]
+  channels      Conversation[]
+  activity      GroupActivity[]
+  announcements Announcement[]
+
+  @@index([adviserId])
+  @@map("groups")
+}
+
+model GroupMember {
+  groupId Int
+  userId  Int
+  /// Students are members or the leader; educators join as mentors.
+  role    GroupRole @default(member)
+  addedAt DateTime  @default(now())
+
+  group ResearchGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([groupId, userId])
+  @@index([userId])
+  @@map("group_members")
+}
+
+model GroupFile {
+  id           Int      @id @default(autoincrement())
+  groupId      Int
+  uploadedById Int
+  name         String   @db.VarChar(160)
+  file         String   @db.VarChar(80)
+  type         String   @db.VarChar(100)
+  size         Int
+  createdAt    DateTime @default(now())
+
+  group      ResearchGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  uploadedBy User          @relation(fields: [uploadedById], references: [id], onDelete: Cascade)
+  /// Chat messages that shared this file into a channel
+  messages   Message[]
+
+  @@index([groupId])
+  @@map("group_files")
+}
+
+/// What happened in a group, newest first: members, roles, files, deadlines, channels, announcements.
+model GroupActivity {
+  id        Int      @id @default(autoincrement())
+  groupId   Int
+  actorId   Int
+  /// e.g. member_added, role_changed, file_shared, deadline_added, channel_created, announcement_posted
+  action    String   @db.VarChar(40)
+  detail    String   @db.VarChar(300)
+  createdAt DateTime @default(now())
+
+  group ResearchGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  actor User          @relation(fields: [actorId], references: [id], onDelete: Cascade)
+
+  @@index([groupId, createdAt])
+  @@map("group_activity")
+}
+
+model GroupDeadline {
+  id        Int      @id @default(autoincrement())
+  groupId   Int
+  title     String   @db.VarChar(160)
+  dueAt     DateTime
+  createdAt DateTime @default(now())
+
+  group ResearchGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@index([groupId, dueAt])
+  @@map("group_deadlines")
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  /// e.g. work_approved, work_revision, event_approved (see server/src/lib/notify.ts)
+  type      String   @db.VarChar(40)
+  message   String   @db.VarChar(300)
+  /// App path to open, e.g. /works/12
+  link      String   @db.VarChar(200)
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, read, createdAt])
+  @@map("notifications")
+}
+
+// ---------- Educator research publishing ----------
+
+/// Research an educator drafts and publishes directly. No adviser review: the educator's publishing right is the gate.
+model Publication {
+  id          Int                   @id @default(autoincrement())
+  authorId    Int
+  title       String                @db.VarChar(200)
+  abstract    String                @db.Text
+  /// Array of keyword strings
+  keywords    Json
+  methodology String                @db.Text
+  fullText    String                @db.MediumText
+  pdfFile     String?               @db.VarChar(80)
+  pdfName     String?               @db.VarChar(160)
+  visibility  PublicationVisibility @default(draft)
+  /// Set the first time it leaves draft
+  publishedAt DateTime?
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+
+  author    User                @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  coAuthors PublicationAuthor[]
+
+  @@index([visibility, publishedAt])
+  @@index([authorId])
+  @@map("publications")
+}
+
+/// Co-authors beyond the main author, in byline order.
+model PublicationAuthor {
+  publicationId Int
+  userId        Int
+  order         Int
+
+  publication Publication @relation(fields: [publicationId], references: [id], onDelete: Cascade)
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([publicationId, userId])
+  @@index([userId])
+  @@map("publication_authors")
+}
+
+// ---------- Announcements ----------
+
+model Announcement {
+  id         Int               @id @default(autoincrement())
+  authorId   Int
+  scope      AnnouncementScope
+  /// department scope: matches Profile.department
+  department String?           @db.VarChar(160)
+  /// group scope
+  groupId    Int?
+  title      String            @db.VarChar(160)
+  /// Light markup: **bold**, _italic_, "## " headings, "- " and "1. " lists, [text](https://…) links
+  body       String            @db.Text
+  pinned     Boolean           @default(false)
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+
+  author      User                     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  group       ResearchGroup?           @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  attachments AnnouncementAttachment[]
+  reads       AnnouncementRead[]
+
+  @@index([scope, createdAt])
+  @@index([groupId])
+  @@map("announcements")
+}
+
+model AnnouncementAttachment {
+  id             Int      @id @default(autoincrement())
+  announcementId Int
+  name           String   @db.VarChar(160)
+  file           String   @db.VarChar(80)
+  type           String   @db.VarChar(100)
+  size           Int
+  createdAt      DateTime @default(now())
+
+  announcement Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+
+  @@index([announcementId])
+  @@map("announcement_attachments")
+}
+
+/// Read receipts: one row the first time a person sees an announcement.
+model AnnouncementRead {
+  announcementId Int
+  userId         Int
+  readAt         DateTime @default(now())
+
+  announcement Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([announcementId, userId])
+  @@index([userId])
+  @@map("announcement_reads")
+}
+
+// ---------- Communication & chat ----------
+
+model Conversation {
+  id            Int              @id @default(autoincrement())
+  kind          ConversationKind
+  /// Channels belong to a research group
+  groupId       Int?
+  /// Channel name; empty for direct chats
+  name          String           @default("") @db.VarChar(80)
+  /// Direct chats: the two user ids, sorted ("3:7"), so each pair has one conversation
+  directKey     String?          @unique @db.VarChar(40)
+  lastMessageAt DateTime         @default(now())
+  createdAt     DateTime         @default(now())
+
+  group    ResearchGroup?       @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  members  ConversationMember[]
+  messages Message[]
+
+  @@index([groupId])
+  @@map("conversations")
+}
+
+/// Who is in a conversation, and how far they have read.
+model ConversationMember {
+  conversationId Int
+  userId         Int
+  lastReadAt     DateTime @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([conversationId, userId])
+  @@index([userId])
+  @@map("conversation_members")
+}
+
+model Message {
+  id             Int       @id @default(autoincrement())
+  conversationId Int
+  senderId       Int
+  /// Thread replies point at the message they answer
+  parentId       Int?
+  text           String    @db.Text
+  /// A file sent in a direct chat is stored on the message
+  file           String?   @db.VarChar(80)
+  fileName       String?   @db.VarChar(160)
+  fileType       String?   @db.VarChar(100)
+  fileSize       Int?
+  /// A file shared in a channel lives in the group's file repository
+  groupFileId    Int?
+  /// Set when the sender or a moderator removes the message
+  deletedAt      DateTime?
+  createdAt      DateTime  @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  parent       Message?     @relation("Thread", fields: [parentId], references: [id], onDelete: Cascade)
+  replies      Message[]    @relation("Thread")
+  groupFile    GroupFile?   @relation(fields: [groupFileId], references: [id], onDelete: SetNull)
+
+  @@index([conversationId, createdAt])
+  @@index([parentId])
+  @@map("messages")
+}

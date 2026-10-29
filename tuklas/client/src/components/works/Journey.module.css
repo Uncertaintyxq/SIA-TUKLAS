@@ -1,0 +1,100 @@
+.journey {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.step {
+  position: relative;
+  display: grid;
+  justify-items: start;
+  gap: var(--s-1);
+  padding-top: var(--s-1);
+}
+
+/* The rule between dots */
+.step::before {
+  content: '';
+  position: absolute;
+  top: calc(var(--s-1) + 10px);
+  left: 24px;
+  right: 4px;
+  height: 2px;
+  background: var(--rule);
+}
+
+.step:last-child::before {
+  display: none;
+}
+
+.dot {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--rule-strong);
+  border-radius: 50%;
+  background: var(--sheet);
+  color: #ffffff;
+}
+
+.label {
+  padding-right: var(--s-2);
+  color: var(--text-faint);
+  font-size: var(--fs-tiny);
+  font-weight: 650;
+  line-height: 1.3;
+}
+
+.done::before {
+  background: var(--action);
+}
+
+.done .dot {
+  border-color: var(--action);
+  background: var(--action);
+}
+
+.done .label {
+  color: var(--text-soft);
+}
+
+.current .dot {
+  border-color: var(--action);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--action) 18%, transparent);
+}
+
+.current .label {
+  color: var(--text);
+}
+
+.ok.done .dot {
+  border-color: var(--gold);
+  background: var(--gold);
+  color: var(--ink);
+}
+
+.ok.done .label {
+  color: var(--gold-text);
+}
+
+.warn .dot {
+  border-color: var(--warn);
+  box-shadow: 0 0 0 4px var(--warn-tint);
+}
+
+.warn .label {
+  color: var(--warn);
+}
+
+.bad .dot {
+  border-color: var(--bad);
+  background: var(--bad);
+}
+
+.bad .label {
+  color: var(--bad);
+}

@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="description" content="Tuklas — a research and academic engagement hub for students, educators and administrators." />
+    <meta name="theme-color" content="#6C4AB6" />
+    <title>Tuklas — From Defense to Discovery</title>
+    <script>
+      // Apply the saved theme and look before first paint, so there's no flash of the wrong one.
+      try {
+        var p = JSON.parse(localStorage.getItem('tuklas.prefs.v1') || '{}');
+        var dark = p.theme === 'dark' || ((!p.theme || p.theme === 'system') && matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+        document.documentElement.dataset.appearance = p.appearance === 'classic' ? 'classic' : 'modern';
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

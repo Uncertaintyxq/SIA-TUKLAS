@@ -1,0 +1,80 @@
+.composer {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--s-1);
+  padding: var(--s-2);
+  border-top: 1px solid var(--rule);
+  background: var(--sheet);
+}
+
+.attach,
+.send {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: var(--tap);
+  height: var(--tap);
+  border: 0;
+  border-radius: var(--radius-control);
+  background: none;
+  color: var(--text-soft);
+  cursor: pointer;
+}
+
+.attach:hover {
+  background: var(--tab);
+  color: var(--text);
+}
+
+.attach:focus-within {
+  box-shadow: var(--focus);
+}
+
+.send {
+  background: var(--action);
+  color: var(--on-action);
+}
+
+.send:hover:not(:disabled) {
+  background: var(--action-hover);
+}
+
+.send:disabled {
+  background: var(--sheet-sunken);
+  color: var(--text-faint);
+  cursor: default;
+}
+
+/* Grows with its content up to about six lines */
+.input {
+  flex: 1;
+  min-width: 0;
+  min-height: var(--tap);
+  max-height: 168px;
+  padding: 11px var(--s-3);
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius-control);
+  background: var(--sheet);
+  line-height: 1.4;
+  resize: none;
+  field-sizing: content;
+}
+
+.input:focus-visible {
+  border-color: var(--action);
+  box-shadow: none;
+}
+
+.input::placeholder {
+  color: var(--text-faint);
+}
+
+.spin {
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

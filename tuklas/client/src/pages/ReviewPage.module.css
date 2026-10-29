@@ -1,0 +1,147 @@
+.notice {
+  margin-bottom: var(--s-4);
+}
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(220px, 1fr));
+  align-items: start;
+  gap: var(--s-3);
+}
+
+.column {
+  --col: var(--gold);
+
+  display: grid;
+  gap: var(--s-2);
+  min-width: 0;
+  padding: var(--s-3);
+  border: 1px solid var(--rule);
+  border-top: 3px solid var(--col);
+  border-radius: var(--radius-sheet);
+  background: var(--sheet-sunken);
+}
+
+.under_review {
+  --col: var(--blue);
+}
+
+.revision {
+  --col: var(--warn);
+}
+
+.approved {
+  --col: var(--ok);
+}
+
+.colHead {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+
+.dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--col);
+}
+
+.colTitle {
+  font-size: 15px;
+}
+
+.count {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: var(--fs-small);
+  font-weight: 700;
+  color: var(--text-soft);
+}
+
+.colHint {
+  color: var(--text-faint);
+  font-size: var(--fs-tiny);
+}
+
+.cards {
+  display: grid;
+  gap: var(--s-2);
+}
+
+.card {
+  display: grid;
+  justify-items: start;
+  gap: var(--s-1);
+  padding: var(--s-3);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-control);
+  background: var(--sheet);
+  box-shadow: var(--lift-1);
+  color: inherit;
+  text-decoration: none;
+  transition:
+    border-color var(--t-fast) var(--ease-out),
+    transform var(--t-base) var(--ease-out);
+}
+
+.card:hover {
+  border-color: var(--action);
+  transform: translateY(-1px);
+}
+
+.cardTop {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1);
+}
+
+.cardTitle {
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.cardMeta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--s-1) var(--s-2);
+  width: 100%;
+  color: var(--text-faint);
+  font-size: var(--fs-tiny);
+}
+
+.cardMeta time {
+  font-family: var(--font-mono);
+}
+
+.none {
+  padding: var(--s-3) 0;
+  color: var(--text-faint);
+  font-size: var(--fs-small);
+  text-align: center;
+}
+
+.skeleton {
+  height: 96px;
+  border-radius: var(--radius-control);
+}
+
+.footnote {
+  margin-top: var(--s-3);
+  color: var(--text-faint);
+  font-size: var(--fs-small);
+}
+
+@media (max-width: 1280px) {
+  .board {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .board {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
