@@ -4,7 +4,8 @@ A research and academic engagement hub for students, educators and administrator
 See `PLAN.md` for the full build plan and [`reference/`](reference/README.md) for the client meeting notes, design notes and original prototype.
 
 > **Moving to Laravel.** The Express server in `server/` is being replaced by a Laravel API in this folder.
-> Decisions, the security spec and what's left are in [`docs/CONVERSION.md`](../docs/CONVERSION.md).
+> Decisions and the security spec are in [`docs/CONVERSION.md`](../docs/CONVERSION.md). What's left, and which
+> branch name to use for it, is in [`docs/TODO.md`](../docs/TODO.md); deployment in [`docs/DEPLOYMENT.md`](../docs/DEPLOYMENT.md).
 
 ## Run it locally
 

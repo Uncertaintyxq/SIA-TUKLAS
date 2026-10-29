@@ -102,7 +102,8 @@ Privacy Act of 2012 (RA 10173).
 
 ## Module status
 
-Source of truth for what's left. Owner is filled in when the two developers split the work.
+What's been ported. **What's left is planned branch by branch in [TODO.md](TODO.md)**, with the
+branch rule; the deployment plan is in [DEPLOYMENT.md](DEPLOYMENT.md).
 
 | Module | Node source | Laravel | Tests | Owner |
 |---|---|---|---|---|
