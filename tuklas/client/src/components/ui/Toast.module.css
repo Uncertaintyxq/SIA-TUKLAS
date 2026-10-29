@@ -1,0 +1,51 @@
+.stack {
+  position: fixed;
+  right: var(--s-4);
+  bottom: var(--s-4);
+  z-index: 60;
+  display: grid;
+  justify-items: end;
+  gap: var(--s-2);
+  pointer-events: none;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  max-width: min(380px, calc(100vw - var(--s-5)));
+  min-height: var(--tap);
+  padding: var(--s-2) var(--s-3);
+  border: 1px solid var(--vellum-edge);
+  border-radius: var(--radius-control);
+  background: var(--vellum-strong);
+  backdrop-filter: var(--vellum-blur);
+  -webkit-backdrop-filter: var(--vellum-blur);
+  box-shadow: var(--lift-3);
+  font-weight: 500;
+  pointer-events: auto;
+}
+
+.toast[data-tone='error'] {
+  border-color: color-mix(in srgb, var(--bad) 40%, transparent);
+}
+
+.tuko {
+  flex: none;
+  margin: -4px 0 -4px -4px;
+}
+
+.icon {
+  flex: none;
+  color: var(--bad);
+}
+
+/* Above the phone bottom bar */
+@media (max-width: 860px) {
+  .stack {
+    right: var(--s-3);
+    left: var(--s-3);
+    bottom: calc(76px + env(safe-area-inset-bottom));
+    justify-items: center;
+  }
+}

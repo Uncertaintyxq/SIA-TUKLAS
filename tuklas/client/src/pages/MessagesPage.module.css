@@ -1,0 +1,72 @@
+/*
+ * Messages fills the window without scrolling the page: the list and the conversation scroll on their own.
+ * Height = window - 72px header - the page's 48px top padding - a 48px gap at the bottom. The negative
+ * margin cancels the rest of the page's bottom padding (96px) so nothing below overflows.
+ */
+.page {
+  display: grid;
+  grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
+  height: calc(100dvh - 72px - var(--s-6) - var(--s-6));
+  margin-bottom: calc(var(--s-6) - var(--s-8));
+  min-height: 420px;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sheet);
+  background: var(--sheet);
+  box-shadow: var(--lift-1);
+  overflow: hidden;
+}
+
+.list {
+  min-height: 0;
+  border-right: 1px solid var(--rule);
+}
+
+.conversation {
+  min-width: 0;
+  min-height: 0;
+}
+
+.placeholder {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: var(--s-1);
+  height: 100%;
+  padding: var(--s-5);
+  text-align: center;
+}
+
+.placeholderIcon {
+  margin-bottom: var(--s-2);
+  color: var(--blue-text);
+}
+
+.placeholderTitle {
+  font-family: var(--font-display);
+  font-size: var(--fs-h3);
+  font-weight: 750;
+}
+
+.placeholderText {
+  max-width: 36ch;
+  color: var(--text-soft);
+  font-size: var(--fs-small);
+}
+
+/* Phones: one pane at a time, between the header and the bottom bar. */
+@media (max-width: 860px) {
+  .page {
+    grid-template-columns: minmax(0, 1fr);
+    height: calc(100dvh - 116px - 72px - var(--s-4));
+    min-height: 360px;
+  }
+
+  .list {
+    border-right: 0;
+  }
+
+  .open .list,
+  .page:not(.open) .conversation {
+    display: none;
+  }
+}

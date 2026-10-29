@@ -1,0 +1,114 @@
+.field {
+  display: grid;
+  gap: var(--s-1);
+}
+
+.label {
+  font-family: var(--font-display);
+  font-stretch: var(--label-stretch);
+  font-size: var(--fs-small);
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  color: var(--text-soft);
+}
+
+.control {
+  width: 100%;
+  min-height: var(--tap);
+  padding: 0 var(--s-3);
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius-control);
+  background: var(--sheet);
+  color: var(--text);
+  transition:
+    border-color var(--t-fast) var(--ease-out),
+    box-shadow var(--t-fast) var(--ease-out);
+}
+
+.control::placeholder {
+  color: var(--text-faint);
+}
+
+.control:hover {
+  border-color: var(--n-6);
+}
+
+.control:focus-visible {
+  border-color: var(--action);
+}
+
+.control[aria-invalid='true'] {
+  border-color: var(--bad);
+}
+
+.select {
+  appearance: none;
+  padding-right: var(--s-6);
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--text-soft) 50%),
+    linear-gradient(135deg, var(--text-soft) 50%, transparent 50%);
+  background-position:
+    calc(100% - 22px) 50%,
+    calc(100% - 16px) 50%;
+  background-size: 6px 6px;
+  background-repeat: no-repeat;
+}
+
+.area {
+  min-height: 120px;
+  padding: var(--s-2) var(--s-3);
+  line-height: 1.55;
+  resize: vertical;
+}
+
+.fileRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2) var(--s-3);
+}
+
+.fileButton {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap);
+  padding: 0 var(--s-3);
+  border: 1px dashed var(--rule-strong);
+  border-radius: var(--radius-control);
+  background: var(--sheet-sunken);
+  color: var(--text);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.fileButton:hover {
+  border-color: var(--action);
+}
+
+.fileRow:focus-within .fileButton {
+  box-shadow: var(--focus);
+}
+
+.fileName {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-soft);
+  font-size: var(--fs-small);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hint,
+.error {
+  font-size: var(--fs-small);
+  color: var(--text-faint);
+}
+
+.error {
+  color: var(--bad);
+  font-weight: 500;
+}
+
+:global([data-appearance='classic']) .control {
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.1);
+}

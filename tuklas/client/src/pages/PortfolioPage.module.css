@@ -1,0 +1,339 @@
+.page {
+  display: grid;
+  gap: var(--s-4);
+}
+
+/* Cover: a purple bookcloth band, then the identity on paper */
+.cover {
+  overflow: hidden;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sheet);
+  background: var(--sheet);
+  box-shadow: var(--lift-1);
+}
+
+.cloth {
+  height: 96px;
+  background-color: var(--cover);
+  background-image:
+    repeating-linear-gradient(0deg, rgb(255 255 255 / 0.035) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(90deg, rgb(0 0 0 / 0.05) 0 1px, transparent 1px 3px),
+    radial-gradient(120% 140% at 90% 100%, rgb(255 203 87 / 0.28), transparent 55%);
+}
+
+.coverBody {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--s-3) var(--s-4);
+  margin-top: -48px;
+  padding: 0 var(--s-4) var(--s-4);
+}
+
+/* The avatar overlaps the cloth; the text starts below it, on paper. */
+.identity {
+  display: grid;
+  flex: 1 1 320px;
+  gap: var(--s-1);
+  min-width: 0;
+  margin-top: calc(48px + var(--s-2));
+}
+
+.nameRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2) var(--s-3);
+}
+
+.name {
+  font-size: var(--fs-h1);
+  font-weight: 800;
+}
+
+.titles {
+  font-weight: 600;
+  color: var(--text-soft);
+}
+
+.position {
+  color: var(--text-soft);
+  font-weight: 500;
+}
+
+.headline {
+  max-width: var(--measure);
+}
+
+.coverActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  margin-top: var(--s-2);
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  margin: 0;
+  border-top: 1px solid var(--rule);
+}
+
+.stats > div {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 2px;
+  padding: var(--s-3) var(--s-4);
+  border-left: 1px solid var(--rule);
+}
+
+.stats > div:first-child {
+  border-left: 0;
+}
+
+.stats dt {
+  color: var(--text-faint);
+  font-size: var(--fs-small);
+}
+
+.stats dd {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  align-items: start;
+  gap: var(--s-4);
+}
+
+.main,
+.side {
+  display: grid;
+  gap: var(--s-3);
+  min-width: 0;
+}
+
+.bio {
+  display: grid;
+  gap: var(--s-2);
+  max-width: var(--measure);
+}
+
+.quiet {
+  color: var(--text-faint);
+  font-size: var(--fs-small);
+}
+
+.works {
+  display: grid;
+  gap: var(--s-2);
+}
+
+.rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row,
+.linkRow {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-3) var(--s-3) var(--s-4);
+  border-top: 1px solid var(--rule);
+}
+
+.rows > li:first-child > .linkRow,
+.rows > .row:first-child {
+  border-top: 0;
+}
+
+.linkRow {
+  color: inherit;
+  text-decoration: none;
+}
+
+.linkRow:hover {
+  background: var(--sheet-sunken);
+}
+
+.linkRow:hover .rowTitle {
+  color: var(--action-text);
+  text-decoration: underline;
+}
+
+.rowIcon {
+  flex: none;
+  margin-top: 2px;
+  color: var(--blue-text);
+}
+
+.honorIcon {
+  flex: none;
+  margin-top: 2px;
+  color: var(--gold-text);
+}
+
+.rowText {
+  display: grid;
+  flex: 1;
+  gap: 2px;
+  min-width: 0;
+}
+
+.rowTitle {
+  font-weight: 650;
+  line-height: 1.3;
+}
+
+.rowSub {
+  overflow: hidden;
+  color: var(--text-faint);
+  font-size: var(--fs-small);
+  text-overflow: ellipsis;
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-size: var(--fs-tiny);
+}
+
+.honorBadges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1);
+  margin-top: var(--s-1);
+}
+
+.rowTools {
+  display: flex;
+  flex: none;
+  margin: -10px -6px 0 0;
+}
+
+.tool {
+  display: grid;
+  place-items: center;
+  width: var(--tap);
+  height: var(--tap);
+  border: 0;
+  border-radius: var(--radius-control);
+  background: none;
+  color: var(--text-faint);
+  cursor: pointer;
+}
+
+.tool:hover {
+  background: var(--tab);
+  color: var(--text);
+}
+
+.cv {
+  display: grid;
+  gap: var(--s-3);
+}
+
+.cvFile {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-2);
+}
+
+.cvLinks {
+  display: flex;
+  gap: var(--s-3);
+  font-size: var(--fs-small);
+  font-weight: 600;
+}
+
+.cvLinks a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap);
+}
+
+.cvTools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+}
+
+.upload {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: var(--tap);
+  padding: 0 var(--s-3);
+  border: 1px dashed var(--rule-strong);
+  border-radius: var(--radius-control);
+  background: var(--sheet-sunken);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.upload:hover {
+  border-color: var(--action);
+}
+
+.upload:focus-within {
+  box-shadow: var(--focus);
+}
+
+.loading {
+  display: grid;
+  gap: var(--s-3);
+}
+
+.skCover {
+  height: 220px;
+  border-radius: var(--radius-sheet);
+}
+
+.skLine {
+  width: 40%;
+}
+
+@media (max-width: 1080px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 560px) {
+  .cloth {
+    height: 72px;
+  }
+
+  .coverBody {
+    margin-top: -40px;
+    padding: 0 var(--s-3) var(--s-3);
+  }
+
+  .identity {
+    flex-basis: 100%;
+    margin-top: 0;
+  }
+
+
+  .stats {
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  }
+
+  .stats > div {
+    padding: var(--s-2) var(--s-3);
+  }
+
+  .stats dt {
+    font-size: var(--fs-tiny);
+  }
+}
+
+:global([data-appearance='classic']) .cloth {
+  background-image: none;
+  background: linear-gradient(#6c4ab6, #4a2f8a);
+}

@@ -1,0 +1,146 @@
+/* The reading view mirrors a work's page: header, a reading column, and a side column of tools. */
+.page {
+  display: grid;
+  gap: var(--s-5);
+}
+
+.loading {
+  display: grid;
+  gap: var(--s-3);
+}
+
+.skTitle {
+  height: 48px;
+  max-width: 560px;
+  border-radius: var(--radius-control);
+}
+
+.skBlock {
+  height: 320px;
+  border-radius: var(--radius-sheet);
+}
+
+.head {
+  display: grid;
+  gap: var(--s-2);
+  max-width: 880px;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-1) var(--s-2);
+}
+
+.dept {
+  color: var(--text-faint);
+  font-size: var(--fs-small);
+  font-weight: 600;
+}
+
+.title {
+  font-size: var(--fs-h1);
+  font-weight: 800;
+}
+
+.authors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1) var(--s-4);
+  margin: var(--s-1) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  align-items: start;
+  gap: var(--s-4);
+}
+
+.main,
+.side {
+  display: grid;
+  gap: var(--s-3);
+  min-width: 0;
+}
+
+.tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+}
+
+.prose {
+  max-width: var(--measure);
+  font-size: 16px;
+  line-height: 1.7;
+  white-space: pre-line;
+}
+
+.fullText {
+  display: grid;
+  gap: var(--s-3);
+  max-width: var(--measure);
+  font-size: 16px;
+  line-height: 1.75;
+  white-space: pre-line;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1);
+  margin: var(--s-3) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 var(--s-2);
+  border-radius: var(--radius-pill);
+  background: var(--sheet-sunken);
+  color: var(--text-soft);
+  font-size: var(--fs-small);
+  font-weight: 600;
+}
+
+.fileLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  min-height: var(--tap);
+  padding: 0 var(--s-2);
+  font-size: var(--fs-small);
+  font-weight: 600;
+}
+
+.pdf {
+  display: block;
+  width: 100%;
+  height: min(78vh, 900px);
+  border: 0;
+  border-radius: 0 0 var(--radius-sheet) var(--radius-sheet);
+  background: var(--sheet-sunken);
+}
+
+.share {
+  display: grid;
+  gap: var(--s-3);
+}
+
+.shareText {
+  color: var(--text-soft);
+  font-size: var(--fs-small);
+}
+
+@media (max-width: 1080px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

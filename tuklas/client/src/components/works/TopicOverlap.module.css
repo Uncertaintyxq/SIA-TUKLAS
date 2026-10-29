@@ -1,0 +1,20 @@
+.lead {
+  margin-bottom: var(--s-1);
+}
+
+.list {
+  display: grid;
+  gap: var(--s-1);
+  margin: 0;
+  padding-left: var(--s-3);
+}
+
+.title {
+  font-weight: 650;
+}
+
+.meta {
+  display: block;
+  color: var(--text-soft);
+  font-size: var(--fs-tiny);
+}

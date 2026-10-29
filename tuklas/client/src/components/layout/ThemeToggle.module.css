@@ -1,0 +1,35 @@
+.toggle {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: var(--tap);
+  height: var(--tap);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--sheet) 70%, transparent);
+  color: var(--text-soft);
+  cursor: pointer;
+  transition:
+    background-color var(--t-fast) var(--ease-out),
+    color var(--t-fast) var(--ease-out),
+    border-color var(--t-fast) var(--ease-out);
+}
+
+.toggle:hover {
+  border-color: var(--rule-strong);
+  background: var(--sheet);
+  color: var(--text);
+}
+
+.icon {
+  display: grid;
+  place-items: center;
+}
+
+/* Classic: the header is a purple gradient bar, so the button sits on it like the old toolbar buttons. */
+:global([data-appearance='classic']) .toggle {
+  border-color: #3a2470;
+  border-radius: 2px;
+  background: linear-gradient(#ffffff, #e6e3ee);
+  color: var(--ink);
+}

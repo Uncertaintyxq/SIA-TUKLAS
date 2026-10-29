@@ -1,0 +1,111 @@
+.sheet {
+  scroll-margin-top: 96px;
+}
+
+.form {
+  display: grid;
+  gap: var(--s-3);
+}
+
+.files {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2) var(--s-3);
+}
+
+.attach {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: var(--tap);
+  padding: 0 var(--s-3);
+  border: 1px dashed var(--rule-strong);
+  border-radius: var(--radius-control);
+  background: var(--sheet-sunken);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.attach:hover {
+  border-color: var(--action);
+}
+
+.attach:focus-within {
+  box-shadow: var(--focus);
+}
+
+.attach[data-disabled] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.limit {
+  color: var(--text-faint);
+  font-size: var(--fs-small);
+}
+
+.fileList {
+  display: grid;
+  flex-basis: 100%;
+  gap: var(--s-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.file {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding-left: var(--s-3);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-control);
+}
+
+.fileName {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.remove {
+  display: grid;
+  place-items: center;
+  width: var(--tap);
+  height: var(--tap);
+  border: 0;
+  border-radius: var(--radius-control);
+  background: none;
+  color: var(--text-faint);
+  cursor: pointer;
+}
+
+.remove:hover {
+  background: var(--tab);
+  color: var(--text);
+}
+
+.pin {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: var(--tap);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.pin input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--action);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+}

@@ -1,0 +1,160 @@
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--s-2);
+  margin: 0 0 var(--s-4);
+}
+
+.kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--s-3);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sheet);
+  background: var(--sheet);
+}
+
+.kpi dt {
+  order: 2;
+  color: var(--text-soft);
+  font-size: var(--fs-small);
+}
+
+.kpi dd {
+  order: 1;
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.kpiNote {
+  order: 3;
+  color: var(--text-faint);
+  font-size: var(--fs-tiny);
+}
+
+.tabs {
+  margin-bottom: var(--s-3);
+}
+
+.skeleton {
+  height: 240px;
+  margin: var(--s-3);
+  border-radius: var(--radius-sheet);
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  border-top: 1px solid var(--rule);
+}
+
+.row:first-child {
+  border-top: 0;
+}
+
+.lead {
+  flex: none;
+}
+
+.rowBody {
+  display: grid;
+  flex: 1 1 320px;
+  justify-items: start;
+  gap: var(--s-1);
+  min-width: 0;
+}
+
+.rowActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--s-2);
+}
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1);
+}
+
+.title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+a.title {
+  color: var(--text);
+  text-decoration: none;
+}
+
+a.title:hover {
+  color: var(--action-text);
+  text-decoration: underline;
+}
+
+.meta {
+  color: var(--text-faint);
+  font-size: var(--fs-small);
+}
+
+.description {
+  max-width: var(--measure);
+  color: var(--text-soft);
+  font-size: var(--fs-small);
+}
+
+.adImage {
+  display: block;
+  width: 96px;
+  height: 60px;
+  border-radius: var(--radius-control);
+  object-fit: cover;
+}
+
+.honorIcon {
+  color: var(--gold-text);
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  border-bottom: 1px solid var(--rule);
+  background: var(--sheet-sunken);
+}
+
+.grow {
+  flex: 1 1 260px;
+}
+
+.roleSelect {
+  min-width: 150px;
+}
+
+.posts,
+.stack {
+  display: grid;
+  gap: var(--s-3);
+}
+
+@media (max-width: 560px) {
+  .row {
+    padding: var(--s-3);
+  }
+}

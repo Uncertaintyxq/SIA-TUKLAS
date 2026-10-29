@@ -1,0 +1,471 @@
+/*
+ * Desktop: [index-tab rail][page]. The page carries the notebook margin: a grid-paper strip
+ * with the blue margin rule, then the content column. Phone: header + content + bottom bar.
+ */
+.shell {
+  --rail-w: 248px;
+
+  display: grid;
+  grid-template-columns: var(--rail-w) minmax(0, 1fr);
+  min-height: 100dvh;
+}
+
+.skip {
+  position: fixed;
+  top: var(--s-2);
+  left: var(--s-2);
+  z-index: 100;
+  padding: var(--s-2) var(--s-3);
+  border-radius: var(--radius-control);
+  background: var(--action);
+  color: var(--on-action);
+  font-weight: 600;
+  transform: translateY(-200%);
+}
+
+.skip:focus {
+  transform: none;
+}
+
+/* ---------- Index-tab rail ---------- */
+.rail {
+  position: sticky;
+  top: 0;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+  padding: var(--s-4) 0 var(--s-3) var(--s-3);
+  background: var(--sheet-sunken);
+  border-right: 1px solid var(--rule);
+}
+
+.brand {
+  align-self: flex-start;
+  padding: var(--s-1) var(--s-2);
+  border-radius: var(--radius-control);
+  text-decoration: none;
+}
+
+.tabs {
+  display: grid;
+  align-content: start;
+  gap: var(--s-1);
+  min-height: 0;
+  /* Ten tabs fit a laptop screen; shorter windows scroll the tabs, not the page. */
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.tab {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  min-height: 48px;
+  margin-right: -1px;
+  padding: 0 var(--s-3);
+  border: 1px solid transparent;
+  border-right: 0;
+  border-radius: 12px 0 0 12px;
+  background: var(--tab);
+  color: var(--text-soft);
+  font-weight: 600;
+  text-decoration: none;
+  transition:
+    background-color var(--t-fast) var(--ease-out),
+    color var(--t-fast) var(--ease-out),
+    transform var(--t-base) var(--ease-out);
+}
+
+.tab:hover {
+  background: var(--tab-hover);
+  color: var(--text);
+  transform: translateX(-3px);
+}
+
+.tab[aria-current='page'] {
+  color: var(--on-action);
+}
+
+.tabFill {
+  position: absolute;
+  inset: -1px 0 -1px -1px;
+  border-radius: inherit;
+  background: var(--action);
+  box-shadow: var(--lift-2);
+}
+
+.tabIcon,
+.tabLabel {
+  position: relative;
+}
+
+/* ---------- Unread counts ---------- */
+.count {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: var(--radius-pill);
+  background: var(--gold);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.tabCount {
+  margin-left: auto;
+}
+
+.tabIcon {
+  flex: none;
+}
+
+.railFoot {
+  margin-top: auto;
+  padding-right: var(--s-3);
+}
+
+/* ---------- Page ---------- */
+.page {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  min-height: 72px;
+  padding: var(--s-3) var(--s-5) var(--s-3) calc(var(--margin-col) + var(--s-5));
+  background: var(--vellum);
+  backdrop-filter: var(--vellum-blur);
+  -webkit-backdrop-filter: var(--vellum-blur);
+  border-bottom: 1px solid var(--vellum-edge);
+}
+
+.headerBrand,
+.headerUser {
+  display: none;
+}
+
+.search {
+  position: relative;
+  flex: 1 1 auto;
+  max-width: 440px;
+}
+
+.searchIcon {
+  position: absolute;
+  top: 50%;
+  left: var(--s-3);
+  color: var(--text-faint);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  min-height: var(--tap);
+  padding: 0 var(--s-3) 0 calc(var(--s-3) + 26px);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--sheet) 70%, transparent);
+  transition:
+    border-color var(--t-fast) var(--ease-out),
+    background-color var(--t-fast) var(--ease-out);
+}
+
+.searchInput::placeholder {
+  color: var(--text-faint);
+}
+
+.searchInput:focus-visible {
+  border-color: var(--action);
+  background: var(--sheet);
+}
+
+.theme {
+  margin-left: auto;
+}
+
+.main {
+  position: relative;
+  flex: 1;
+  display: grid;
+  grid-template-columns: var(--margin-col) minmax(0, 1fr);
+  outline: none;
+}
+
+/* The notebook margin: grid paper and the blue margin rule */
+.margin {
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: var(--cell) var(--cell);
+  box-shadow: inset -2px 0 0 var(--margin-rule);
+}
+
+.content {
+  min-width: 0;
+  padding: var(--s-6) var(--s-5) var(--s-8);
+}
+
+/* ---------- Phone bottom bar ---------- */
+.bottomBar {
+  display: none;
+}
+
+@media (max-width: 1100px) {
+  .shell {
+    --rail-w: 88px;
+  }
+
+  .rail {
+    padding-left: var(--s-2);
+  }
+
+  .brand {
+    padding: var(--s-1);
+  }
+
+  .railLogo > span:last-child {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+
+  .tab {
+    justify-content: center;
+    padding: 0;
+  }
+
+  .tabLabel {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  /* Icon-only rail: the count rides on the icon's corner. */
+  .tabCount {
+    position: absolute;
+    top: 4px;
+    right: 6px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+  }
+
+  .railFoot {
+    padding-right: var(--s-2);
+  }
+}
+
+@media (max-width: 860px) {
+  .shell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .rail {
+    display: none;
+  }
+
+  .header {
+    min-height: 60px;
+    padding: var(--s-2) var(--s-3);
+    gap: var(--s-2);
+  }
+
+  .headerBrand {
+    display: block;
+    text-decoration: none;
+  }
+
+  .headerUser {
+    display: block;
+  }
+
+  .search {
+    order: 5;
+    flex-basis: 100%;
+    max-width: none;
+  }
+
+  .header {
+    flex-wrap: wrap;
+  }
+
+  .main {
+    grid-template-columns: var(--s-3) minmax(0, 1fr);
+  }
+
+  .content {
+    padding: var(--s-4) var(--s-3) calc(var(--s-8) + 40px) var(--s-3);
+  }
+
+  .bottomBar {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 30;
+    display: grid;
+    grid-auto-columns: 1fr;
+    grid-auto-flow: column;
+    gap: var(--s-1);
+    padding: var(--s-1) var(--s-2) calc(var(--s-1) + env(safe-area-inset-bottom));
+    background: var(--vellum);
+    backdrop-filter: var(--vellum-blur);
+    -webkit-backdrop-filter: var(--vellum-blur);
+    border-top: 1px solid var(--vellum-edge);
+  }
+
+  .barItem {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    align-content: center;
+    gap: 2px;
+    min-height: 56px;
+    border-radius: var(--radius-control);
+    color: var(--text-soft);
+    font-size: var(--fs-tiny);
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  button.barItem {
+    border: 0;
+    background: none;
+    font: inherit;
+    font-size: var(--fs-tiny);
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .barItem[aria-current='page'],
+  .barItem[data-active]:not([aria-expanded='true']) {
+    color: var(--on-action);
+  }
+
+  .barItem[aria-expanded='true'] {
+    background: var(--tab);
+    color: var(--text);
+  }
+
+  .barIconWrap {
+    position: relative;
+    display: grid;
+    place-items: center;
+  }
+
+  .barCount {
+    position: absolute;
+    top: -6px;
+    left: 12px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+    box-shadow: 0 0 0 2px var(--paper);
+  }
+
+  /*
+   * "More": a sheet that rises above the bar with the rest of the destinations. Opaque on purpose:
+   * the bar's own backdrop blur stops a nested blur from reaching the page behind.
+   */
+  .more {
+    position: absolute;
+    right: var(--s-2);
+    bottom: calc(100% + var(--s-2));
+    left: var(--s-2);
+    display: grid;
+    gap: 2px;
+    padding: var(--s-2);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-sheet);
+    background: var(--sheet);
+    box-shadow: var(--lift-3);
+  }
+
+  .moreItem {
+    display: flex;
+    align-items: center;
+    gap: var(--s-3);
+    min-height: 48px;
+    padding: 0 var(--s-3);
+    border-radius: var(--radius-control);
+    color: var(--text);
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .moreItem:hover {
+    background: var(--tab);
+  }
+
+  .moreItem[aria-current='page'] {
+    background: var(--action);
+    color: var(--on-action);
+  }
+
+  .moreCount {
+    margin-left: auto;
+  }
+
+  .barFill {
+    position: absolute;
+    inset: 4px 2px;
+    border-radius: var(--radius-control);
+    background: var(--action);
+  }
+
+  .barIcon,
+  .barLabel {
+    position: relative;
+  }
+}
+
+/* ---------- Classic ---------- */
+:global([data-appearance='classic']) .rail {
+  background: linear-gradient(#ffffff, #f1eef8);
+}
+
+:global([data-appearance='classic'][data-theme='dark']) .rail {
+  background: linear-gradient(#211d2d, #1a1724);
+}
+
+:global([data-appearance='classic']) .header {
+  background: linear-gradient(#5a3ba0, #4a2f8a);
+  border-bottom-color: #3a2470;
+}
+
+:global([data-appearance='classic']) .header .searchInput {
+  border-radius: 2px;
+  background: #ffffff;
+  color: var(--ink);
+}
+
+:global([data-appearance='classic']) .tab {
+  border: 1px solid var(--rule);
+  border-right: 0;
+}
+
+:global([data-appearance='classic']) .tabFill {
+  background: var(--purple-deep);
+  box-shadow: none;
+}

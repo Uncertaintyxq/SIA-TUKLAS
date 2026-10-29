@@ -1,0 +1,20 @@
+.empty {
+  display: grid;
+  justify-items: center;
+  gap: var(--s-2);
+  padding: var(--s-7) var(--s-4);
+  border: 1px dashed var(--rule-strong);
+  border-radius: var(--radius-sheet);
+  background: var(--sheet);
+  text-align: center;
+}
+
+.title {
+  margin-top: var(--s-2);
+  font-size: var(--fs-h3);
+}
+
+.text {
+  max-width: 46ch;
+  color: var(--text-soft);
+}

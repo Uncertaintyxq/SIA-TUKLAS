@@ -1,0 +1,49 @@
+.notice {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-2);
+  padding: var(--s-3);
+  border-left: 3px solid var(--blue);
+  border-radius: 0 var(--radius-control) var(--radius-control) 0;
+  background: color-mix(in srgb, var(--blue) 10%, var(--sheet));
+  font-size: var(--fs-small);
+}
+
+.icon {
+  display: grid;
+  flex: none;
+  margin-top: 1px;
+  color: var(--blue-text);
+}
+
+.text {
+  min-width: 0;
+}
+
+.gold {
+  border-left-color: var(--gold);
+  background: color-mix(in srgb, var(--gold) 16%, var(--sheet));
+}
+
+.gold .icon {
+  color: var(--gold-text);
+}
+
+.warn {
+  border-left-color: var(--warn);
+  background: var(--warn-tint);
+}
+
+.warn .icon {
+  color: var(--warn);
+}
+
+.bad {
+  border-left-color: var(--bad);
+  background: var(--bad-tint);
+  color: var(--bad);
+}
+
+.bad .icon {
+  color: var(--bad);
+}

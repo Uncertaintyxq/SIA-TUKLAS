@@ -1,0 +1,58 @@
+.loading {
+  display: grid;
+  gap: var(--s-3);
+  width: min(100% - var(--s-5), 680px);
+  margin: var(--s-8) auto;
+}
+
+.lineWide {
+  width: 60%;
+  height: 28px;
+}
+
+.line {
+  width: 40%;
+}
+
+.block {
+  height: 160px;
+  border-radius: var(--radius-sheet);
+}
+
+/* Public pages for logged-out visitors: a vellum bar and the paper */
+.public {
+  min-height: 100dvh;
+  background-color: var(--paper);
+}
+
+.publicHeader {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+  min-height: 64px;
+  padding: var(--s-2) var(--s-4);
+  background: var(--vellum);
+  backdrop-filter: var(--vellum-blur);
+  -webkit-backdrop-filter: var(--vellum-blur);
+  border-bottom: 1px solid var(--vellum-edge);
+}
+
+.publicBrand {
+  text-decoration: none;
+}
+
+.publicMain {
+  width: min(100% - var(--s-5), 1180px);
+  margin: 0 auto;
+  padding: var(--s-5) 0 var(--s-8);
+}
+
+.center {
+  width: min(100% - var(--s-5), 720px);
+  margin: 0 auto;
+  padding: var(--s-7) 0;
+}

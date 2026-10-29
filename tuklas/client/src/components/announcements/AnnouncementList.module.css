@@ -1,0 +1,10 @@
+.list {
+  display: grid;
+  gap: var(--s-3);
+  min-width: 0;
+}
+
+.skeleton {
+  height: 180px;
+  border-radius: var(--radius-sheet);
+}

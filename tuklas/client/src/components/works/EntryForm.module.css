@@ -1,0 +1,59 @@
+.form {
+  display: grid;
+  gap: var(--s-3);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--s-3);
+}
+
+.coauthors {
+  display: grid;
+  gap: var(--s-2);
+}
+
+.chosen {
+  display: grid;
+  gap: var(--s-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chosenItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2);
+  padding: var(--s-1) var(--s-1) var(--s-1) var(--s-2);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-control);
+}
+
+.remove {
+  display: grid;
+  place-items: center;
+  width: var(--tap);
+  height: var(--tap);
+  border: 0;
+  border-radius: var(--radius-control);
+  background: none;
+  color: var(--text-soft);
+  cursor: pointer;
+}
+
+.remove:hover {
+  background: var(--bad-tint);
+  color: var(--bad);
+}
+
+.error {
+  padding: var(--s-2) var(--s-3);
+  border-radius: var(--radius-control);
+  background: var(--bad-tint);
+  color: var(--bad);
+  font-size: var(--fs-small);
+  font-weight: 500;
+}

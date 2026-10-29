@@ -1,0 +1,51 @@
+.group {
+  display: grid;
+  grid-auto-columns: 1fr;
+  grid-auto-flow: column;
+  gap: 2px;
+  padding: 3px;
+  border-radius: var(--radius-control);
+  background: var(--sheet-sunken);
+  border: 1px solid var(--rule);
+}
+
+.option {
+  position: relative;
+  min-height: 40px;
+  padding: 0 var(--s-2);
+  border: 0;
+  border-radius: calc(var(--radius-control) - 3px);
+  background: none;
+  color: var(--text-soft);
+  font-size: var(--fs-small);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.option[aria-checked='true'] {
+  color: var(--text);
+}
+
+.option:hover:not([aria-checked='true']) {
+  color: var(--text);
+}
+
+.marker {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--sheet);
+  box-shadow: var(--lift-2);
+}
+
+:global([data-theme='dark']) .marker {
+  background: var(--rule-strong);
+}
+
+.content {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-1);
+}

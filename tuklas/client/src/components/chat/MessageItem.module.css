@@ -1,0 +1,206 @@
+/* A message reads like a line in a lab notebook: gutter (avatar or time), then the entry. */
+.message {
+  position: relative;
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  gap: var(--s-2);
+  padding: var(--s-2) var(--s-3);
+  border-radius: var(--radius-control);
+}
+
+.continued {
+  padding-top: 2px;
+}
+
+.message:hover,
+.message:focus-within {
+  background: var(--sheet-sunken);
+}
+
+.highlighted {
+  background: color-mix(in srgb, var(--gold) 16%, var(--sheet));
+}
+
+.gutter {
+  display: flex;
+  justify-content: center;
+  padding-top: 2px;
+}
+
+.gutterTime {
+  visibility: hidden;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-faint);
+  line-height: 22px;
+}
+
+.message:hover .gutterTime {
+  visibility: visible;
+}
+
+.main {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.byline {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-2);
+}
+
+.name {
+  font-weight: 700;
+}
+
+.time {
+  font-family: var(--font-mono);
+  font-size: var(--fs-tiny);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-faint);
+}
+
+.text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.removed {
+  color: var(--text-faint);
+  font-size: var(--fs-small);
+  font-style: italic;
+}
+
+.replies {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  min-height: 32px;
+  margin-top: 2px;
+  padding: 0 var(--s-2);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-pill);
+  background: var(--sheet);
+  color: var(--action-text);
+  font-size: var(--fs-small);
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.replies:hover {
+  border-color: var(--action);
+}
+
+/* Hover tools, top right, like a margin note */
+.actions {
+  position: absolute;
+  top: -12px;
+  right: var(--s-3);
+  display: flex;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-control);
+  background: var(--sheet);
+  box-shadow: var(--lift-2);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--t-fast) var(--ease-out);
+}
+
+.message:hover .actions,
+.message:focus-within .actions {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.action {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  background: none;
+  color: var(--text-soft);
+  cursor: pointer;
+}
+
+.action:hover {
+  background: var(--tab);
+  color: var(--text);
+}
+
+/* ---------- Files ---------- */
+.file {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  max-width: 420px;
+  margin-top: var(--s-1);
+  padding-left: var(--s-3);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-control);
+  background: var(--sheet);
+}
+
+.fileIcon {
+  flex: none;
+  color: var(--blue-text);
+}
+
+.fileName {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fileSize {
+  flex: none;
+  color: var(--text-faint);
+  font-size: var(--fs-small);
+}
+
+.download {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: var(--tap);
+  height: var(--tap);
+  color: var(--text-faint);
+}
+
+.download:hover {
+  color: var(--text);
+}
+
+.image {
+  display: block;
+  max-width: 320px;
+  margin-top: var(--s-1);
+}
+
+.image img {
+  display: block;
+  max-width: 100%;
+  max-height: 240px;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-control);
+  object-fit: cover;
+}
+
+/* Touch screens have no hover: keep the tools reachable. */
+@media (hover: none) {
+  .actions {
+    position: static;
+    grid-column: 2;
+    justify-self: start;
+    opacity: 1;
+    pointer-events: auto;
+    box-shadow: none;
+  }
+}

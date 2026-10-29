@@ -1,0 +1,115 @@
+.notice {
+  margin-bottom: var(--s-4);
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  align-items: start;
+  gap: var(--s-4);
+}
+
+.form {
+  display: grid;
+  gap: var(--s-3);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--s-3);
+}
+
+.submit {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.error {
+  padding: var(--s-2) var(--s-3);
+  border-radius: var(--radius-control);
+  background: var(--bad-tint);
+  color: var(--bad);
+  font-size: var(--fs-small);
+}
+
+.postings {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.posting {
+  display: grid;
+  justify-items: start;
+  gap: var(--s-2);
+  padding: var(--s-3) var(--s-4);
+  border-top: 1px solid var(--rule);
+}
+
+.posting:first-child {
+  border-top: 0;
+}
+
+.postingHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2);
+}
+
+.closes {
+  font-family: var(--font-mono);
+  font-size: var(--fs-tiny);
+  color: var(--text-faint);
+}
+
+.postingTitle {
+  font-size: 15px;
+}
+
+.applicants {
+  width: 100%;
+}
+
+.applicants summary {
+  display: flex;
+  align-items: center;
+  min-height: var(--tap);
+  color: var(--action-text);
+  font-size: var(--fs-small);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.applicantList {
+  display: grid;
+  gap: var(--s-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.applicant {
+  display: grid;
+  gap: var(--s-1);
+  padding: var(--s-2) var(--s-3);
+  border-radius: var(--radius-control);
+  background: var(--sheet-sunken);
+}
+
+.message {
+  font-size: var(--fs-small);
+  white-space: pre-line;
+}
+
+.quiet {
+  color: var(--text-faint);
+  font-size: var(--fs-small);
+}
+
+@media (max-width: 1080px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

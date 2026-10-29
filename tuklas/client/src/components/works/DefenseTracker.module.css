@@ -1,0 +1,130 @@
+.empty {
+  color: var(--text-faint);
+  font-size: var(--fs-small);
+}
+
+.timeline {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Each stage hangs off the blue margin rule, like a dated notebook entry. */
+.stage {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-3);
+  padding: 0 0 var(--s-3) var(--s-4);
+}
+
+.stage::before {
+  content: '';
+  position: absolute;
+  top: 6px;
+  bottom: -6px;
+  left: 6px;
+  width: 2px;
+  background: var(--margin-rule);
+}
+
+.stage:last-child {
+  padding-bottom: 0;
+}
+
+.stage:last-child::before {
+  display: none;
+}
+
+.dot {
+  position: absolute;
+  top: 4px;
+  left: 0;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--blue);
+  border-radius: 50%;
+  background: var(--sheet);
+}
+
+.published .dot {
+  border-color: var(--gold);
+  background: var(--gold);
+}
+
+.upcoming .dot {
+  border-style: dashed;
+}
+
+.body {
+  flex: 1;
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-1) var(--s-2);
+}
+
+.date {
+  font-family: var(--font-mono);
+  font-size: var(--fs-tiny);
+  font-weight: 600;
+  color: var(--text-faint);
+}
+
+.name {
+  font-size: 15px;
+}
+
+.panel,
+.notes {
+  font-size: var(--fs-small);
+  color: var(--text-soft);
+}
+
+.tools {
+  display: flex;
+  margin-top: -10px;
+}
+
+.tool {
+  display: grid;
+  place-items: center;
+  width: var(--tap);
+  height: var(--tap);
+  border: 0;
+  border-radius: var(--radius-control);
+  background: none;
+  color: var(--text-soft);
+  cursor: pointer;
+}
+
+.tool:hover {
+  background: var(--tab);
+  color: var(--text);
+}
+
+.form {
+  display: grid;
+  gap: var(--s-3);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--s-3);
+}
+
+.error {
+  padding: var(--s-2) var(--s-3);
+  border-radius: var(--radius-control);
+  background: var(--bad-tint);
+  color: var(--bad);
+  font-size: var(--fs-small);
+}

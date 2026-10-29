@@ -1,0 +1,154 @@
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  align-items: start;
+  gap: var(--s-4);
+}
+
+.list,
+.side {
+  display: grid;
+  gap: var(--s-3);
+  min-width: 0;
+}
+
+.skeleton {
+  height: 200px;
+  border-radius: var(--radius-sheet);
+}
+
+.entry {
+  display: grid;
+  gap: var(--s-2);
+  padding: var(--s-4);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sheet);
+  background: var(--sheet);
+  box-shadow: var(--lift-1);
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-1) var(--s-2);
+}
+
+.no,
+.updated {
+  font-family: var(--font-mono);
+  font-size: var(--fs-tiny);
+  font-weight: 600;
+  color: var(--text-faint);
+}
+
+.updated {
+  margin-left: auto;
+}
+
+.title {
+  font-size: 19px;
+  font-stretch: 105%;
+  line-height: 1.25;
+}
+
+.titleLink {
+  color: var(--text);
+  text-decoration: none;
+}
+
+.titleLink:hover {
+  color: var(--action-text);
+  text-decoration: underline;
+}
+
+.meta {
+  color: var(--text-soft);
+  font-size: var(--fs-small);
+}
+
+.feedback {
+  margin: 0;
+  padding: var(--s-2) var(--s-3);
+  border-left: 3px solid var(--warn);
+  border-radius: 0 var(--radius-control) var(--radius-control) 0;
+  background: var(--warn-tint);
+  font-size: var(--fs-small);
+}
+
+.feedbackLabel {
+  font-weight: 700;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2);
+  margin-top: var(--s-1);
+}
+
+.sideLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap);
+  padding: 0 var(--s-2);
+  font-size: var(--fs-small);
+  font-weight: 600;
+}
+
+.groups {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.group {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-2);
+  padding: var(--s-3) var(--s-4);
+  border-top: 1px solid var(--rule);
+  color: inherit;
+  text-decoration: none;
+}
+
+li:first-child > .group {
+  border-top: 0;
+}
+
+.group:hover {
+  background: var(--sheet-sunken);
+}
+
+.groupIcon {
+  flex: none;
+  margin-top: 2px;
+  color: var(--blue-text);
+}
+
+.groupText {
+  display: grid;
+  min-width: 0;
+}
+
+.groupName {
+  font-weight: 650;
+}
+
+.groupMeta {
+  color: var(--text-faint);
+  font-size: var(--fs-small);
+}
+
+@media (max-width: 1080px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 560px) {
+  .entry {
+    padding: var(--s-3);
+  }
+}
