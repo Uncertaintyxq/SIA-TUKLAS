@@ -1,6 +1,6 @@
 # Tuklas — "From Defense to Discovery" · Build Plan
 
-Sources: `reference/prototype.html` (working prototype, the feature spec) and `reference/October_1_2026.docx` (design notes).
+Sources: `reference/prototype.html` (working prototype, the feature spec), `reference/August_31_2026.md` (client kickoff and Q&A) and `reference/October_1_2026.md` (design notes). See `reference/README.md`.
 Goal: a full-stack TypeScript app with the same features, roles and rules, where the rules are enforced on the server.
 
 ---

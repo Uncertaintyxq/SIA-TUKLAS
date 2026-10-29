@@ -1,7 +1,10 @@
 # Tuklas — From Defense to Discovery
 
 A research and academic engagement hub for students, educators and administrators.
-See `PLAN.md` for the full build plan and `reference/` for the original prototype and design notes.
+See `PLAN.md` for the full build plan and [`reference/`](reference/README.md) for the client meeting notes, design notes and original prototype.
+
+> **Moving to Laravel.** The Express server in `server/` is being replaced by a Laravel API in this folder.
+> Decisions, the security spec and what's left are in [`docs/CONVERSION.md`](../docs/CONVERSION.md).
 
 ## Run it locally
 

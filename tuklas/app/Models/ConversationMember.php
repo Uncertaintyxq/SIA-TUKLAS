@@ -1,0 +1,33 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+/** Who is in a conversation, and how far they have read. Keyed by (conversation_id, user_id). */
+#[Fillable(['conversation_id', 'user_id', 'last_read_at'])]
+class ConversationMember extends Model
+{
+    public $timestamps = false;
+
+    protected $primaryKey = null;
+
+    public $incrementing = false;
+
+    protected function casts(): array
+    {
+        return ['last_read_at' => 'datetime'];
+    }
+
+    public function conversation(): BelongsTo
+    {
+        return $this->belongsTo(Conversation::class);
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+}
