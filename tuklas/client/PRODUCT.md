@@ -57,7 +57,8 @@ Every public piece of student work has been signed off by a named adviser or the
 ## Evidence on Hand
 
 - `../reference/prototype.html`: working prototype with all features, copy, and demo data.
-- `../reference/October_1_2026.docx`: design progress notes and palette decisions.
+- `../reference/August_31_2026.md` (and `.pdf`): client kickoff meeting and written Q&A, the source of the requirements.
+- `../reference/October_1_2026.md` (and `.pdf`, `.docx`): design progress notes and palette decisions.
 - Demo people (fictional): Andrea Villanueva, Paolo Reyes, Kim Dela Cruz, Dr. Maria Santos, Prof. Ramon Aquino, Lea Mercado.
 - The institution is **generic and fictional** ("University of Iloilo" in demo data). Don't add real institution names, logos, statistics or testimonials.
 
