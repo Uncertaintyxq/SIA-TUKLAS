@@ -5,7 +5,7 @@
  */
 import type { ReactNode } from 'react';
 import { createBrowserRouter, Navigate, NavLink, Outlet, RouterProvider, useLocation } from 'react-router-dom';
-import type { Role } from '@server/schemas/auth';
+import type { Role } from './types/auth';
 import { useMe } from './api/auth';
 import { AppShell } from './components/layout/AppShell';
 import { Logo } from './components/brand/Logo';

@@ -4,7 +4,7 @@
  */
 import { useState, type FormEvent } from 'react';
 import { CalendarClock, Check, Users } from 'lucide-react';
-import type { OpportunityCard } from '@server/schemas/feed';
+import type { OpportunityCard } from '../../types/feed';
 import { useMe } from '../../api/auth';
 import { useApply, useWithdraw } from '../../api/feed';
 import { fmtDate, plural, relTime } from '../../lib/format';

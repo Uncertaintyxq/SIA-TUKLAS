@@ -3,9 +3,9 @@
  * Covers stats, the moderation queue, users, educators, and notifications.
  */
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import type { AdminEducators, AdminPosts, AdminQueue, AdminStats, AdminUser, EducatorOverview, UserPatch } from '@server/schemas/admin';
-import type { Role } from '@server/schemas/auth';
-import type { NotificationsResponse } from '@server/schemas/notifications';
+import type { AdminEducators, AdminPosts, AdminQueue, AdminStats, AdminUser, EducatorOverview, UserPatch } from '../types/admin';
+import type { Role } from '../types/auth';
+import type { NotificationsResponse } from '../types/notifications';
 import { api } from './client';
 import { useAction } from './mutate';
 

@@ -6,7 +6,7 @@
 import { useState, type FormEvent } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Globe, Lock, Save, School, X } from 'lucide-react';
-import type { UserCard } from '@server/schemas/common';
+import type { UserCard } from '../types/common';
 import { useMe } from '../api/auth';
 import {
   useCreatePublication,

@@ -5,7 +5,7 @@
 import { Link } from 'react-router-dom';
 import clsx from 'clsx';
 import { Bookmark, BookmarkCheck, Link2, MessageSquare, Sparkles } from 'lucide-react';
-import type { WorkCard } from '@server/schemas/works';
+import type { WorkCard } from '../../types/works';
 import { useSave } from '../../api/works';
 import { entryNo, isoDate } from '../../lib/format';
 import { Byline } from '../people/Person';

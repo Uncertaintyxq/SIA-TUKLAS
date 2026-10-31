@@ -5,7 +5,7 @@
 import { useState, type FormEvent } from 'react';
 import clsx from 'clsx';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
-import type { DefenseStageKind, StageView, Verdict } from '@server/schemas/works';
+import type { DefenseStageKind, StageView, Verdict } from '../../types/works';
 import { useDeleteStage, useSaveStage } from '../../api/works';
 import { isoDate } from '../../lib/format';
 import { stageLabel, verdictLabel } from '../../lib/labels';
