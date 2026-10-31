@@ -273,15 +273,7 @@ class ChatController extends Controller
     /** Saves a message, bumps the conversation, moves my read marker and tells everyone's open tabs. */
     private function deliver(Conversation $c, User $me, array $fields): Message
     {
-        $m = DB::transaction(function () use ($c, $me, $fields) {
-            $m = new Message($fields + ['sender_id' => $me->id]);
-            $m->conversation()->associate($c)->save();
-            $c->forceFill(['last_message_at' => now()])->save();
-            ConversationMember::where('conversation_id', $c->id)->where('user_id', $me->id)->update(['last_read_at' => now()]);
-
-            return $m;
-        });
-        Chat::announce($c->id, $m->id, $m->parent_id);
+        $m = Chat::post($c, $me->id, $fields);
 
         return $this->withMessageData(Message::query())->findOrFail($m->id);
     }

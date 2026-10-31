@@ -1,11 +1,12 @@
 /**
  * DeliverablePanel — one deliverable in a research group: its instructions, the student's hand-in
- * form and their submission, and for the adviser and mentors everyone's work with accept / revise.
+ * form and their submission with its earlier versions, and for the adviser and mentors everyone's work
+ * with accept / revise.
  * What the viewer may do comes from the server (`can`); students only ever get their own work back.
  */
 import { useState, type FormEvent } from 'react';
-import { Check, Download, FileText, RotateCcw, Upload, X } from 'lucide-react';
-import type { SubmissionMode, SubmissionStatus } from '../../types/groups';
+import { Check, Download, FileText, History, RotateCcw, Upload, X } from 'lucide-react';
+import type { DeliverableVersion, SubmissionMode, SubmissionStatus } from '../../types/groups';
 import { useDeliverable, useHandIn, useReviewSubmission, type DeliverableDetail, type DeliverableSubmission } from '../../api/groups';
 import { Person } from '../people/Person';
 import { Badge, type BadgeTone } from '../ui/Badge';
@@ -83,7 +84,10 @@ function HandInForm({ groupId, deliverable: d }: { groupId: number; deliverable:
   return (
     <form className={styles.form} onSubmit={submit}>
       <h3 className={styles.heading}>{again ? 'Hand in a new version' : 'Hand in your work'}</h3>
-      {again && <p className={styles.muted}>The new file replaces the one above, and the review starts again.</p>}
+      <p className={styles.muted}>
+        {again ? 'The review starts again. Your earlier versions and their feedback stay below the submission. ' : ''}
+        The group sees “handed in” in #general, but never your file or note.
+      </p>
       {late && <Notice tone="warn">The due date has passed. You can still hand in, and it will be marked late.</Notice>}
       <FileField label="File" hint="PDF, Word, slides or any file up to 15 MB." file={file} onFile={setFile} />
       <TextAreaField label="Note to your reviewers (optional)" rows={3} maxLength={2000} value={note} onChange={(e) => setNote(e.target.value)} />
@@ -171,8 +175,54 @@ function SubmissionCard({ groupId, deliverable: d, submission: s, reviewing = fa
           {s.feedback}
         </blockquote>
       )}
+      {s.history.length > 0 && <EarlierVersions versions={s.history} />}
       {reviewing && <ReviewForm groupId={groupId} deadlineId={d.id} submission={s} />}
     </article>
+  );
+}
+
+function EarlierVersions({ versions }: { versions: DeliverableVersion[] }) {
+  return (
+    <details className={styles.history}>
+      <summary className={styles.historySummary}>
+        <History size={16} aria-hidden="true" />
+        Earlier versions ({versions.length})
+      </summary>
+      <ol className={styles.versions}>
+        {versions.map((v) => (
+          <li key={v.version} className={styles.version}>
+            <div className={styles.versionHead}>
+              <a href={v.fileUrl} target="_blank" rel="noreferrer" className={styles.fileName}>
+                Version {v.version}: {v.name}
+              </a>
+              <span className={styles.badges}>
+                {v.late && <Badge tone="bad">Late</Badge>}
+                <Badge tone={statusTone[v.status]}>{statusLabel[v.status]}</Badge>
+              </span>
+            </div>
+            <span className={styles.muted}>
+              {fileSize(v.size)} · {v.submittedBy ? `${v.submittedBy.name} · ` : ''}
+              {fmtDateTime(v.submittedAt)}
+            </span>
+            {v.note && (
+              <blockquote className={styles.note}>
+                <span className={styles.label}>Note</span>
+                {v.note}
+              </blockquote>
+            )}
+            {v.feedback && (
+              <blockquote className={styles.feedback}>
+                <span className={styles.label}>
+                  Feedback{v.reviewedBy ? ` from ${v.reviewedBy.name}` : ''}
+                  {v.reviewedAt ? ` · ${relTime(v.reviewedAt)}` : ''}
+                </span>
+                {v.feedback}
+              </blockquote>
+            )}
+          </li>
+        ))}
+      </ol>
+    </details>
   );
 }
 
