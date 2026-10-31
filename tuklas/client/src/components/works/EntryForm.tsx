@@ -4,8 +4,8 @@
  */
 import { useState, type FormEvent } from 'react';
 import { ShieldCheck, X } from 'lucide-react';
-import type { UserCard } from '@server/schemas/common';
-import type { WorkStatus, WorkType } from '@server/schemas/works';
+import type { UserCard } from '../../types/common';
+import type { WorkStatus, WorkType } from '../../types/works';
 import { useMe } from '../../api/auth';
 import { useAdvisers } from '../../api/portfolio';
 import { useCreateWork, useSubmitWork, useUpdateWork, useUploadWorkPdf, type WorkCard } from '../../api/works';

@@ -16,7 +16,7 @@ import {
   Users,
   type LucideIcon,
 } from 'lucide-react';
-import type { Role } from '@server/schemas/auth';
+import type { Role } from '../../types/auth';
 
 /** Counters a nav item can carry. */
 export type NavBadge = 'messages' | 'announcements';

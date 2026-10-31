@@ -3,7 +3,7 @@
  * Login and signup write the user straight into the cached "me" query.
  */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { LoginInput, PublicUser, SignupInput } from '@server/schemas/auth';
+import type { LoginInput, PublicUser, SignupInput } from '../types/auth';
 import { api, ApiError } from './client';
 
 export type { PublicUser };

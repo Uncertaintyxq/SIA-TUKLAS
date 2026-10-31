@@ -4,7 +4,7 @@
  */
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
-import type { AcademicLinkView, BackgroundView, HonorKind, HonorView, LinkType } from '@server/schemas/profile';
+import type { AcademicLinkView, BackgroundView, HonorKind, HonorView, LinkType } from '../../types/profile';
 import { useRemovePhoto, useSaveBackground, useSaveHonor, useSaveLinks, useUpdateProfile, useUploadPhoto, type Portfolio } from '../../api/portfolio';
 import { honorLabel, linkLabel } from '../../lib/labels';
 import { Avatar } from '../ui/Avatar';

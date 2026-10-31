@@ -5,7 +5,7 @@
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import clsx from 'clsx';
-import type { UserCard } from '@server/schemas/common';
+import type { UserCard } from '../../types/common';
 import { Avatar } from '../ui/Avatar';
 import styles from './Person.module.css';
 

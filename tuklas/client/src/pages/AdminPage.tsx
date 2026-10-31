@@ -5,7 +5,7 @@
 import { useState, type ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Award, CircleCheck, EyeOff, RotateCcw, Trash2, XCircle } from 'lucide-react';
-import type { Role } from '@server/schemas/auth';
+import type { Role } from '../types/auth';
 import {
   useAdminPosts,
   useAdminQueue,

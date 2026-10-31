@@ -5,7 +5,7 @@
 import { useState, type FormEvent } from 'react';
 import clsx from 'clsx';
 import { CheckCheck, CircleCheck, FileText, PenLine, Send } from 'lucide-react';
-import type { ReviewDecision, WorkDetail } from '@server/schemas/works';
+import type { ReviewDecision, WorkDetail } from '../../types/works';
 import { useDecision, usePatchItem, useReviewComment } from '../../api/works';
 import { fmtDate, relTime } from '../../lib/format';
 import { decisionLabel } from '../../lib/labels';

@@ -4,7 +4,7 @@
  */
 import { useState, type FormEvent } from 'react';
 import { ShieldAlert, Trash2 } from 'lucide-react';
-import type { OpportunityKind } from '@server/schemas/feed';
+import type { OpportunityKind } from '../types/feed';
 import { useMe } from '../api/auth';
 import { useCreateOpportunity, useDeleteOpportunity, useMyOpportunities } from '../api/feed';
 import { PageHeader } from '../components/layout/PageHeader';

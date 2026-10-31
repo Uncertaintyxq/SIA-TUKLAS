@@ -5,7 +5,7 @@
 import { useEffect, useState } from 'react';
 import QRCode from 'qrcode';
 import { Copy, Download, Lightbulb, Sparkles, Wrench } from 'lucide-react';
-import type { ReactionKind, WorkDetail } from '@server/schemas/works';
+import type { ReactionKind, WorkDetail } from '../../types/works';
 import { useReact } from '../../api/works';
 import { apa, mla, type Citation, type CiteSource } from '../../lib/citation';
 import { reactionLabel } from '../../lib/labels';

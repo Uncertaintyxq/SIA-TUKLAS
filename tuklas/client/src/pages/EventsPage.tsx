@@ -5,7 +5,7 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { CalendarPlus, ShieldCheck } from 'lucide-react';
-import type { EventCategory } from '@server/schemas/events';
+import type { EventCategory } from '../types/events';
 import { useMe } from '../api/auth';
 import { useCreateEvent, useEvents } from '../api/events';
 import { PageHeader } from '../components/layout/PageHeader';

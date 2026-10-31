@@ -2,7 +2,7 @@
  * Events API hooks — events, registrations and event ads.
  */
 import { useQuery } from '@tanstack/react-query';
-import type { AdCard, AdInput, EventCard, EventCategory, EventDetail, EventInput, EventsResponse } from '@server/schemas/events';
+import type { AdCard, AdInput, EventCard, EventCategory, EventDetail, EventInput, EventsResponse } from '../types/events';
 import { api, upload } from './client';
 import { useAction } from './mutate';
 

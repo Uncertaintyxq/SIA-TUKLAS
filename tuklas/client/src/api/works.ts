@@ -13,7 +13,7 @@ import type {
   WorkCard,
   WorkDetail,
   WorkInput,
-} from '@server/schemas/works';
+} from '../types/works';
 import { api, upload } from './client';
 import { useAction } from './mutate';
 
