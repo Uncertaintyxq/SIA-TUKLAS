@@ -156,3 +156,41 @@
   padding: 0;
   list-style: none;
 }
+
+.history {
+  border-top: 1px dashed var(--rule);
+  padding-top: var(--s-2);
+}
+
+.historySummary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  min-height: var(--tap);
+  color: var(--action-text);
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.versions {
+  display: grid;
+  gap: var(--s-3);
+  margin: var(--s-2) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.version {
+  display: grid;
+  gap: var(--s-1);
+  padding-left: var(--s-3);
+  border-left: 2px solid var(--rule);
+}
+
+.versionHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2);
+}

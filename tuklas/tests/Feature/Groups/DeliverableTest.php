@@ -2,8 +2,11 @@
 
 namespace Tests\Feature\Groups;
 
+use App\Models\Conversation;
 use App\Models\DeliverableSubmission;
+use App\Models\DeliverableVersion;
 use App\Models\GroupDeadline;
+use App\Models\Message;
 use App\Models\Notification;
 use App\Models\ResearchGroup;
 use App\Models\User;
@@ -73,20 +76,45 @@ class DeliverableTest extends TestCase
         $this->assertSame(1, Notification::where('user_id', 4)->where('type', 'group_deliverable')->count());
     }
 
-    public function test_handing_in_again_replaces_the_file_and_resets_the_review(): void
+    public function test_handing_in_again_keeps_the_earlier_version_with_its_review(): void
     {
         $old = DeliverableSubmission::where('student_id', 1)->where('group_deadline_id', $this->chapter3)->first();
-        Storage::disk('local')->assertExists('uploads/'.$old->file);
 
-        $this->handIn(1, $this->chapter3, name: 'chapter3-v2.pdf')
+        $res = $this->handIn(1, $this->chapter3, name: 'chapter3-v2.pdf')
             ->assertOk()
             ->assertJsonPath('version', 2)
             ->assertJsonPath('status', 'submitted')
             ->assertJsonPath('feedback', null)
-            ->assertJsonPath('name', 'chapter3-v2.pdf');
+            ->assertJsonPath('name', 'chapter3-v2.pdf')
+            ->assertJsonCount(1, 'history')
+            ->assertJsonPath('history.0.version', 1)
+            ->assertJsonPath('history.0.status', 'needs_revision')
+            ->assertJsonPath('history.0.feedback', 'Good start. Add how you will choose the households, and attach the consent form in Filipino as well.');
 
-        Storage::disk('local')->assertMissing('uploads/'.$old->file);
+        Storage::disk('local')->assertExists('uploads/'.$old->file);
         $this->assertSame(1, DeliverableSubmission::where('group_deadline_id', $this->chapter3)->where('student_id', 1)->count());
+
+        // The earlier file opens for its student and the reviewers, not for classmates
+        $earlier = $res->json('history.0.fileUrl');
+        $this->assertStringEndsWith('/versions/1/file', $earlier);
+        $this->actingAs(User::find(1))->get($earlier)->assertOk();
+        $this->actingAs(User::find(4))->get($earlier)->assertOk();
+        $this->actingAs(User::find(3))->get($earlier)->assertNotFound();
+        $this->actingAs(User::find(1))->get(str_replace('/versions/1/', '/versions/9/', $earlier))->assertNotFound();
+    }
+
+    public function test_hand_ins_are_posted_in_general_without_the_file(): void
+    {
+        $general = Conversation::where('research_group_id', 1)->where('name', 'general')->first();
+
+        $this->handIn(3, $this->chapter3)->assertCreated();
+
+        $message = Message::where('conversation_id', $general->id)->latest('id')->first();
+        $this->assertSame(3, $message->sender_id);
+        $this->assertSame('Handed in “Chapter 3 (Methodology) draft due”.', $message->text);
+        $this->assertNull($message->file);
+        $this->assertNull($message->group_file_id);
+        $this->actingAs(User::find(1))->getJson('/api/groups/1')->assertJsonPath('channels.0.unread', fn ($n) => $n >= 1);
     }
 
     public function test_work_handed_in_after_the_deadline_is_marked_late(): void
@@ -178,14 +206,31 @@ class DeliverableTest extends TestCase
             ->assertOk()->assertJsonPath('note', 'Interview guide is in the appendix.');
     }
 
-    public function test_deleting_a_deliverable_removes_the_files_handed_in(): void
+    public function test_deleting_a_deliverable_removes_every_version_handed_in(): void
     {
-        $file = DeliverableSubmission::where('group_deadline_id', $this->chapter3)->value('file');
+        $first = DeliverableSubmission::where('group_deadline_id', $this->chapter3)->value('file');
+        $this->handIn(1, $this->chapter3);
+        $latest = DeliverableSubmission::where('group_deadline_id', $this->chapter3)->value('file');
 
         $this->actingAs(User::find(4))->deleteJson("/api/groups/1/deadlines/{$this->chapter3}")->assertNoContent();
 
-        Storage::disk('local')->assertMissing('uploads/'.$file);
+        Storage::disk('local')->assertMissing('uploads/'.$first);
+        Storage::disk('local')->assertMissing('uploads/'.$latest);
         $this->assertSame(0, DeliverableSubmission::where('group_deadline_id', $this->chapter3)->count());
+        // Only Chapter 2's earlier version is left
+        $this->assertSame(1, DeliverableVersion::count());
+    }
+
+    public function test_deleting_the_group_removes_deliverable_files(): void
+    {
+        $files = [...DeliverableSubmission::pluck('file')->all(), ...DeliverableVersion::pluck('file')->all()];
+        $this->assertCount(3, $files);
+
+        $this->actingAs(User::find(4))->deleteJson('/api/groups/1')->assertNoContent();
+
+        foreach ($files as $file) {
+            Storage::disk('local')->assertMissing('uploads/'.$file);
+        }
     }
 
     public function test_organizers_create_deliverables(): void

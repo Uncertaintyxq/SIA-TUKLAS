@@ -35,6 +35,22 @@ export interface GroupDeadline {
   expected?: number | null;
 }
 
+/** An earlier version of a submission, with the review it got. */
+export interface DeliverableVersion {
+  version: number;
+  name: string;
+  size: number;
+  fileUrl: string;
+  note: string | null;
+  status: SubmissionStatus;
+  late: boolean;
+  submittedAt: string;
+  submittedBy: UserCard | null;
+  feedback: string | null;
+  reviewedBy: UserCard | null;
+  reviewedAt: string | null;
+}
+
 /** Work handed in against a deliverable. A group deliverable has one, shared by its students. */
 export interface DeliverableSubmission {
   id: number;
@@ -52,6 +68,8 @@ export interface DeliverableSubmission {
   feedback: string | null;
   reviewedBy: UserCard | null;
   reviewedAt: string | null;
+  /** Earlier versions, newest first */
+  history: DeliverableVersion[];
 }
 
 export interface DeliverableDetail {

@@ -30,5 +30,6 @@ Route::middleware(['auth:sanctum', 'account.ready'])->prefix('groups')->name('gr
     Route::put('/{id}/deadlines/{deadlineId}/submission', [DeliverableController::class, 'submit'])->whereNumber(['id', 'deadlineId'])->middleware('throttle:uploads')->name('deliverables.submit');
     Route::patch('/{id}/deadlines/{deadlineId}/submission', [DeliverableController::class, 'note'])->whereNumber(['id', 'deadlineId'])->name('deliverables.note');
     Route::get('/{id}/deadlines/{deadlineId}/submissions/{submissionId}/file', [DeliverableController::class, 'file'])->whereNumber(['id', 'deadlineId', 'submissionId'])->name('deliverables.file');
+    Route::get('/{id}/deadlines/{deadlineId}/submissions/{submissionId}/versions/{version}/file', [DeliverableController::class, 'versionFile'])->whereNumber(['id', 'deadlineId', 'submissionId', 'version'])->name('deliverables.version-file');
     Route::post('/{id}/deadlines/{deadlineId}/submissions/{submissionId}/review', [DeliverableController::class, 'review'])->whereNumber(['id', 'deadlineId', 'submissionId'])->name('deliverables.review');
 });

@@ -155,7 +155,7 @@ class GroupController extends Controller
     public function destroy(int $id): Response
     {
         $group = self::load($id, 'manage');
-        $files = $group->files()->pluck('file')->merge(DeliverableSubmission::whereIn('group_deadline_id', $group->deadlines()->select('id'))->pluck('file'));
+        $files = $group->files()->pluck('file')->merge(DeliverableSubmission::filesOf(DeliverableSubmission::whereIn('group_deadline_id', $group->deadlines()->select('id'))));
         $group->delete();
         $files->each(fn ($f) => Uploads::delete($f));
 
@@ -324,9 +324,9 @@ class GroupController extends Controller
     {
         $deadline = self::load($id, 'organize')->deadlines()->find($deadlineId);
         if ($deadline !== null) {
-            $files = $deadline->deliverables()->pluck('file');
+            $files = DeliverableSubmission::filesOf($deadline->deliverables());
             $deadline->delete();
-            $files->each(fn ($f) => Uploads::delete($f));
+            array_map(Uploads::delete(...), $files);
         }
 
         return response()->noContent();

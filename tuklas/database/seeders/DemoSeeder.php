@@ -11,6 +11,7 @@ use App\Models\Conversation;
 use App\Models\ConversationMember;
 use App\Models\DefenseStage;
 use App\Models\DeliverableSubmission;
+use App\Models\DeliverableVersion;
 use App\Models\Event;
 use App\Models\GroupActivity;
 use App\Models\GroupDeadline;
@@ -64,7 +65,7 @@ class DemoSeeder extends Seeder
     /** App tables, emptied before seeding, children before parents. Laravel's own tables (sessions, cache, jobs) are kept. */
     public const TABLES = [
         'announcement_reads', 'announcement_attachments', 'announcements', 'messages', 'conversation_members',
-        'conversations', 'group_activities', 'publication_authors', 'publications', 'notifications', 'deliverable_submissions', 'group_deadlines',
+        'conversations', 'group_activities', 'publication_authors', 'publications', 'notifications', 'deliverable_versions', 'deliverable_submissions', 'group_deadlines',
         'group_files', 'group_members', 'research_groups', 'ads', 'event_registrations', 'events',
         'opportunity_applications', 'opportunities', 'saved_works', 'reactions', 'comments', 'revision_items',
         'reviews', 'defense_stages', 'work_versions', 'work_authors', 'works', 'academic_links', 'profiles',
@@ -312,10 +313,14 @@ class DemoSeeder extends Seeder
             'instructions' => 'Upload your own methodology chapter as a PDF or Word file. Include your sampling plan and the consent form you will use with barangay partners.']);
         $chapter2 = GroupDeadline::create(['research_group_id' => 1, 'title' => 'Chapter 2 (Review of Related Literature)', 'due_at' => $this->ago(10), 'submission_mode' => 'group',
             'instructions' => 'One combined RRL for the lab, with every source in APA 7.']);
-        $this->deliverable($chapter2, self::ANDREA, 'DIL Chapter 2 RRL.pdf', $this->ago(11), [
+        $rrl = $this->deliverable($chapter2, self::ANDREA, 'DIL Chapter 2 RRL.pdf', $this->ago(11), [
             'version' => 2, 'status' => 'accepted', 'feedback' => 'Well organised. The section on LoRa field studies is especially strong.',
             'reviewed_by_id' => self::SANTOS, 'reviewed_at' => $this->ago(8),
         ]);
+        DeliverableVersion::create(['deliverable_submission_id' => $rrl->id, 'version' => 1, 'student_id' => self::KIM, 'file' => $this->placeholderPdf(),
+            'name' => 'DIL Chapter 2 RRL (first draft).pdf', 'type' => 'application/pdf', 'size' => strlen(self::PLACEHOLDER_PDF), 'status' => 'needs_revision',
+            'feedback' => 'Group the sources by theme instead of by year, and add the 2021 NDRRMC report.', 'reviewed_by_id' => self::SANTOS,
+            'reviewed_at' => $this->ago(13), 'submitted_at' => $this->ago(15)]);
         $this->deliverable($chapter3, self::ANDREA, 'Villanueva Chapter 3 draft.pdf', $this->ago(2), [
             'note' => 'I still need to finalise the sample size with the barangay captain.', 'status' => 'needs_revision',
             'feedback' => 'Good start. Add how you will choose the households, and attach the consent form in Filipino as well.',
@@ -328,15 +333,24 @@ class DemoSeeder extends Seeder
         GroupDeadline::create(['research_group_id' => 2, 'title' => 'Folio manuscripts due', 'due_at' => $this->ahead(25)]);
     }
 
-    /** A deliverable handed in, with a small placeholder PDF on the private disk. */
-    private function deliverable(GroupDeadline $deadline, int $student, string $name, CarbonImmutable $at, array $fields): void
+    /** A one-page blank PDF, stored for demo deliverables. */
+    private const PLACEHOLDER_PDF = "%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n"
+        ."3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 595 842]>>endobj\ntrailer<</Root 1 0 R>>\n%%EOF\n";
+
+    /** Saves the placeholder PDF on the private disk and returns its stored name. */
+    private function placeholderPdf(): string
     {
         $file = Str::uuid()->toString().'.pdf';
-        $pdf = "%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n"
-            ."3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 595 842]>>endobj\ntrailer<</Root 1 0 R>>\n%%EOF\n";
-        Storage::disk('local')->put('uploads/'.$file, $pdf);
-        DeliverableSubmission::create(['group_deadline_id' => $deadline->id, 'student_id' => $student, 'file' => $file, 'name' => $name,
-            'type' => 'application/pdf', 'size' => strlen($pdf), 'submitted_at' => $at, ...$fields]);
+        Storage::disk('local')->put('uploads/'.$file, self::PLACEHOLDER_PDF);
+
+        return $file;
+    }
+
+    /** A deliverable handed in, with the placeholder PDF as its file. */
+    private function deliverable(GroupDeadline $deadline, int $student, string $name, CarbonImmutable $at, array $fields): DeliverableSubmission
+    {
+        return DeliverableSubmission::create(['group_deadline_id' => $deadline->id, 'student_id' => $student, 'file' => $this->placeholderPdf(), 'name' => $name,
+            'type' => 'application/pdf', 'size' => strlen(self::PLACEHOLDER_PDF), 'submitted_at' => $at, ...$fields]);
     }
 
     private function portfolios(): void

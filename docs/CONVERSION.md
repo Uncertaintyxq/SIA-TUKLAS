@@ -213,8 +213,10 @@ branch rule; the deployment plan is in [DEPLOYMENT.md](DEPLOYMENT.md).
 - 2026-11-01: `feat/group-deliverables`. A group deadline can collect work: `submission_mode`
   none (a reminder), each (every student hands in their own) or group (one shared submission),
   with optional instructions. Students hand in a file plus an optional note; handing in again
-  replaces the file, counts a version and restarts the review; work after the due date is marked
-  late. The adviser, mentors and admins see every submission and who is missing, and accept or
+  counts a version and restarts the review, and the earlier file stays in the history with the
+  feedback it got (`deliverable_versions`); work after the due date is marked late. Each hand-in
+  is posted in the group's #general by the student (title and version only, never the file or
+  note). The adviser, mentors and admins see every submission and who is missing, and accept or
   ask for a revision with feedback (required for a revision); students and reviewers are
   notified (`group_deliverable`) with a link that opens the deliverable. Students see only their
   own submission, or their group's; the files are served through the same check. Notes and
@@ -223,7 +225,8 @@ branch rule; the deployment plan is in [DEPLOYMENT.md](DEPLOYMENT.md).
   policy abilities `submit` / `review`. Tests now use a fake disk (they used to write uploads into
   `storage/`). Fix found on the way: with Reverb not running, any request that sent a
   notification answered 500 after saving; live updates are now best effort and a failure is
-  logged. 121 tests pass; checked end to end through the proxy.
+  logged. `Chat::post` now saves every chat message (the chat controller uses it too). 123 tests
+  pass; checked end to end through the proxy.
 
 ## How the code is laid out (for the next modules)
 

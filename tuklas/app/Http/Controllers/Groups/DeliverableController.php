@@ -8,11 +8,13 @@ use App\Enums\SubmissionStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserCardResource;
 use App\Models\DeliverableSubmission;
+use App\Models\DeliverableVersion;
 use App\Models\GroupDeadline;
 use App\Models\GroupMember;
 use App\Models\ResearchGroup;
 use App\Models\User;
 use App\Support\Cards;
+use App\Support\Chat;
 use App\Support\Groups;
 use App\Support\Notifier;
 use App\Support\Uploads;
@@ -28,7 +30,9 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 /**
  * Deliverables: students hand in work against a group deadline, one submission each or one for the
  * group; the adviser and mentors accept it or ask for a revision. /api/groups/{id}/deadlines/{deadlineId}/…
- * Students see only their own submission (or their group's); reviewers see everyone's.
+ * Students see only their own submission (or their group's); reviewers see everyone's. Earlier
+ * versions are kept with their feedback. Each hand-in is also posted in the group's #general
+ * (title and version only, never the file or note, so classmates can't see each other's work).
  */
 class DeliverableController extends Controller
 {
@@ -42,7 +46,10 @@ class DeliverableController extends Controller
         /** @var User $me */
         $me = $request->user();
         [$group, $deadline] = $this->load($id, $deadlineId);
-        $deadline->load(['deliverables' => fn ($q) => $q->latest('submitted_at'), ...Cards::user('deliverables.student'), ...Cards::user('deliverables.reviewedBy')]);
+        $deadline->load([
+            'deliverables' => fn ($q) => $q->latest('submitted_at'), ...Cards::user('deliverables.student'), ...Cards::user('deliverables.reviewedBy'),
+            'deliverables.versions', ...Cards::user('deliverables.versions.student'), ...Cards::user('deliverables.versions.reviewedBy'),
+        ]);
         $review = Gate::allows('review', $group);
         $submit = Gate::allows('submit', $group) && $deadline->collectsWork();
         $mine = $submit ? $this->mine($deadline, $me) : null;
@@ -70,7 +77,8 @@ class DeliverableController extends Controller
 
     /**
      * PUT /api/groups/{id}/deadlines/{deadlineId}/submission — the file is the body (X-File-Name).
-     * Handing in again replaces the file, counts a new version and resets the status. Late is allowed, and marked.
+     * Handing in again keeps the earlier version (with its review), counts a new one and resets the
+     * status. Late is allowed, and marked.
      */
     public function submit(Request $request, int $id, int $deadlineId): JsonResponse
     {
@@ -86,7 +94,6 @@ class DeliverableController extends Controller
         }
 
         $upload = Uploads::store($request, 'any');
-        $oldFile = $existing?->file;
         $submission = DB::transaction(function () use ($existing, $deadline, $me, $upload) {
             $fields = [
                 'student_id' => $me->id, 'file' => $upload['file'], 'name' => $upload['name'], 'type' => $upload['type'], 'size' => $upload['size'],
@@ -95,17 +102,18 @@ class DeliverableController extends Controller
             if ($existing === null) {
                 return $deadline->deliverables()->create($fields);
             }
+            $existing->versions()->create($existing->only([
+                'version', 'student_id', 'file', 'name', 'type', 'size', 'note', 'status', 'feedback', 'reviewed_by_id', 'reviewed_at', 'submitted_at',
+            ]));
             $existing->update([...$fields, 'version' => $existing->version + 1]);
 
             return $existing;
         });
-        // A submission keeps only its latest file
-        Uploads::delete($oldFile);
-
         $submission->setRelation('deadline', $deadline);
         $late = $submission->isLate() ? ' (late)' : '';
         $again = $submission->version > 1 ? " again (version {$submission->version})" : '';
         Groups::log($group, $me->id, 'deliverable_submitted', "{$me->name} handed in “{$deadline->title}”{$again}{$late}.");
+        $this->tellTheGroup($group, $me, "Handed in “{$deadline->title}”{$again}{$late}.");
         Notifier::notify($this->reviewerIds($group), 'group_deliverable', "{$me->name} handed in “{$deadline->title}” in “{$group->name}”{$late}.", $this->link($group, $deadline), $me->id);
 
         return response()->json($this->submission($submission->fresh(['student.profile', 'reviewedBy.profile']), $deadline, $request), $existing === null ? 201 : 200);
@@ -133,6 +141,15 @@ class DeliverableController extends Controller
         $s = $this->visibleSubmission($request, $id, $deadlineId, $submissionId);
 
         return Uploads::serve($s->file, $s->type, $s->name, $request->query('download') === '1' || $s->type !== 'application/pdf');
+    }
+
+    /** GET …/submissions/{submissionId}/versions/{version}/file — an earlier version, same access as the submission */
+    public function versionFile(Request $request, int $id, int $deadlineId, int $submissionId, int $version): StreamedResponse
+    {
+        $v = $this->visibleSubmission($request, $id, $deadlineId, $submissionId)->versions()->where('version', $version)->first()
+            ?? throw new HttpException(404, self::NOT_FOUND);
+
+        return Uploads::serve($v->file, $v->type, $v->name, $request->query('download') === '1' || $v->type !== 'application/pdf');
     }
 
     /** POST /api/groups/{id}/deadlines/{deadlineId}/submissions/{submissionId}/review {status, feedback} */
@@ -200,6 +217,16 @@ class DeliverableController extends Controller
         return User::with('profile')->whereIn('id', $ids)->get()->sortBy(fn (User $u) => $ids->search($u->id))->values();
     }
 
+    /** A line in the group's #general from the student, so the group sees the work coming in. */
+    private function tellTheGroup(ResearchGroup $group, User $me, string $text): void
+    {
+        Groups::ensureGeneralChannel($group);
+        $general = $group->channels()->where('name', 'general')->first();
+        if ($general !== null) {
+            Chat::post($general, $me->id, ['text' => $text]);
+        }
+    }
+
     /** @return list<int> */
     private function reviewerIds(ResearchGroup $group): array
     {
@@ -223,23 +250,40 @@ class DeliverableController extends Controller
         if ($s === null) {
             return null;
         }
-        $s->setRelation('deadline', $deadline)->loadMissing([...Cards::user('student'), ...Cards::user('reviewedBy')]);
+        $s->setRelation('deadline', $deadline)->loadMissing([...Cards::user('student'), ...Cards::user('reviewedBy'), 'versions', ...Cards::user('versions.student'), ...Cards::user('versions.reviewedBy')]);
+        $fileUrl = "/api/groups/{$deadline->research_group_id}/deadlines/{$deadline->id}/submissions/{$s->id}/file";
+        $card = fn (?User $u) => $u ? (new UserCardResource($u))->resolve($request) : null;
 
         return [
             'id' => $s->id,
             'name' => $s->name,
             'size' => $s->size,
             'type' => $s->type,
-            'fileUrl' => "/api/groups/{$deadline->research_group_id}/deadlines/{$deadline->id}/submissions/{$s->id}/file",
+            'fileUrl' => $fileUrl,
             'note' => $s->note,
             'version' => $s->version,
             'status' => $s->status->value,
             'late' => $s->isLate(),
             'submittedAt' => $s->submitted_at->toISOString(),
-            'submittedBy' => (new UserCardResource($s->student))->resolve($request),
+            'submittedBy' => $card($s->student),
             'feedback' => $s->feedback,
-            'reviewedBy' => $s->reviewedBy ? (new UserCardResource($s->reviewedBy))->resolve($request) : null,
+            'reviewedBy' => $card($s->reviewedBy),
             'reviewedAt' => $s->reviewed_at?->toISOString(),
+            // Earlier versions, newest first, each with the review it got
+            'history' => $s->versions->map(fn (DeliverableVersion $v) => [
+                'version' => $v->version,
+                'name' => $v->name,
+                'size' => $v->size,
+                'fileUrl' => str_replace('/file', "/versions/{$v->version}/file", $fileUrl),
+                'note' => $v->note,
+                'status' => $v->status->value,
+                'late' => $v->submitted_at->gt($deadline->due_at),
+                'submittedAt' => $v->submitted_at->toISOString(),
+                'submittedBy' => $card($v->student),
+                'feedback' => $v->feedback,
+                'reviewedBy' => $card($v->reviewedBy),
+                'reviewedAt' => $v->reviewed_at?->toISOString(),
+            ])->all(),
         ];
     }
 }
