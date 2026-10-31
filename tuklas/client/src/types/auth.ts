@@ -34,6 +34,14 @@ export interface PublicUser {
   headline: string;
   /** What this person may do beyond their role's basics */
   rights: EducatorRights;
+  emailVerified: boolean;
+  /** The email must be confirmed before anything else works (false in demo mode). */
+  emailVerificationRequired: boolean;
+  twoFactorEnabled: boolean;
+  /** Admins and educators must turn on 2FA before anything else works (false in demo mode). */
+  twoFactorRequired: boolean;
+  /** Has accepted the current version of the privacy notice. */
+  privacyAccepted: boolean;
 }
 
 export interface EducatorRights {

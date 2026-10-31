@@ -264,3 +264,11 @@
   transform: none;
   background-image: none;
 }
+
+.forgot {
+  justify-self: end;
+  margin-top: calc(-1 * var(--s-2));
+  color: var(--action-text);
+  font-size: var(--fs-small);
+  font-weight: 600;
+}

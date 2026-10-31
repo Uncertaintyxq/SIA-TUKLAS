@@ -1,12 +1,12 @@
 /**
- * UserMenu — the account popover with theme, look, demo reset and log out.
+ * UserMenu — the account popover with theme, look, account security, demo reset and log out.
  * Used in the top bar and the tab rail; closes on outside click or Escape.
  */
 import { useEffect, useId, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import clsx from 'clsx';
-import { LogOut, Monitor, Moon, RotateCcw, Sun } from 'lucide-react';
+import { LogOut, Monitor, Moon, RotateCcw, ShieldCheck, Sun } from 'lucide-react';
 import { useLogout, useResetDemo, type PublicUser } from '../../api/auth';
 import { usePrefs } from '../../lib/prefs';
 import { roleLabel } from '../../lib/format';
@@ -106,6 +106,17 @@ export function UserMenu({
               />
             </div>
             <div className={styles.actions}>
+              <button
+                type="button"
+                className={styles.item}
+                onClick={() => {
+                  setOpen(false);
+                  navigate('/account');
+                }}
+              >
+                <ShieldCheck size={18} aria-hidden="true" />
+                Account and security
+              </button>
               {demoMode && (
                 <button
                   type="button"
