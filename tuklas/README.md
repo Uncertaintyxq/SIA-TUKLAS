@@ -9,6 +9,9 @@ See `PLAN.md` for the full build plan and [`reference/`](reference/README.md) fo
 
 ## Run it locally
 
+**New here? Start with [`docs/GETTING_STARTED.md`](../docs/GETTING_STARTED.md)**: what to install, how to run
+and test the Laravel API, and what's left to build. The steps below run the React app on the old Node server.
+
 Requires Node 22+ and Docker Desktop (or MySQL 8+, see below).
 
 ```bash
