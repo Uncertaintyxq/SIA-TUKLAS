@@ -44,6 +44,8 @@ export function LoginPage() {
   const signIn = (creds: { email: string; password: string }) =>
     login.mutate(creds, {
       onSuccess: ({ user }) => {
+        // The code screen comes with feat/client-account-screens. Demo mode skips 2FA.
+        if (!user) return toast('This account uses two-factor sign-in. Code entry isn’t available in this version yet.', 'info');
         toast(`Welcome back, ${firstName(user.name)}.`, 'success');
         navigate(from, { replace: true });
       },

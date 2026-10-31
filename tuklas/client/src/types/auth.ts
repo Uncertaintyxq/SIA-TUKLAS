@@ -14,7 +14,12 @@ export interface SignupInput {
   password: string;
   role: 'student' | 'educator';
   program: string;
+  /** Consent to the privacy notice (Data Privacy Act). The server refuses signup without it. */
+  privacy: boolean;
 }
+
+/** A login either signs in, or, when the account has 2FA, asks for the code first. */
+export type LoginResult = { user: PublicUser; twoFactor: false } | { user: null; twoFactor: true };
 
 /** The user as the API returns it — never includes the password hash. */
 export interface PublicUser {
