@@ -10,6 +10,7 @@ use App\Models\Comment;
 use App\Models\Conversation;
 use App\Models\ConversationMember;
 use App\Models\DefenseStage;
+use App\Models\DeliverableSubmission;
 use App\Models\Event;
 use App\Models\GroupActivity;
 use App\Models\GroupDeadline;
@@ -33,6 +34,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 /**
  * Wipes all app data and loads the prototype's demo people, works, groups, announcements and chat.
@@ -61,7 +64,7 @@ class DemoSeeder extends Seeder
     /** App tables, emptied before seeding, children before parents. Laravel's own tables (sessions, cache, jobs) are kept. */
     public const TABLES = [
         'announcement_reads', 'announcement_attachments', 'announcements', 'messages', 'conversation_members',
-        'conversations', 'group_activities', 'publication_authors', 'publications', 'notifications', 'group_deadlines',
+        'conversations', 'group_activities', 'publication_authors', 'publications', 'notifications', 'deliverable_submissions', 'group_deadlines',
         'group_files', 'group_members', 'research_groups', 'ads', 'event_registrations', 'events',
         'opportunity_applications', 'opportunities', 'saved_works', 'reactions', 'comments', 'revision_items',
         'reviews', 'defense_stages', 'work_versions', 'work_authors', 'works', 'academic_links', 'profiles',
@@ -305,12 +308,35 @@ class DemoSeeder extends Seeder
             GroupMember::create(['research_group_id' => 1, 'user_id' => $user, 'role' => $role, 'added_at' => $this->ago($daysAgo)]);
         }
         GroupDeadline::create(['research_group_id' => 1, 'title' => 'Lab meeting: bring your progress slides', 'due_at' => $this->ahead(3)]);
-        GroupDeadline::create(['research_group_id' => 1, 'title' => 'Chapter 3 (Methodology) draft due', 'due_at' => $this->ahead(7)]);
+        $chapter3 = GroupDeadline::create(['research_group_id' => 1, 'title' => 'Chapter 3 (Methodology) draft due', 'due_at' => $this->ahead(7), 'submission_mode' => 'each',
+            'instructions' => 'Upload your own methodology chapter as a PDF or Word file. Include your sampling plan and the consent form you will use with barangay partners.']);
+        $chapter2 = GroupDeadline::create(['research_group_id' => 1, 'title' => 'Chapter 2 (Review of Related Literature)', 'due_at' => $this->ago(10), 'submission_mode' => 'group',
+            'instructions' => 'One combined RRL for the lab, with every source in APA 7.']);
+        $this->deliverable($chapter2, self::ANDREA, 'DIL Chapter 2 RRL.pdf', $this->ago(11), [
+            'version' => 2, 'status' => 'accepted', 'feedback' => 'Well organised. The section on LoRa field studies is especially strong.',
+            'reviewed_by_id' => self::SANTOS, 'reviewed_at' => $this->ago(8),
+        ]);
+        $this->deliverable($chapter3, self::ANDREA, 'Villanueva Chapter 3 draft.pdf', $this->ago(2), [
+            'note' => 'I still need to finalise the sample size with the barangay captain.', 'status' => 'needs_revision',
+            'feedback' => 'Good start. Add how you will choose the households, and attach the consent form in Filipino as well.',
+            'reviewed_by_id' => self::SANTOS, 'reviewed_at' => $this->ago(1),
+        ]);
 
         ResearchGroup::create(['id' => 2, 'adviser_id' => self::AQUINO, 'name' => 'Tinig Writers Circle',
             'description' => 'Student writers preparing work for the Tinig literary folio, Vol. 7.', 'created_at' => $this->ago(45)]);
         GroupMember::create(['research_group_id' => 2, 'user_id' => self::PAOLO, 'role' => 'leader', 'added_at' => $this->ago(45)]);
         GroupDeadline::create(['research_group_id' => 2, 'title' => 'Folio manuscripts due', 'due_at' => $this->ahead(25)]);
+    }
+
+    /** A deliverable handed in, with a small placeholder PDF on the private disk. */
+    private function deliverable(GroupDeadline $deadline, int $student, string $name, CarbonImmutable $at, array $fields): void
+    {
+        $file = Str::uuid()->toString().'.pdf';
+        $pdf = "%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n"
+            ."3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 595 842]>>endobj\ntrailer<</Root 1 0 R>>\n%%EOF\n";
+        Storage::disk('local')->put('uploads/'.$file, $pdf);
+        DeliverableSubmission::create(['group_deadline_id' => $deadline->id, 'student_id' => $student, 'file' => $file, 'name' => $name,
+            'type' => 'application/pdf', 'size' => strlen($pdf), 'submitted_at' => $at, ...$fields]);
     }
 
     private function portfolios(): void

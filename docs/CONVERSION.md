@@ -117,7 +117,7 @@ branch rule; the deployment plan is in [DEPLOYMENT.md](DEPLOYMENT.md).
 | Feed and opportunities | `routes/feed.ts` | ☑ | ☑ | |
 | Events and ads | `routes/events.ts` | ☑ | ☑ | |
 | Research groups | `routes/groups.ts`, `policies/groups.ts` | ☑ | ☑ | |
-| Group deliverables (new: submissions against a group deadline) | new | ☐ | ☐ | |
+| Group deliverables (new: submissions against a group deadline) | new | ☑ | ☑ | |
 | Announcements | `routes/announcements.ts` | ☑ | ☑ | |
 | Chat and real-time (server side) | `routes/chat.ts`, `realtime.ts` | ☑ | ☑ | |
 | Publications | `routes/publications.ts` | ☑ | ☑ | |
@@ -209,6 +209,21 @@ branch rule; the deployment plan is in [DEPLOYMENT.md](DEPLOYMENT.md).
   flows were checked end to end through the proxy with `DEMO_MODE=false` (2FA setup with a real
   TOTP code, recovery-code login, verification link, reset link, sessions, export, privacy).
   The privacy notice text is a draft until the Data Privacy Act paperwork is done.
+
+- 2026-11-01: `feat/group-deliverables`. A group deadline can collect work: `submission_mode`
+  none (a reminder), each (every student hands in their own) or group (one shared submission),
+  with optional instructions. Students hand in a file plus an optional note; handing in again
+  replaces the file, counts a version and restarts the review; work after the due date is marked
+  late. The adviser, mentors and admins see every submission and who is missing, and accept or
+  ask for a revision with feedback (required for a revision); students and reviewers are
+  notified (`group_deliverable`) with a link that opens the deliverable. Students see only their
+  own submission, or their group's; the files are served through the same check. Notes and
+  feedback are encrypted. Deleting a deliverable or the group deletes the files handed in.
+  New: `DeliverableController`, `DeliverableSubmission`, `SubmissionMode`, `SubmissionStatus`,
+  policy abilities `submit` / `review`. Tests now use a fake disk (they used to write uploads into
+  `storage/`). Fix found on the way: with Reverb not running, any request that sent a
+  notification answered 500 after saving; live updates are now best effort and a failure is
+  logged. 121 tests pass; checked end to end through the proxy.
 
 ## How the code is laid out (for the next modules)
 

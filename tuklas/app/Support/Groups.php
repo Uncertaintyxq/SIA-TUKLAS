@@ -14,7 +14,8 @@ class Groups
 {
     /**
      * Actions: group_created, member_added, member_removed, member_left, role_changed, file_shared,
-     * file_deleted, deadline_added, channel_created, channel_deleted, announcement_posted.
+     * file_deleted, deadline_added, deliverable_submitted, deliverable_reviewed, channel_created,
+     * channel_deleted, announcement_posted.
      */
     public static function log(ResearchGroup $group, int $actorId, string $action, string $detail): void
     {

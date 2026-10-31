@@ -1,12 +1,13 @@
 /**
  * GroupPage — /groups/:id. A research group's workspace: chat channels with threads, group announcements,
- * the shared file repository, deadlines and an activity log, with members and their roles alongside.
+ * the shared file repository, deadlines and deliverables, and an activity log, with members and their roles alongside.
  * What each person can do comes from the server (`can`), which applies the group rules.
  */
 import { useState, type FormEvent } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import clsx from 'clsx';
-import { CalendarPlus, Download, FileText, Hash, LogOut, Megaphone, Plus, Trash2, UserMinus } from 'lucide-react';
+import { CalendarPlus, Download, FileText, Hash, LogOut, Megaphone, PackageOpen, Plus, Trash2, UserMinus } from 'lucide-react';
+import type { GroupDeadline, SubmissionMode } from '../types/groups';
 import { useMe } from '../api/auth';
 import {
   useAddDeadline,
@@ -24,6 +25,7 @@ import {
   type GroupRole,
 } from '../api/groups';
 import { AnnouncementList } from '../components/announcements/AnnouncementList';
+import { DeliverablePanel, modeLabel, statusLabel, statusTone } from '../components/groups/DeliverablePanel';
 import { ChatView } from '../components/chat/ChatView';
 import { PageHeader } from '../components/layout/PageHeader';
 import { Person } from '../components/people/Person';
@@ -32,7 +34,7 @@ import { Badge } from '../components/ui/Badge';
 import { Button, ButtonLink } from '../components/ui/Button';
 import { Chips } from '../components/ui/Chips';
 import { EmptyState } from '../components/ui/EmptyState';
-import { SelectField, TextField } from '../components/ui/Field';
+import { SelectField, TextAreaField, TextField } from '../components/ui/Field';
 import { Sheet, SheetEmpty } from '../components/ui/Sheet';
 import { Skeleton } from '../components/ui/Skeleton';
 import { useToast } from '../components/ui/Toast';
@@ -115,14 +117,14 @@ export function GroupPage() {
               { value: 'chat', label: 'Chat', count: unread || undefined },
               { value: 'announcements', label: 'Announcements' },
               { value: 'files', label: 'Files', count: g.files.length },
-              { value: 'deadlines', label: 'Deadlines', count: g.deadlines.length },
+              { value: 'deadlines', label: 'Deadlines', count: g.deadlines.length || undefined },
               { value: 'activity', label: 'Activity' },
             ]}
           />
           {tab === 'chat' && <Channels group={g} />}
           {tab === 'announcements' && <GroupAnnouncements group={g} />}
           {tab === 'files' && <Files groupId={g.id} files={g.files} />}
-          {tab === 'deadlines' && <Deadlines groupId={g.id} deadlines={g.deadlines} organize={g.can.organize} />}
+          {tab === 'deadlines' && <Deadlines group={g} />}
           {tab === 'activity' && <Activity items={g.activity} />}
         </div>
         <aside className={styles.side}>
@@ -312,11 +314,29 @@ function Activity({ items }: { items: GroupDetail['activity'] }) {
   );
 }
 
-// ---------- Deadlines ----------
+// ---------- Deadlines and deliverables ----------
 
-function Deadlines({ groupId, deadlines, organize }: { groupId: number; deadlines: GroupDetail['deadlines']; organize: boolean }) {
+/** Where a deliverable stands, from the viewer's side: their own work, or how many handed in. */
+function DeliverableBadge({ deadline: d, group: g }: { deadline: GroupDeadline; group: GroupDetail }) {
+  if (d.submissionMode === 'none') return null;
+  if (g.can.review && d.expected != null) {
+    const done = (d.handedIn ?? 0) >= d.expected;
+    const text = d.submissionMode === 'group' ? (done ? 'Handed in' : 'Not handed in') : `${d.handedIn ?? 0} of ${d.expected} handed in`;
+    return <Badge tone={done ? 'ok' : 'neutral'}>{text}</Badge>;
+  }
+  if (!g.can.submit) return null;
+  if (d.myStatus) return <Badge tone={statusTone[d.myStatus]}>{statusLabel[d.myStatus]}</Badge>;
+  return new Date(d.dueAt).getTime() < Date.now() ? <Badge tone="bad">Missing</Badge> : <Badge>To do</Badge>;
+}
+
+function Deadlines({ group: g }: { group: GroupDetail }) {
+  const [params, setParams] = useSearchParams();
+  const open = Number(params.get('deadline')) || null;
+  const select = (id: number | null) => setParams(id ? { tab: 'deadlines', deadline: String(id) } : { tab: 'deadlines' }, { replace: true });
   const [title, setTitle] = useState('');
   const [due, setDue] = useState(() => isoDate(new Date(Date.now() + 7 * 86_400_000).toISOString()));
+  const [mode, setMode] = useState<SubmissionMode>('none');
+  const [instructions, setInstructions] = useState('');
   const add = useAddDeadline();
   const remove = useDeleteDeadline();
   const toast = useToast();
@@ -325,55 +345,98 @@ function Deadlines({ groupId, deadlines, organize }: { groupId: number; deadline
   const submit = (e: FormEvent) => {
     e.preventDefault();
     add.mutate(
-      { id: groupId, title, dueAt: `${due}T23:59:00` },
+      { id: g.id, title, dueAt: `${due}T23:59:00`, submissionMode: mode, instructions: mode === 'none' ? '' : instructions },
       {
         onSuccess: () => {
           setTitle('');
-          toast('Deadline added. Members have been notified.', 'success');
+          setInstructions('');
+          toast(mode === 'none' ? 'Deadline added. Members have been notified.' : 'Deliverable added. Members have been notified.', 'success');
         },
         onError: (err) => toast(err.message, 'error'),
       },
     );
   };
 
+  const del = (d: GroupDeadline) => {
+    const question = d.submissionMode === 'none' ? `Remove “${d.title}”?` : `Remove “${d.title}” and all the work handed in for it?`;
+    if (!window.confirm(question)) return;
+    remove.mutate({ id: g.id, deadlineId: d.id }, { onSuccess: () => open === d.id && select(null), onError: (err) => toast(err.message, 'error') });
+  };
+
   return (
-    <Sheet title="Deadlines" aside={String(deadlines.length)} flush>
-      {deadlines.length === 0 ? (
-        <SheetEmpty>No deadlines yet.</SheetEmpty>
-      ) : (
-        <ul className={styles.list}>
-          {deadlines.map((d) => {
-            const past = new Date(d.dueAt).getTime() < now;
-            return (
-              <li key={d.id} className={clsx(styles.deadline, past && styles.past)}>
-                <time className={styles.due} dateTime={d.dueAt}>
-                  {isoDate(d.dueAt)}
-                </time>
-                <span className={styles.deadlineText}>
-                  <span className={styles.deadlineTitle}>{d.title}</span>
-                  <span className={styles.rel}>{past ? `Was due ${relTime(d.dueAt)}` : `Due ${relTime(d.dueAt)}`}</span>
-                </span>
-                {organize && (
-                  <button type="button" className={styles.iconButton} onClick={() => remove.mutate({ id: groupId, deadlineId: d.id })}>
-                    <Trash2 size={16} aria-hidden="true" />
-                    <span className="sr-only">Remove {d.title}</span>
-                  </button>
-                )}
-              </li>
-            );
-          })}
-        </ul>
-      )}
-      {organize && (
-        <form className={styles.inlineForm} onSubmit={submit}>
-          <TextField label="New deadline" value={title} onChange={(e) => setTitle(e.target.value)} required minLength={3} maxLength={160} placeholder="e.g. Chapter 2 draft" className={styles.grow} />
-          <TextField label="Due" type="date" value={due} onChange={(e) => setDue(e.target.value)} required />
-          <Button type="submit" icon={<CalendarPlus size={16} aria-hidden="true" />} loading={add.isPending}>
-            Add
-          </Button>
-        </form>
-      )}
-    </Sheet>
+    <div className={styles.stack}>
+      {open !== null && g.deadlines.some((d) => d.id === open) && <DeliverablePanel key={open} groupId={g.id} deadlineId={open} onClose={() => select(null)} />}
+      <Sheet title="Deadlines and deliverables" aside={String(g.deadlines.length)} flush>
+        {g.deadlines.length === 0 ? (
+          <SheetEmpty>No deadlines yet.</SheetEmpty>
+        ) : (
+          <ul className={styles.list}>
+            {g.deadlines.map((d) => {
+              const past = new Date(d.dueAt).getTime() < now;
+              const deliverable = d.submissionMode !== 'none';
+              return (
+                <li key={d.id} className={clsx(styles.deadline, past && styles.past, open === d.id && styles.selected)}>
+                  <time className={styles.due} dateTime={d.dueAt}>
+                    {isoDate(d.dueAt)}
+                  </time>
+                  <span className={styles.deadlineText}>
+                    {deliverable ? (
+                      <button type="button" className={styles.deadlineLink} onClick={() => select(d.id)}>
+                        {d.title}
+                      </button>
+                    ) : (
+                      <span className={styles.deadlineTitle}>{d.title}</span>
+                    )}
+                    <span className={styles.rel}>
+                      {past ? `Was due ${relTime(d.dueAt)}` : `Due ${relTime(d.dueAt)}`}
+                      {deliverable && ` · ${modeLabel[d.submissionMode as Exclude<SubmissionMode, 'none'>]}`}
+                    </span>
+                  </span>
+                  <DeliverableBadge deadline={d} group={g} />
+                  {deliverable && (
+                    <button type="button" className={styles.iconButton} onClick={() => select(d.id)}>
+                      <PackageOpen size={16} aria-hidden="true" />
+                      <span className="sr-only">Open {d.title}</span>
+                    </button>
+                  )}
+                  {g.can.organize && (
+                    <button type="button" className={styles.iconButton} onClick={() => del(d)}>
+                      <Trash2 size={16} aria-hidden="true" />
+                      <span className="sr-only">Remove {d.title}</span>
+                    </button>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+        {g.can.organize && (
+          <form className={styles.inlineForm} onSubmit={submit}>
+            <TextField label="New deadline" value={title} onChange={(e) => setTitle(e.target.value)} required minLength={3} maxLength={160} placeholder="e.g. Chapter 2 draft" className={styles.grow} />
+            <TextField label="Due" type="date" value={due} onChange={(e) => setDue(e.target.value)} required />
+            <SelectField label="Students hand in" value={mode} onChange={(e) => setMode(e.target.value as SubmissionMode)}>
+              <option value="none">Nothing (a reminder)</option>
+              <option value="each">Their own work, each</option>
+              <option value="group">One for the group</option>
+            </SelectField>
+            {mode !== 'none' && (
+              <TextAreaField
+                label="Instructions (optional)"
+                rows={2}
+                maxLength={2000}
+                value={instructions}
+                onChange={(e) => setInstructions(e.target.value)}
+                placeholder="What to hand in, the format, anything the reviewers will look for."
+                className={styles.full}
+              />
+            )}
+            <Button type="submit" icon={<CalendarPlus size={16} aria-hidden="true" />} loading={add.isPending}>
+              Add
+            </Button>
+          </form>
+        )}
+      </Sheet>
+    </div>
   );
 }
 

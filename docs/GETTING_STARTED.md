@@ -141,7 +141,7 @@ The full list, with the branch name to use for each item and the files it may to
 
 1. **React client** (`feat/client-*` branches): live updates through Reverb and the new chat
    search. (Shared types, the API connection and the account screens are done.)
-2. **Account deletion** (`feat/account-deletion`) and **group deliverables** (`feat/group-deliverables`).
+2. **Account deletion** (`feat/account-deletion`). (Group deliverables are done.)
 3. **Tooling**: Claude Code kit, CI on GitHub Actions, Larastan.
 4. **Remove the old Node server** (`chore/remove-node-server`), last.
 5. **Deployment** (`chore/deploy-*`), planned in [DEPLOYMENT.md](DEPLOYMENT.md).
