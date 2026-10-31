@@ -9,30 +9,24 @@ See `PLAN.md` for the full build plan and [`reference/`](reference/README.md) fo
 
 ## Run it locally
 
-**New here? Start with [`docs/GETTING_STARTED.md`](../docs/GETTING_STARTED.md)**: what to install, how to run
-and test the Laravel API, and what's left to build. The steps below run the React app on the old Node server.
-
-Requires Node 22+ and Docker Desktop (or MySQL 8+, see below).
+**Full steps: [`docs/GETTING_STARTED.md`](../docs/GETTING_STARTED.md)**, covering what to install (PHP 8.3+ via Herd,
+Composer, Node 22+, MySQL 8), how to run and test, and what's left to build. In short:
 
 ```bash
-npm install
-cp server/.env.example server/.env
-npm run db:up        # start MySQL 8 in Docker
-npm run db:reset     # create tables + load demo data
-npm run dev          # API on :4000, app on http://localhost:5173
+composer install && npm install
+cp .env.example .env && php artisan key:generate && php artisan reverb:install
+php artisan migrate:fresh --seed     # tables + demo data
+php artisan serve                    # API on :8000 (also run reverb:start and queue:work)
+npm run dev -w client                # the site on http://localhost:5173
 ```
-
-**No Docker?** If MySQL 8+ is installed (for example from [dev.mysql.com](https://dev.mysql.com/downloads/mysql/)),
-use `npm run db:local` instead of `npm run db:up`. It runs a separate MySQL just for Tuklas, with the same database
-and account, on the port in `DATABASE_URL` in `server/.env`. Run it again after restarting your computer. If another
-MySQL already uses port 3306, change that port (e.g. to 3307).
 
 Demo accounts (password `tuklas123`): `andrea@tuklas.edu`, `paolo@tuklas.edu`, `kim@tuklas.edu` (students),
 `msantos@tuklas.edu`, `raquino@tuklas.edu` (verified educators), `cjavier@tuklas.edu` (educator waiting for
 verification), `admin@tuklas.edu` (admin). "Reset demo data" in the account menu reloads them and deletes every other account.
 
-Uploaded files (work PDFs, CVs, photos, ad images, group files) are stored in `server/uploads/` (gitignored);
-the database keeps only their names. Work PDFs are served through the same privacy check as the work itself.
+Uploaded files (work PDFs, CVs, photos, ad images, group files) are stored on Laravel's private disk
+(`storage/app/private/`, gitignored); the database keeps only their names. Every file is served through the same
+privacy check as the thing it belongs to.
 
 ## What's built
 
