@@ -2,24 +2,22 @@
 
 What to install, how to run and test Tuklas on your machine, and what's left to build.
 
-**Where things stand (2026-10-31):** Tuklas is moving from a Node/Express server to a Laravel
-API. The Laravel API is finished and tested, but the React app still talks to the old Node
-server until the client branches in [TODO.md](TODO.md) are done. So for now there are two ways
-to run it:
+**Where things stand (2026-10-31):** Tuklas has moved from a Node/Express server to a Laravel
+API. The API is finished and tested, and the React app now talks to it. Still missing on the
+client: the 2FA, email-verification and password-reset screens, and live updates (see
+[TODO.md](TODO.md)). The old Node server in `server/` is no longer used and will be deleted.
 
-- **A. The Laravel API**, the new server. Test it with `php artisan test` or call its `/api`
-  endpoints. This is where new work goes.
-- **B. The React app on the old Node server**, to see and click through the current site.
+To run the site you start the Laravel API (section 3) and then the React app (section 4).
 
 ## 1. Install these
 
 | Tool | Version | Needed for | Get it |
 |---|---|---|---|
 | Git | any recent | Everything | [git-scm.com](https://git-scm.com/) |
-| PHP | **8.3 or newer**, with `intl`, `zip`, `sodium`, `pdo_mysql`, `pdo_sqlite`, `mbstring`, `fileinfo`, `openssl` | Laravel API (A) | **[Laravel Herd](https://herd.laravel.com/)** (Windows/macOS) installs PHP and Composer with these extensions on |
-| Composer | 2.x | Laravel API (A) | Included with Herd, or [getcomposer.org](https://getcomposer.org/) |
-| Node.js | **22 or newer** (with npm) | React app, old Node server (B) | [nodejs.org](https://nodejs.org/) |
-| MySQL | **8.x** | The real database (A and B) | **Docker Desktop** (uses the repo's `docker-compose.yml`), or the [MySQL 8 installer](https://dev.mysql.com/downloads/mysql/) |
+| PHP | **8.3 or newer**, with `intl`, `zip`, `sodium`, `pdo_mysql`, `pdo_sqlite`, `mbstring`, `fileinfo`, `openssl` | Laravel API | **[Laravel Herd](https://herd.laravel.com/)** (Windows/macOS) installs PHP and Composer with these extensions on |
+| Composer | 2.x | Laravel API | Included with Herd, or [getcomposer.org](https://getcomposer.org/) |
+| Node.js | **22 or newer** (with npm) | React app | [nodejs.org](https://nodejs.org/) |
+| MySQL | **8.x** | The database | **Docker Desktop** (uses the repo's `docker-compose.yml`), or the [MySQL 8 installer](https://dev.mysql.com/downloads/mysql/) |
 | VS Code | optional | Editing | Recommended extensions: PHP Intelephense, ESLint |
 | GitHub CLI | optional | `gh` commands for PRs | [cli.github.com](https://cli.github.com/) |
 
@@ -45,10 +43,10 @@ docker -v       # if you use Docker for MySQL
 git clone https://github.com/Uncertaintyxq/SIA-TUKLAS.git
 cd SIA-TUKLAS/tuklas          # the app lives in tuklas/
 composer install              # PHP packages (vendor/)
-npm install                   # JavaScript packages (React app, old Node server)
+npm install                   # JavaScript packages (React app)
 ```
 
-## 3. Run the Laravel API (A)
+## 3. Run the Laravel API
 
 ### 3a. Configure
 
@@ -102,20 +100,25 @@ vendor/bin/pint                     # format PHP before committing (PowerShell: 
 
 All tests must pass before a pull request is merged.
 
-## 4. Run the React app on the old Node server (B)
+## 4. Run the React app
 
-Until the client branches are done, this is how to see the site:
+With the Laravel API from 3c running, in a fourth terminal:
 
 ```bash
-cp server/.env.example server/.env
-npm run db:up                 # MySQL in Docker (or: npm run db:local, see README)
-npm run db:reset              # Node server's tables + demo data, in the `tuklas` database
-npm run dev                   # Node API on :4000, React app on http://localhost:5173
+npm run dev -w client         # the site on http://localhost:5173
 ```
+
+Open <http://localhost:5173>. Vite forwards `/api` and `/sanctum` to Laravel on `:8000`, so the
+browser sees one site and the sign-in cookies work. Use `npm run dev -w client`, not
+`npm run dev`: the root script still starts the old Node server too, until
+`chore/remove-node-server`.
+
+Not there yet: live updates (new messages appear after a refresh; `feat/client-realtime`) and
+the 2FA code screen (`feat/client-account-screens`). With `DEMO_MODE=true` neither blocks you.
 
 ## Demo accounts
 
-Password `tuklas123` for all, in both setups:
+Password `tuklas123` for all:
 
 | Email | Role |
 |---|---|
@@ -132,9 +135,9 @@ the 2FA requirement, so these accounts sign in straight away. Turn it off to tes
 The full list, with the branch name to use for each item and the files it may touch, is
 [TODO.md](TODO.md). In short:
 
-1. **React client on Laravel** (`feat/client-*` branches): shared types, API headers and proxy,
-   2FA / verification / password-reset / privacy screens, live updates through Reverb, the new
-   chat search. After these, the React app runs on the Laravel API.
+1. **React client** (`feat/client-*` branches): 2FA / verification / password-reset / sessions
+   screens, live updates through Reverb, the new chat search. (Shared types and the API
+   connection are done.)
 2. **Account deletion** (`feat/account-deletion`) and **group deliverables** (`feat/group-deliverables`).
 3. **Tooling**: Claude Code kit, CI on GitHub Actions, Larastan.
 4. **Remove the old Node server** (`chore/remove-node-server`), last.
@@ -163,4 +166,5 @@ someone is working on it. The full rule is at the top of [TODO.md](TODO.md).
 | `Unknown database 'tuklas_laravel'` | Run the `CREATE DATABASE` command in 3a |
 | Port 3306 already in use | Another MySQL is running; stop it, or change the port in `docker-compose.yml` and `.env` |
 | `MissingAttributeException` in a test | Strict mode caught a missing default; add it to the model's `$attributes` |
+| "Your session expired" (419) on every form | `APP_URL` in `.env` must be `http://localhost:5173` and `SANCTUM_STATEFUL_DOMAINS` must list `localhost:5173` (both in `.env.example`); then `php artisan config:clear` |
 | 403 with `"code": "two_factor_required"` | Expected for educators/admins when `DEMO_MODE=false`; set up 2FA or turn demo mode on |

@@ -126,7 +126,9 @@ branch rule; the deployment plan is in [DEPLOYMENT.md](DEPLOYMENT.md).
 | Demo reset | `routes/demo.ts` | ☑ | ☑ | |
 | Privacy: data export, sessions, consent, audit log | new | ☑ | ☑ | |
 | Privacy: account deletion (D13) | new | ☐ | ☐ | |
-| Client: types, proxy, CSRF, Echo, new security screens | `client/` | ☐ | ☐ | |
+| Client: own types (no `server/` imports) | `client/` | ☑ | typecheck | |
+| Client: proxy, CSRF, `/auth/register`, privacy consent at signup | `client/` | ☑ | smoke test | |
+| Client: Echo on Reverb, 2FA / verification / reset / sessions screens, chat search | `client/` | ☐ | ☐ | |
 | Remove Node server and Prisma | | ☐ | | |
 
 ## Client changes this causes
@@ -183,6 +185,13 @@ branch rule; the deployment plan is in [DEPLOYMENT.md](DEPLOYMENT.md).
 - 2026-10-30: Privacy endpoints: `GET /api/account/export` (JSON download), `GET /api/account/sessions`,
   `POST /api/account/sessions/logout-others` (needs the password), `POST /api/account/privacy`.
   106 tests pass. Next: client changes, then the Claude Code kit, then removing `server/`.
+- 2026-10-31: `Conversion` merged into `main`. `feat/client-types`: the client owns its API types
+  in `client/src/types/`. `feat/client-api-transport`: Vite proxies `/api` and `/sanctum` to
+  `:8000`; `client.ts` sends `Accept: application/json` and `X-XSRF-TOKEN` (fetching
+  `/sanctum/csrf-cookie` first, and once more after a 419); signup posts to `/auth/register` with
+  a privacy-consent checkbox and the 12-character hint; a 2FA login (`{two_factor: true}`) no
+  longer crashes the login page. `ApiError` now carries `code` and `issues`. Checked end to end
+  through the proxy: login, `/me`, feed, logout, register, and a write without the token (419).
 
 ## How the code is laid out (for the next modules)
 

@@ -22,3 +22,19 @@
   font-size: var(--fs-small);
   color: var(--text-faint);
 }
+
+.consent {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-2);
+  font-size: var(--fs-small);
+  cursor: pointer;
+}
+
+.consent input {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  accent-color: var(--action);
+}
