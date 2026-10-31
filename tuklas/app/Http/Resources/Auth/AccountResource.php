@@ -28,6 +28,8 @@ class AccountResource extends JsonResource
             'headline' => $this->headline,
             'rights' => $this->rights(),
             'emailVerified' => $this->hasVerifiedEmail(),
+            // What the React app must ask for before anything else works (EnsureAccountReady). Demo mode skips both.
+            'emailVerificationRequired' => ! $this->hasVerifiedEmail() && ! config('tuklas.demo_mode'),
             'twoFactorEnabled' => $this->hasTwoFactorEnabled(),
             'twoFactorRequired' => $this->mustUseTwoFactor() && ! config('tuklas.demo_mode'),
             'privacyAccepted' => $this->privacy_version === config('tuklas.privacy_version'),
