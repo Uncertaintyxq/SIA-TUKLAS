@@ -1,6 +1,6 @@
 /** APA 7 and MLA 9 citations for student works and educator research. */
-import type { PublicationCard } from '@server/schemas/publications';
-import type { WorkCard } from '@server/schemas/works';
+import type { PublicationCard } from '../types/publications';
+import type { WorkCard } from '../types/works';
 import { typeLabel } from './labels';
 
 /** What a citation needs, whichever kind of item it cites. */

@@ -5,7 +5,7 @@
 import { Link } from 'react-router-dom';
 import clsx from 'clsx';
 import { CalendarCheck, MapPin, Users } from 'lucide-react';
-import type { AdCard, EventCard as EventData, EventCategory } from '@server/schemas/events';
+import type { AdCard, EventCard as EventData, EventCategory } from '../../types/events';
 import { useRegister } from '../../api/events';
 import { fmtDateTime, monthShort, plural } from '../../lib/format';
 import { categoryLabel } from '../../lib/labels';

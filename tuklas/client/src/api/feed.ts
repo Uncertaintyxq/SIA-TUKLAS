@@ -3,7 +3,7 @@
  * Educators post opportunities; students apply to them or withdraw.
  */
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import type { FeedFilter, FeedItem, FeedResponse, MyOpportunity, OpportunityCard, OpportunityInput, SidebarResponse } from '@server/schemas/feed';
+import type { FeedFilter, FeedItem, FeedResponse, MyOpportunity, OpportunityCard, OpportunityInput, SidebarResponse } from '../types/feed';
 import { api } from './client';
 import { useAction } from './mutate';
 

@@ -2,7 +2,7 @@
  * Avatar — the round picture shown next to a person's name.
  */
 import clsx from 'clsx';
-import type { Role } from '@server/schemas/auth';
+import type { Role } from '../../types/auth';
 import { initials } from '../../lib/format';
 import styles from './Avatar.module.css';
 

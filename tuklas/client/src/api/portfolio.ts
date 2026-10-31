@@ -3,8 +3,8 @@
  * Covers profile fields, links, background, honors, photo and CV uploads, and the adviser list.
  */
 import { useQuery } from '@tanstack/react-query';
-import type { UserCard } from '@server/schemas/common';
-import type { BackgroundInput, HonorInput, LinksInput, Portfolio, ProfileInput } from '@server/schemas/profile';
+import type { UserCard } from '../types/common';
+import type { BackgroundInput, HonorInput, LinksInput, Portfolio, ProfileInput } from '../types/profile';
 import { api, upload } from './client';
 import { useAction } from './mutate';
 

@@ -18,7 +18,7 @@ import {
   Trash2,
   Upload,
 } from 'lucide-react';
-import type { BackgroundView, HonorView, LinkType } from '@server/schemas/profile';
+import type { BackgroundView, HonorView, LinkType } from '../types/profile';
 import { useMe } from '../api/auth';
 import { useDeleteBackground, useDeleteHonor, usePortfolio, useRemoveCv, useUploadCv, type Portfolio } from '../api/portfolio';
 import { BackgroundForm, HonorForm, LinksForm, ProfileForm } from '../components/portfolio/PortfolioForms';

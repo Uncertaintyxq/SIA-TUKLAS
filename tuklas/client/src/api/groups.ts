@@ -2,8 +2,8 @@
  * Groups API hooks — research groups and their members, files, deadlines and channels.
  */
 import { useQuery } from '@tanstack/react-query';
-import type { ChannelInput } from '@server/schemas/chat';
-import type { DeadlineInput, GroupDetail, GroupInput, GroupRole, GroupSummary } from '@server/schemas/groups';
+import type { ChannelInput } from '../types/chat';
+import type { DeadlineInput, GroupDetail, GroupInput, GroupRole, GroupSummary } from '../types/groups';
 import { api, upload } from './client';
 import { useAction } from './mutate';
 

@@ -1,7 +1,7 @@
 /**
  * WorkBadges — the colored type tag and status badge shown on works.
  */
-import type { WorkStatus, WorkType } from '@server/schemas/works';
+import type { WorkStatus, WorkType } from '../../types/works';
 import { statusLabel, typeLabel } from '../../lib/labels';
 import { Badge, type BadgeTone } from '../ui/Badge';
 

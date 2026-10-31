@@ -5,7 +5,7 @@
  */
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import type { RealtimeEvent } from '@server/schemas/realtime';
+import type { RealtimeEvent } from '../types/realtime';
 
 type Presence = Record<number, { online: boolean; lastSeenAt: string | null }>;
 
