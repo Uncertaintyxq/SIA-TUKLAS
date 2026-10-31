@@ -6,6 +6,7 @@ use App\Enums\Role;
 use App\Models\User;
 use Database\Seeders\DemoSeeder;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
+use Illuminate\Support\Facades\Storage;
 use Laravel\Fortify\Contracts\TwoFactorAuthenticationProvider;
 
 abstract class TestCase extends BaseTestCase
@@ -16,6 +17,8 @@ abstract class TestCase extends BaseTestCase
 
         // Requests come from the React app's origin, so Sanctum treats them as a cookie session (SPA auth).
         $this->withHeaders(['Referer' => config('app.url').'/']);
+        // Uploads and seeded files go to a throwaway disk, never storage/app/private
+        Storage::fake('local');
     }
 
     /**

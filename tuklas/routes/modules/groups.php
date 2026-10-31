@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Groups\DeliverableController;
 use App\Http\Controllers\Groups\GroupController;
 use Illuminate\Support\Facades\Route;
 
@@ -23,4 +24,11 @@ Route::middleware(['auth:sanctum', 'account.ready'])->prefix('groups')->name('gr
 
     Route::post('/{id}/deadlines', [GroupController::class, 'addDeadline'])->whereNumber('id')->name('deadlines.store');
     Route::delete('/{id}/deadlines/{deadlineId}', [GroupController::class, 'deleteDeadline'])->whereNumber(['id', 'deadlineId'])->name('deadlines.destroy');
+
+    // Deliverables: work handed in against a deadline (DeliverableController)
+    Route::get('/{id}/deadlines/{deadlineId}', [DeliverableController::class, 'show'])->whereNumber(['id', 'deadlineId'])->name('deadlines.show');
+    Route::put('/{id}/deadlines/{deadlineId}/submission', [DeliverableController::class, 'submit'])->whereNumber(['id', 'deadlineId'])->middleware('throttle:uploads')->name('deliverables.submit');
+    Route::patch('/{id}/deadlines/{deadlineId}/submission', [DeliverableController::class, 'note'])->whereNumber(['id', 'deadlineId'])->name('deliverables.note');
+    Route::get('/{id}/deadlines/{deadlineId}/submissions/{submissionId}/file', [DeliverableController::class, 'file'])->whereNumber(['id', 'deadlineId', 'submissionId'])->name('deliverables.file');
+    Route::post('/{id}/deadlines/{deadlineId}/submissions/{submissionId}/review', [DeliverableController::class, 'review'])->whereNumber(['id', 'deadlineId', 'submissionId'])->name('deliverables.review');
 });

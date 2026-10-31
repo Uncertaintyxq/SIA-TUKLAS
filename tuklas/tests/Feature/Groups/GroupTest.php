@@ -29,7 +29,7 @@ class GroupTest extends TestCase
         $this->actingAs(User::find(3))->getJson('/api/groups/1')
             ->assertOk()
             ->assertJsonPath('mySeat', 'member')
-            ->assertJsonPath('can', ['manage' => false, 'moderate' => false, 'organize' => false, 'announce' => false])
+            ->assertJsonPath('can', ['manage' => false, 'review' => false, 'submit' => true, 'moderate' => false, 'organize' => false, 'announce' => false])
             ->assertJsonPath('channels.0.name', 'general');
         $this->actingAs(User::find(6))->getJson('/api/groups/1')->assertOk()->assertJsonPath('mySeat', null)->assertJsonPath('can.manage', true);
 
