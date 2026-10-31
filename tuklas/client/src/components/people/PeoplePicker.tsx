@@ -4,8 +4,8 @@
  */
 import { useState } from 'react';
 import { Plus } from 'lucide-react';
-import type { Role } from '@server/schemas/auth';
-import type { UserCard } from '@server/schemas/common';
+import type { Role } from '../../types/auth';
+import type { UserCard } from '../../types/common';
 import { usePeopleSearch } from '../../api/portfolio';
 import { useDebounced } from '../../lib/useDebounced';
 import { roleBadge } from '../../lib/labels';

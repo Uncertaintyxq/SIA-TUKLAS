@@ -4,7 +4,7 @@
  */
 import clsx from 'clsx';
 import { BadgeCheck } from 'lucide-react';
-import type { Approval } from '@server/schemas/works';
+import type { Approval } from '../../types/works';
 import { fmtDate, isoDate } from '../../lib/format';
 import styles from './ApprovalLine.module.css';
 

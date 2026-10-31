@@ -5,7 +5,7 @@
 import { Link } from 'react-router-dom';
 import clsx from 'clsx';
 import { ListChecks, ShieldAlert, Users } from 'lucide-react';
-import type { WorkStatus } from '@server/schemas/works';
+import type { WorkStatus } from '../types/works';
 import { useMe } from '../api/auth';
 import { useReviewQueue, type MyWork } from '../api/works';
 import { PageHeader } from '../components/layout/PageHeader';

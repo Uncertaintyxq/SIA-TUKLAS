@@ -1,6 +1,6 @@
 /** Educator research API: the library, one publication, and the author's editor. */
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import type { PublicationCard, PublicationDetail, PublicationInput, PublicationVisibility } from '@server/schemas/publications';
+import type { PublicationCard, PublicationDetail, PublicationInput, PublicationVisibility } from '../types/publications';
 import { api, upload } from './client';
 import { useAction } from './mutate';
 

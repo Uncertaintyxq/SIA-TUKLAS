@@ -7,7 +7,7 @@ import type {
   AnnouncementsResponse,
   AnnouncementView,
   ReceiptsView,
-} from '@server/schemas/announcements';
+} from '../types/announcements';
 import { api, upload } from './client';
 import { useAction } from './mutate';
 

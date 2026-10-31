@@ -51,7 +51,7 @@ Paths are relative to `tuklas/` unless they start with `docs/` or `.github/`.
 
 | Branch | Scope | Depends on | Status |
 |---|---|---|---|
-| `feat/client-types` | Copy the types the client imports from `server/src/schemas/*` into `client/src/types/` and update the 36 importing files. No behaviour change. | | Not started |
+| `feat/client-types` | Copy the types the client imports from `server/src/schemas/*` into `client/src/types/` and update the 36 importing files. No behaviour change. | | Done |
 | `feat/client-api-transport` | Point the client at Laravel: `client/vite.config.ts` proxy to `:8000`; `client/src/api/client.ts` sends `Accept: application/json` and `X-XSRF-TOKEN`; `client/src/api/auth.ts` uses `/auth/register`. | `feat/client-types` | Not started |
 | `feat/client-account-screens` | Screens for 2FA setup and the login code challenge, email verification, forgot/reset password, privacy consent, active sessions and data export; route to them when the API answers `email_unverified` or `two_factor_required`. `client/src/pages/` (new pages), `client/src/components/account/` (new), `client/src/api/account.ts` (new), `client/src/App.tsx` (*shared*: routes only). | `feat/client-api-transport` | Not started |
 | `feat/client-realtime` | Replace the hand-written WebSocket with Laravel Echo on Reverb: `client/src/lib/realtime.tsx`, `client/package.json` (*shared*: adds `laravel-echo`, `pusher-js`). Presence for "online" dots. | `feat/client-api-transport` | Not started |

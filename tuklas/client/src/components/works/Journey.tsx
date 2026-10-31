@@ -3,7 +3,7 @@
  */
 import clsx from 'clsx';
 import { Check, X } from 'lucide-react';
-import type { WorkStatus } from '@server/schemas/works';
+import type { WorkStatus } from '../../types/works';
 import styles from './Journey.module.css';
 
 const position: Record<WorkStatus, number> = { draft: 0, submitted: 1, under_review: 2, revision: 2, approved: 3, rejected: 3 };

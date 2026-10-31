@@ -1,6 +1,6 @@
 /** Chat API: conversations, messages, threads, files and search. New messages arrive through lib/realtime. */
 import { keepPreviousData, useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { ConversationPage, ConversationSummary, MessageInput, MessageView, SearchHit, ThreadView } from '@server/schemas/chat';
+import type { ConversationPage, ConversationSummary, MessageInput, MessageView, SearchHit, ThreadView } from '../types/chat';
 import { api, upload } from './client';
 
 export type { ConversationPage, ConversationSummary, MessageView, SearchHit, ThreadView };

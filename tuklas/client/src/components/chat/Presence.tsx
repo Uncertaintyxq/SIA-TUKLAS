@@ -3,7 +3,7 @@
  * kept live by lib/realtime.
  */
 import clsx from 'clsx';
-import type { ChatPerson } from '@server/schemas/chat';
+import type { ChatPerson } from '../../types/chat';
 import { relTime } from '../../lib/format';
 import { usePresence } from '../../lib/realtime';
 import styles from './Presence.module.css';

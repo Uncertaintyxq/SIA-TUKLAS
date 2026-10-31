@@ -2,12 +2,12 @@
  * Labels — the display text (and some badge tones) for every enum the server sends.
  * Keyed by the server's schema types, so a new enum value fails the type check until it gets a label.
  */
-import type { UserCard } from '@server/schemas/common';
-import type { ApprovalStatus, EventCategory } from '@server/schemas/events';
+import type { UserCard } from '../types/common';
+import type { ApprovalStatus, EventCategory } from '../types/events';
 import type { BadgeTone } from '../components/ui/Badge';
-import type { OpportunityKind } from '@server/schemas/feed';
-import type { HonorKind, LinkType } from '@server/schemas/profile';
-import type { DefenseStageKind, ReactionKind, ReviewDecision, Verdict, WorkStatus, WorkType } from '@server/schemas/works';
+import type { OpportunityKind } from '../types/feed';
+import type { HonorKind, LinkType } from '../types/profile';
+import type { DefenseStageKind, ReactionKind, ReviewDecision, Verdict, WorkStatus, WorkType } from '../types/works';
 
 export const typeLabel: Record<WorkType, string> = { research: 'Research paper', literary: 'Literary work', innovation: 'Innovation' };
 
