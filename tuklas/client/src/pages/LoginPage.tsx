@@ -1,11 +1,13 @@
 /**
  * LoginPage — the sign-in page with the cover panel and sign-up link ("/login").
  * Signed-in users are sent back to where they came from; demo mode adds one-click role logins.
+ * Accounts with two-factor sign-in get a second step asking for the code.
  */
 import { useState, type FormEvent } from 'react';
-import { Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
 import { BadgeCheck, GraduationCap, ShieldCheck } from 'lucide-react';
+import type { PublicUser } from '../types/auth';
 import { useLogin, useMe } from '../api/auth';
 import { firstName } from '../lib/format';
 import { Logo } from '../components/brand/Logo';
@@ -14,6 +16,7 @@ import { Button } from '../components/ui/Button';
 import { ApprovalLine } from '../components/works/ApprovalLine';
 import { TextField } from '../components/ui/Field';
 import { useToast } from '../components/ui/Toast';
+import { TwoFactorChallenge } from '../components/account/TwoFactorChallenge';
 import { SignupModal } from './SignupModal';
 import styles from './LoginPage.module.css';
 
@@ -37,17 +40,22 @@ export function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [signupOpen, setSignupOpen] = useState(false);
+  const [challenge, setChallenge] = useState(false);
 
   const from = (location.state as { from?: string } | null)?.from ?? '/feed';
   if (me) return <Navigate to={from} replace />;
 
+  const welcome = (user: PublicUser) => {
+    toast(`Welcome back, ${firstName(user.name)}.`, 'success');
+    navigate(from, { replace: true });
+  };
+
   const signIn = (creds: { email: string; password: string }) =>
     login.mutate(creds, {
       onSuccess: ({ user }) => {
-        // The code screen comes with feat/client-account-screens. Demo mode skips 2FA.
-        if (!user) return toast('This account uses two-factor sign-in. Code entry isn’t available in this version yet.', 'info');
-        toast(`Welcome back, ${firstName(user.name)}.`, 'success');
-        navigate(from, { replace: true });
+        if (!user) return setChallenge(true);
+        setPassword('');
+        welcome(user);
       },
     });
 
@@ -89,54 +97,67 @@ export function LoginPage() {
 
       <section className={styles.formSide}>
         <motion.div className={styles.card} {...rise(0.1)}>
-          <h2 className={styles.welcome}>Welcome back</h2>
-          <p className={styles.sub}>Log in to continue to your workspace.</p>
+          <h2 className={styles.welcome}>{challenge ? 'Two-factor sign-in' : 'Welcome back'}</h2>
+          <p className={styles.sub}>{challenge ? 'One more step to keep your account safe.' : 'Log in to continue to your workspace.'}</p>
 
-          <form className={styles.form} onSubmit={submit} noValidate>
-            <TextField
-              label="Email address"
-              type="email"
-              autoComplete="username"
-              placeholder="you@tuklas.edu"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
+          {challenge ? (
+            <TwoFactorChallenge
+              onSignedIn={welcome}
+              onCancel={() => {
+                setChallenge(false);
+                setPassword('');
+              }}
             />
-            <TextField
-              label="Password"
-              type="password"
-              autoComplete="current-password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-            {login.error && (
-              <p className={styles.error} role="alert">
-                {login.error.message}
-              </p>
-            )}
-            <Button type="submit" variant="primary" size="lg" block loading={login.isPending}>
-              Log in
-            </Button>
-          </form>
-
-          {demoMode && (
+          ) : (
             <>
-              <div className={styles.divider}>Continue as</div>
-              <div className={styles.roles}>
-                {demoAccounts.map((a) => (
-                  <Button
-                    key={a.role}
-                    variant={a.variant}
-                    icon={<a.icon size={18} aria-hidden="true" />}
-                    disabled={login.isPending}
-                    onClick={() => signIn({ email: a.email, password: DEMO_PASSWORD })}
-                  >
-                    {a.role}
-                  </Button>
-                ))}
-              </div>
+              <form className={styles.form} onSubmit={submit} noValidate>
+                <TextField
+                  label="Email address"
+                  type="email"
+                  autoComplete="username"
+                  placeholder="you@tuklas.edu"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+                <TextField
+                  label="Password"
+                  type="password"
+                  autoComplete="current-password"
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+                <Link to="/forgot-password" className={styles.forgot}>
+                  Forgot your password?
+                </Link>
+                {login.error && (
+                  <p className={styles.error} role="alert">
+                    {login.error.message}
+                  </p>
+                )}
+                <Button type="submit" variant="primary" size="lg" block loading={login.isPending}>
+                  Log in
+                </Button>
+              </form>
+
+              {demoMode && (
+                <>
+                  <div className={styles.divider}>Continue as</div>
+                  <div className={styles.roles}>
+                    {demoAccounts.map((a) => (
+                      <Button
+                        key={a.role}
+                        variant={a.variant}
+                        icon={<a.icon size={18} aria-hidden="true" />}
+                        disabled={login.isPending}
+                        onClick={() => signIn({ email: a.email, password: DEMO_PASSWORD })}
+                      >
+                        {a.role}
+                      </Button>
+                    ))}
+                  </div>
             </>
           )}
 
@@ -146,6 +167,8 @@ export function LoginPage() {
               Create your account
             </button>
           </p>
+            </>
+          )}
         </motion.div>
       </section>
 

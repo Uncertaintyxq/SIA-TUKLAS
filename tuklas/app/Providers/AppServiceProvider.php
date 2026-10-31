@@ -73,8 +73,13 @@ class AppServiceProvider extends ServiceProvider
 
         // Every API request (bootstrap/app.php throttleApi)
         RateLimiter::for('api', fn (Request $request) => Limit::perMinute(120)->by($byUser($request)));
-        // Fortify routes: signup, forgot password, verification emails, 2FA setup
-        RateLimiter::for('auth', fn (Request $request) => Limit::perMinute(10)->by($request->ip()));
+        // Fortify routes and /api/account: signup, forgot password, verification emails, 2FA setup,
+        // sessions. Signed in, per account: setting up 2FA alone takes about eight requests. Signed
+        // out, per IP, but loose enough for a campus behind one address; guessing passwords and
+        // codes is held back per account by the `login` and `two-factor` limiters.
+        RateLimiter::for('auth', fn (Request $request) => $request->user()
+            ? Limit::perMinute(40)->by('user:'.$request->user()->id)
+            : Limit::perMinute(20)->by('ip:'.$request->ip()));
         // Creating content: works, comments, events, opportunities, announcements, publications
         RateLimiter::for('posting', fn (Request $request) => Limit::perMinute(20)->by($byUser($request)));
         RateLimiter::for('uploads', fn (Request $request) => Limit::perMinute(20)->by($byUser($request)));

@@ -6,6 +6,7 @@ use App\Models\AuditLog;
 use App\Models\User;
 use Database\Factories\UserFactory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\URL;
 use Tests\TestCase;
 
 class LoginTest extends TestCase
@@ -79,8 +80,32 @@ class LoginTest extends TestCase
         $this->actingAs($educator)->getJson('/api/auth/me')
             ->assertOk()
             ->assertJsonPath('user.emailVerified', false)
+            ->assertJsonPath('user.emailVerificationRequired', true)
             ->assertJsonPath('user.twoFactorEnabled', false)
             ->assertJsonPath('user.twoFactorRequired', true);
+    }
+
+    public function test_demo_mode_does_not_ask_for_setup(): void
+    {
+        config(['tuklas.demo_mode' => true]);
+        $educator = User::factory()->educator()->withoutTwoFactor()->unverified()->create();
+
+        $this->actingAs($educator)->getJson('/api/auth/me')
+            ->assertOk()
+            ->assertJsonPath('user.emailVerificationRequired', false)
+            ->assertJsonPath('user.twoFactorRequired', false);
+    }
+
+    public function test_a_signed_out_browser_opening_an_emailed_link_goes_to_the_login_page(): void
+    {
+        $user = User::factory()->unverified()->create();
+        $url = URL::temporarySignedRoute('verification.verify', now()->addHour(), ['id' => $user->id, 'hash' => sha1($user->email)]);
+
+        $this->get($url)->assertRedirect('/login');
+        $this->actingAs($user)->get($url.'x')->assertRedirect('/verify-email?expired=1');
+        $this->assertFalse($user->fresh()->hasVerifiedEmail());
+        $this->actingAs($user)->get($url)->assertRedirect();
+        $this->assertTrue($user->fresh()->hasVerifiedEmail());
     }
 
     public function test_logout_ends_the_session(): void

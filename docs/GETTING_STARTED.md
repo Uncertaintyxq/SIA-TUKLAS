@@ -3,9 +3,9 @@
 What to install, how to run and test Tuklas on your machine, and what's left to build.
 
 **Where things stand (2026-10-31):** Tuklas has moved from a Node/Express server to a Laravel
-API. The API is finished and tested, and the React app now talks to it. Still missing on the
-client: the 2FA, email-verification and password-reset screens, and live updates (see
-[TODO.md](TODO.md)). The old Node server in `server/` is no longer used and will be deleted.
+API. The API is finished and tested, and the React app now talks to it, including the 2FA,
+email-verification, password-reset and account screens. Still missing on the client: live
+updates and the new chat search (see [TODO.md](TODO.md)). The old Node server in `server/` is no longer used and will be deleted.
 
 To run the site you start the Laravel API (section 3) and then the React app (section 4).
 
@@ -113,8 +113,12 @@ browser sees one site and the sign-in cookies work. Use `npm run dev -w client`,
 `npm run dev`: the root script still starts the old Node server too, until
 `chore/remove-node-server`.
 
-Not there yet: live updates (new messages appear after a refresh; `feat/client-realtime`) and
-the 2FA code screen (`feat/client-account-screens`). With `DEMO_MODE=true` neither blocks you.
+Not there yet: live updates (new messages appear after a refresh; `feat/client-realtime`).
+
+**Testing sign-in security:** set `DEMO_MODE=false` in `.env` and restart `php artisan serve`.
+Educators and admins are then asked to set up 2FA (any authenticator app works), and new
+accounts must confirm their email. Emails go to `storage/logs/laravel.log`: copy the link from
+there into the browser. Run `php artisan queue:work` too, or queued emails never arrive.
 
 ## Demo accounts
 
@@ -135,9 +139,8 @@ the 2FA requirement, so these accounts sign in straight away. Turn it off to tes
 The full list, with the branch name to use for each item and the files it may touch, is
 [TODO.md](TODO.md). In short:
 
-1. **React client** (`feat/client-*` branches): 2FA / verification / password-reset / sessions
-   screens, live updates through Reverb, the new chat search. (Shared types and the API
-   connection are done.)
+1. **React client** (`feat/client-*` branches): live updates through Reverb and the new chat
+   search. (Shared types, the API connection and the account screens are done.)
 2. **Account deletion** (`feat/account-deletion`) and **group deliverables** (`feat/group-deliverables`).
 3. **Tooling**: Claude Code kit, CI on GitHub Actions, Larastan.
 4. **Remove the old Node server** (`chore/remove-node-server`), last.
@@ -167,4 +170,5 @@ someone is working on it. The full rule is at the top of [TODO.md](TODO.md).
 | Port 3306 already in use | Another MySQL is running; stop it, or change the port in `docker-compose.yml` and `.env` |
 | `MissingAttributeException` in a test | Strict mode caught a missing default; add it to the model's `$attributes` |
 | "Your session expired" (419) on every form | `APP_URL` in `.env` must be `http://localhost:5173` and `SANCTUM_STATEFUL_DOMAINS` must list `localhost:5173` (both in `.env.example`); then `php artisan config:clear` |
+| An emailed link opens `localhost:8000` | Restart Vite after pulling: `client/vite.config.ts` must keep `changeOrigin: false` |
 | 403 with `"code": "two_factor_required"` | Expected for educators/admins when `DEMO_MODE=false`; set up 2FA or turn demo mode on |

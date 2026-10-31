@@ -13,7 +13,12 @@ import { Skeleton } from './components/ui/Skeleton';
 import { EmptyState } from './components/ui/EmptyState';
 import { ButtonLink } from './components/ui/Button';
 import { RealtimeProvider } from './lib/realtime';
+import { AccountGate } from './components/account/AccountGate';
 import { LoginPage } from './pages/LoginPage';
+import { AccountPage } from './pages/AccountPage';
+import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
+import { PrivacyPage } from './pages/PrivacyPage';
+import { ResetPasswordPage } from './pages/ResetPasswordPage';
 import { AdminPage } from './pages/AdminPage';
 import { AnnouncementsPage } from './pages/AnnouncementsPage';
 import { EventPage } from './pages/EventPage';
@@ -38,7 +43,11 @@ function RequireAuth() {
   if (isPending) return <ShellSkeleton />;
   if (error) return <Unavailable message={error.message} />;
   if (!me) return <Navigate to="/login" replace state={{ from: location.pathname + location.search }} />;
-  return <AppShell user={me} />;
+  return (
+    <AccountGate me={me}>
+      <AppShell user={me} />
+    </AccountGate>
+  );
 }
 
 /** Public pages (portfolios, works, educator research) sit in the app shell when signed in, and in a plain frame when not. */
@@ -99,6 +108,8 @@ function Unavailable({ message }: { message: string }) {
 
 const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
+  { path: '/forgot-password', element: <ForgotPasswordPage /> },
+  { path: '/reset-password', element: <ResetPasswordPage /> },
   {
     // Public, no login needed
     element: <PublicOrShell />,
@@ -106,6 +117,7 @@ const router = createBrowserRouter([
       { path: '/u/:username', element: <PublicPortfolioPage /> },
       { path: '/works/:id', element: <WorkPage /> },
       { path: '/publications/:id', element: <PublicationPage /> },
+      { path: '/privacy', element: <PrivacyPage /> },
     ],
   },
   {
@@ -113,6 +125,9 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <Navigate to="/feed" replace /> },
       { path: '/feed', element: <FeedPage /> },
+      { path: '/account', element: <AccountPage /> },
+      // The gate shows the verify screen while the email is unconfirmed; after that, on to the feed.
+      { path: '/verify-email', element: <Navigate to="/feed" replace /> },
       { path: '/announcements', element: <AnnouncementsPage /> },
       { path: '/messages', element: <OnlyFor roles={['student', 'educator']}><MessagesPage /></OnlyFor> },
       { path: '/messages/:id', element: <OnlyFor roles={['student', 'educator']}><MessagesPage /></OnlyFor> },
