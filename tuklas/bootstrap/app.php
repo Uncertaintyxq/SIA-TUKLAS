@@ -12,6 +12,7 @@ use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Exceptions\PostTooLargeException;
 use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Exceptions\InvalidSignatureException;
 use Illuminate\Session\TokenMismatchException;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -32,6 +33,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->append(SecurityHeaders::class);
         $middleware->api(append: [TouchLastSeen::class]);
         $middleware->alias(['account.ready' => EnsureAccountReady::class]);
+        // There is no server-side login page: the React app's is at /login.
+        $middleware->redirectGuestsTo('/login');
         $middleware->throttleApi('api');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
@@ -42,6 +45,13 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (ValidationException $e, Request $request) use ($json, $error) {
             if ($json($request)) {
                 return $error(collect($e->errors())->flatten()->first() ?? 'Check the form and try again.', $e->status, ['issues' => $e->errors()]);
+            }
+        });
+        // The emailed verification link is opened by a browser, not the React app: send it to a screen
+        // instead of answering with JSON (signed out: log in first; old or altered link: ask for a new one).
+        $exceptions->render(function (AuthenticationException|InvalidSignatureException $e, Request $request) {
+            if ($request->routeIs('verification.verify') && ! $request->expectsJson()) {
+                return redirect($e instanceof AuthenticationException ? '/login' : '/verify-email?expired=1');
             }
         });
         $exceptions->render(function (AuthenticationException $e, Request $request) use ($json, $error) {

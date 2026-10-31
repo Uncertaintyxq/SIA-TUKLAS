@@ -128,7 +128,8 @@ branch rule; the deployment plan is in [DEPLOYMENT.md](DEPLOYMENT.md).
 | Privacy: account deletion (D13) | new | ☐ | ☐ | |
 | Client: own types (no `server/` imports) | `client/` | ☑ | typecheck | |
 | Client: proxy, CSRF, `/auth/register`, privacy consent at signup | `client/` | ☑ | smoke test | |
-| Client: Echo on Reverb, 2FA / verification / reset / sessions screens, chat search | `client/` | ☐ | ☐ | |
+| Client: 2FA setup and login code, email verification, password reset, sessions, privacy, data export | `client/` | ☑ | smoke test | |
+| Client: Echo on Reverb, chat search | `client/` | ☐ | ☐ | |
 | Remove Node server and Prisma | | ☐ | | |
 
 ## Client changes this causes
@@ -141,8 +142,8 @@ branch rule; the deployment plan is in [DEPLOYMENT.md](DEPLOYMENT.md).
 - Signup posts to `/api/auth/register` and sends `privacy: true` (consent checkbox).
 - Login can answer `{two_factor: true}`: then show the code screen, which posts to
   `/api/auth/two-factor-challenge` (`code` or `recovery_code`) and gets `{user}` back.
-- `/api/auth/me` now also returns `emailVerified`, `twoFactorEnabled`, `twoFactorRequired` and
-  `privacyAccepted`. Any API call can answer 403 with `code: "email_unverified"` or
+- `/api/auth/me` now also returns `emailVerified`, `emailVerificationRequired`, `twoFactorEnabled`,
+  `twoFactorRequired` and `privacyAccepted` (the two `Required` flags are false in demo mode). Any API call can answer 403 with `code: "email_unverified"` or
   `code: "two_factor_required"`: route to the matching setup screen.
 - Validation errors are 422 (were 400). The body is still `{error, issues}`.
 - `client/src/lib/realtime.tsx` switches from the hand-written WebSocket to Laravel Echo on Reverb.
@@ -192,6 +193,22 @@ branch rule; the deployment plan is in [DEPLOYMENT.md](DEPLOYMENT.md).
   a privacy-consent checkbox and the 12-character hint; a 2FA login (`{two_factor: true}`) no
   longer crashes the login page. `ApiError` now carries `code` and `issues`. Checked end to end
   through the proxy: login, `/me`, feed, logout, register, and a write without the token (419).
+
+- 2026-10-31: `feat/client-account-screens`. Before the app opens, `AccountGate` asks for whatever
+  setup is unfinished: confirm the email, turn on 2FA (educators and admins), accept a changed
+  privacy notice. Any API answer with `code: email_unverified / two_factor_required` re-reads `/me`
+  to bring that screen up. Login has the code step (app code or recovery code). New pages:
+  `/forgot-password`, `/reset-password`, `/privacy` (public), `/account` (2FA on/off and recovery
+  codes, password change, sessions and "sign out other browsers", data download), linked from the
+  account menu. Server: `emailVerificationRequired` in `/me`; the emailed verification link opened
+  signed out goes to `/login`, and an expired one to `/verify-email?expired=1`, instead of JSON.
+  The `auth` rate limit was 10 a minute per IP, which a single 2FA setup nearly used up (and a
+  campus behind one IP would share): now 40 a minute per account when signed in, 20 per IP when
+  not. Fix from the previous branch: Vite's string proxy shorthand turns on `changeOrigin`, so
+  emailed links pointed at `:8000`; the proxy now keeps the browser's host. 110 tests pass; the
+  flows were checked end to end through the proxy with `DEMO_MODE=false` (2FA setup with a real
+  TOTP code, recovery-code login, verification link, reset link, sessions, export, privacy).
+  The privacy notice text is a draft until the Data Privacy Act paperwork is done.
 
 ## How the code is laid out (for the next modules)
 

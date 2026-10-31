@@ -53,7 +53,7 @@ Paths are relative to `tuklas/` unless they start with `docs/` or `.github/`.
 |---|---|---|---|
 | `feat/client-types` | Copy the types the client imports from `server/src/schemas/*` into `client/src/types/` and update the 36 importing files. No behaviour change. | | Done |
 | `feat/client-api-transport` | Point the client at Laravel: `client/vite.config.ts` proxy to `:8000`; `client/src/api/client.ts` sends `Accept: application/json` and `X-XSRF-TOKEN`; `client/src/api/auth.ts` uses `/auth/register`; privacy checkbox and 12-character hint in `client/src/pages/SignupModal.tsx`; `client/src/types/auth.ts`; 2FA login answer handled in `client/src/pages/LoginPage.tsx`. | `feat/client-types` | Done |
-| `feat/client-account-screens` | Screens for 2FA setup and the login code challenge, email verification, forgot/reset password, privacy consent, active sessions and data export; route to them when the API answers `email_unverified` or `two_factor_required`. `client/src/pages/` (new pages), `client/src/components/account/` (new), `client/src/api/account.ts` (new), `client/src/App.tsx` (*shared*: routes only). | `feat/client-api-transport` | Not started |
+| `feat/client-account-screens` | Screens for 2FA setup and the login code challenge, email verification, forgot/reset password, privacy consent, active sessions and data export; route to them when the API answers `email_unverified` or `two_factor_required`. `client/src/pages/` (new pages), `client/src/components/account/` (new), `client/src/api/account.ts` (new), `client/src/App.tsx` (*shared*: routes only). Also touched: `LoginPage.tsx` (code step, forgot link), `SignupModal.tsx` (privacy link), `UserMenu.tsx` (Account link), `client/vite.config.ts` (proxy keeps the host), `AccountResource` (`emailVerificationRequired`), `bootstrap/app.php` (emailed links in a browser), the `auth` rate limit. | `feat/client-api-transport` | Done |
 | `feat/client-realtime` | Replace the hand-written WebSocket with Laravel Echo on Reverb: `client/src/lib/realtime.tsx`, `client/package.json` (*shared*: adds `laravel-echo`, `pusher-js`). Presence for "online" dots. | `feat/client-api-transport` | Not started |
 | `feat/client-chat-search` | Chat search UI: find conversations by person, channel or group instead of message text (D7). `client/src/components/chat/`, `client/src/pages/MessagesPage.tsx`. | `feat/client-types` | Not started |
 | `chore/remove-node-server` | Delete `server/`, Prisma, `database/schema.sql`, the Node scripts in `package.json` (*shared*) and the root `docker-compose` notes that only apply to Node. Switch `DB_DATABASE` back to `tuklas`. Update `README.md` and `docs/GETTING_STARTED.md`. Last of the conversion. | every row above | Not started |
@@ -82,5 +82,7 @@ Paths are relative to `tuklas/` unless they start with `docs/` or `.github/`.
   Options: Docker Desktop with the repo's `docker-compose.yml`, or the MySQL 8 installer.
 - [ ] **Answer the deployment decisions** in [DEPLOYMENT.md](DEPLOYMENT.md#decisions-needed): host, domain, email provider.
 - [ ] **Data Privacy Act paperwork** before launch: privacy notice text, a named Data Protection
-  Officer, and NPC registration if required (see DEPLOYMENT.md).
+  Officer, and NPC registration if required (see DEPLOYMENT.md). A draft notice is in
+  `client/src/components/account/PrivacyNotice.tsx`; when the approved text replaces it, bump
+  `PRIVACY_VERSION` there and `privacy_version` in `config/tuklas.php` together.
 - [ ] **Later, optional:** passkeys sign-in (Fortify supports it; needs client screens).

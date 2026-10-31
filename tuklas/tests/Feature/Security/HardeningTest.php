@@ -26,6 +26,26 @@ class HardeningTest extends TestCase
             ->assertHeaderMissing('X-Powered-By');
     }
 
+    public function test_account_endpoints_are_limited_per_account_when_signed_in(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+        // A 2FA setup plus a look at the Account page is well under the limit
+        for ($i = 0; $i < 15; $i++) {
+            $this->getJson('/api/account/sessions')->assertOk();
+        }
+        // Another account on the same network isn't held back by the first
+        $this->actingAs(User::factory()->create())->getJson('/api/account/sessions')->assertOk();
+    }
+
+    public function test_signed_out_account_requests_are_limited_per_address(): void
+    {
+        for ($i = 0; $i < 20; $i++) {
+            $this->postJson('/api/auth/forgot-password', ['email' => "someone{$i}@tuklas.edu"])->assertOk();
+        }
+        $this->postJson('/api/auth/forgot-password', ['email' => 'one-more@tuklas.edu'])->assertStatus(429);
+    }
+
     public function test_other_websites_get_no_cors_access(): void
     {
         $this->withHeaders(['Origin' => 'https://evil.example'])

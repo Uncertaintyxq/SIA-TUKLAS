@@ -58,7 +58,13 @@ export function SignupModal({ open, onClose }: { open: boolean; onClose: () => v
         </div>
         <label className={styles.consent}>
           <input type="checkbox" checked={form.privacy} onChange={(e) => setForm((f) => ({ ...f, privacy: e.target.checked }))} required />
-          I agree that Tuklas may store and use my account details, research and messages to run this hub, as the Data Privacy Act of 2012 allows.
+          <span>
+            I have read the{' '}
+            <a href="/privacy" target="_blank" rel="noreferrer">
+              privacy notice
+            </a>{' '}
+            and agree that Tuklas may process my data as it describes.
+          </span>
         </label>
         {signup.error && (
           <p className={styles.error} role="alert">
