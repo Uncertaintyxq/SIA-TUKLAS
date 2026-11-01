@@ -32,7 +32,6 @@ export function DeliverablePanel({ groupId, deadlineId, onClose }: { groupId: nu
   return (
     <Sheet
       title={d?.title ?? 'Deliverable'}
-      aside={d ? `Due ${fmtDateTime(d.dueAt)}` : undefined}
       actions={
         <Button variant="ghost" icon={<X size={16} aria-hidden="true" />} onClick={onClose}>
           Close
@@ -47,7 +46,10 @@ export function DeliverablePanel({ groupId, deadlineId, onClose }: { groupId: nu
         </p>
       ) : (
         <div className={styles.panel}>
-          {d.submissionMode !== 'none' && <p className={styles.mode}>{modeLabel[d.submissionMode]}</p>}
+          <p className={styles.mode}>
+            Due {fmtDateTime(d.dueAt)}
+            {d.submissionMode !== 'none' && <span className={styles.muted}> · {modeLabel[d.submissionMode]}</span>}
+          </p>
           {d.instructions && <p className={styles.instructions}>{d.instructions}</p>}
           {d.mine && <SubmissionCard groupId={groupId} deliverable={d} submission={d.mine} />}
           {d.can.submit && <HandInForm groupId={groupId} deliverable={d} />}

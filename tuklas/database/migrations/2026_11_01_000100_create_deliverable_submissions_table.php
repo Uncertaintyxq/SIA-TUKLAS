@@ -7,7 +7,8 @@ use Illuminate\Support\Facades\Schema;
 /**
  * Group deliverables: a group deadline can collect work from students, one submission each or one
  * for the whole group. The adviser and mentors accept it or ask for a revision with feedback.
- * A submission keeps only its latest file; `version` counts how many times it was handed in.
+ * A row holds the latest file; `version` counts how many times it was handed in, and earlier
+ * versions move to deliverable_versions.
  */
 return new class extends Migration
 {

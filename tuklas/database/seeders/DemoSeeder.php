@@ -309,9 +309,9 @@ class DemoSeeder extends Seeder
             GroupMember::create(['research_group_id' => 1, 'user_id' => $user, 'role' => $role, 'added_at' => $this->ago($daysAgo)]);
         }
         GroupDeadline::create(['research_group_id' => 1, 'title' => 'Lab meeting: bring your progress slides', 'due_at' => $this->ahead(3)]);
-        $chapter3 = GroupDeadline::create(['research_group_id' => 1, 'title' => 'Chapter 3 (Methodology) draft due', 'due_at' => $this->ahead(7), 'submission_mode' => 'each',
+        $chapter3 = GroupDeadline::create(['research_group_id' => 1, 'title' => 'Chapter 3 (Methodology) draft due', 'due_at' => $this->ahead(7)->setTime(23, 59), 'submission_mode' => 'each',
             'instructions' => 'Upload your own methodology chapter as a PDF or Word file. Include your sampling plan and the consent form you will use with barangay partners.']);
-        $chapter2 = GroupDeadline::create(['research_group_id' => 1, 'title' => 'Chapter 2 (Review of Related Literature)', 'due_at' => $this->ago(10), 'submission_mode' => 'group',
+        $chapter2 = GroupDeadline::create(['research_group_id' => 1, 'title' => 'Chapter 2 (Review of Related Literature)', 'due_at' => $this->ago(10)->setTime(23, 59), 'submission_mode' => 'group',
             'instructions' => 'One combined RRL for the lab, with every source in APA 7.']);
         $rrl = $this->deliverable($chapter2, self::ANDREA, 'DIL Chapter 2 RRL.pdf', $this->ago(11), [
             'version' => 2, 'status' => 'accepted', 'feedback' => 'Well organised. The section on LoRa field studies is especially strong.',
