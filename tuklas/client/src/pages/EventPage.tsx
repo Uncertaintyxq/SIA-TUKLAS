@@ -5,9 +5,11 @@
 import { useState, type FormEvent } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { CalendarCheck, MapPin, Megaphone, Trash2, Users } from 'lucide-react';
+import { useMe } from '../api/auth';
 import { useCreateAd, useDeleteAd, useDeleteEvent, useEvent, type EventDetail } from '../api/events';
 import { CalendarLeaf, RegisterButton, categoryTone } from '../components/events/EventBits';
 import { Person } from '../components/people/Person';
+import { ReportButton } from '../components/reports/ReportDialog';
 import { Badge } from '../components/ui/Badge';
 import { Button, ButtonLink } from '../components/ui/Button';
 import { EmptyState } from '../components/ui/EmptyState';
@@ -23,6 +25,7 @@ import styles from './EventPage.module.css';
 export function EventPage() {
   const id = Number(useParams().id);
   const { data: e, isPending, error } = useEvent(id);
+  const { data: me } = useMe();
   const del = useDeleteEvent();
   const toast = useToast();
   const navigate = useNavigate();
@@ -71,6 +74,7 @@ export function EventPage() {
             <Person user={e.organizer} sub="Organizer" />
             <div className={styles.footActions}>
               <RegisterButton event={e} />
+              {me && !manage && <ReportButton type="event" id={e.id} label={`“${e.title}”`} />}
               {manage && (
                 <Button
                   variant="danger"

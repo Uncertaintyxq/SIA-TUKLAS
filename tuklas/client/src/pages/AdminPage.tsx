@@ -19,8 +19,10 @@ import {
 } from '../api/admin';
 import { useMe } from '../api/auth';
 import { useDeleteOpportunity } from '../api/feed';
+import { useReportQueue } from '../api/reports';
 import { useDecision, useDeleteDiscussion } from '../api/works';
 import { EducatorMonitor } from '../components/admin/EducatorMonitor';
+import { ReportQueue } from '../components/admin/ReportQueue';
 import { CalendarLeaf, categoryTone } from '../components/events/EventBits';
 import { PageHeader } from '../components/layout/PageHeader';
 import { Person } from '../components/people/Person';
@@ -37,18 +39,19 @@ import { categoryLabel, honorLabel, roleBadge } from '../lib/labels';
 import { useDebounced } from '../lib/useDebounced';
 import styles from './AdminPage.module.css';
 
-type Tab = 'research' | 'educators' | 'events' | 'ads' | 'honors' | 'users' | 'posts';
-const tabs: Tab[] = ['research', 'educators', 'events', 'ads', 'honors', 'users', 'posts'];
+type Tab = 'research' | 'educators' | 'events' | 'ads' | 'honors' | 'reports' | 'users' | 'posts';
+const tabs: Tab[] = ['research', 'educators', 'events', 'ads', 'honors', 'reports', 'users', 'posts'];
 
 export function AdminPage() {
   const [params, setParams] = useSearchParams();
   const tab = (tabs.find((t) => t === params.get('tab')) ?? 'research') as Tab;
   const { data: stats } = useAdminStats();
   const { data: queue, isPending } = useAdminQueue();
+  const { data: reports } = useReportQueue('open');
 
   return (
     <>
-      <PageHeader title="Approval queue" description="Verify and monitor educators, approve research, events and academic ads, verify honors, and moderate the feed." />
+      <PageHeader title="Approval queue" description="Verify and monitor educators, approve research, events and academic ads, verify honors, handle reports, and moderate the feed." />
 
       <dl className={styles.kpis}>
         <Kpi label="Research awaiting the panel" value={stats?.works.inReview} />
@@ -73,13 +76,14 @@ export function AdminPage() {
             { value: 'events', label: 'Events', count: queue?.events.length },
             { value: 'ads', label: 'Ad slots', count: queue?.ads.length },
             { value: 'honors', label: 'Honors & grants', count: queue?.honors.length },
+            { value: 'reports', label: 'Reports', count: reports?.openCount },
             { value: 'users', label: 'Users & roles' },
             { value: 'posts', label: 'Moderate posts' },
           ]}
         />
       </div>
 
-      {isPending && tab !== 'users' && tab !== 'posts' ? (
+      {isPending && tab !== 'users' && tab !== 'posts' && tab !== 'reports' ? (
         <Skeleton className={styles.skeleton} />
       ) : (
         <>
@@ -93,6 +97,7 @@ export function AdminPage() {
           {tab === 'events' && <EventQueue events={queue!.events} />}
           {tab === 'ads' && <AdQueue ads={queue!.ads} />}
           {tab === 'honors' && <HonorQueue honors={queue!.honors} />}
+          {tab === 'reports' && <ReportQueue />}
           {tab === 'users' && <Users />}
           {tab === 'posts' && <Posts />}
         </>

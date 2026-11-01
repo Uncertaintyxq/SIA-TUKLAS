@@ -1,10 +1,10 @@
 /**
  * MessageItem — one chat message: sender, time, text (links made clickable), an attached file,
- * and its thread and delete actions. Consecutive messages from one sender collapse under one name.
+ * and its thread, delete and report actions. Consecutive messages from one sender collapse under one name.
  */
 import type { ReactNode } from 'react';
 import clsx from 'clsx';
-import { Download, FileText, MessageSquareReply, Trash2 } from 'lucide-react';
+import { Download, FileText, Flag, MessageSquareReply, Trash2 } from 'lucide-react';
 import type { MessageView } from '../../api/chat';
 import { fileSize } from '../../lib/format';
 import { Avatar } from '../ui/Avatar';
@@ -34,6 +34,7 @@ export function MessageItem({
   highlighted,
   onReply,
   onDelete,
+  onReport,
 }: {
   message: MessageView;
   /** Same sender as the message just above, moments later */
@@ -42,6 +43,8 @@ export function MessageItem({
   /** Opens the thread; absent inside a thread */
   onReply?: () => void;
   onDelete: () => void;
+  /** Report to the admins; absent on your own messages */
+  onReport?: () => void;
 }) {
   return (
     <li id={`m-${m.id}`} className={clsx(styles.message, continued && styles.continued, highlighted && styles.highlighted)}>
@@ -79,7 +82,7 @@ export function MessageItem({
           </button>
         )}
       </div>
-      {!m.deleted && (onReply || m.canDelete) && (
+      {!m.deleted && (onReply || m.canDelete || onReport) && (
         <div className={styles.actions}>
           {onReply && (
             <button type="button" className={styles.action} onClick={onReply} title="Reply in thread">
@@ -91,6 +94,12 @@ export function MessageItem({
             <button type="button" className={styles.action} onClick={onDelete} title="Remove message">
               <Trash2 size={16} aria-hidden="true" />
               <span className="sr-only">Remove message</span>
+            </button>
+          )}
+          {onReport && (
+            <button type="button" className={styles.action} onClick={onReport} title="Report message">
+              <Flag size={16} aria-hidden="true" />
+              <span className="sr-only">Report message</span>
             </button>
           )}
         </div>
