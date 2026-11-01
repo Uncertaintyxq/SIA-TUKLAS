@@ -6,6 +6,14 @@ return [
     // AppServiceProvider refuses to boot with this on in production.
     'demo_mode' => (bool) env('DEMO_MODE', false),
 
+    // Web Push (notifications on phones and browsers). VAPID keys identify this server to push
+    // services: `php artisan tuklas:vapid-keys` makes a pair (deploy.sh does it on servers).
+    'push' => [
+        'public_key' => env('WEBPUSH_PUBLIC_KEY', ''),
+        'private_key' => env('WEBPUSH_PRIVATE_KEY', ''),
+        'subject' => env('WEBPUSH_SUBJECT', env('APP_URL', 'https://localhost')),
+    ],
+
     // The university, for Google Scholar's citation_dissertation_institution on student research (PageMeta)
     'institution' => env('TUKLAS_INSTITUTION', ''),
 
@@ -33,6 +41,9 @@ return [
         "font-src 'self'",
         "connect-src 'self' ".env('CSP_CONNECT_EXTRA', ''),
         "object-src 'none'",
+        // The service worker (/sw.js) and the install manifest, from this site only
+        "worker-src 'self'",
+        "manifest-src 'self'",
         "base-uri 'self'",
         "form-action 'self'",
         "frame-ancestors 'none'",

@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#6C4AB6" />
+    <title>You’re offline · Tuklas</title>
+    <!-- Shown by the service worker (sw.js) when a page can't load. Self-contained: nothing else is reachable offline. -->
+    <style>
+      :root { color-scheme: light dark; --bg: #f8f9fd; --text: #222221; --soft: #5b5868; --purple: #6c4ab6; }
+      @media (prefers-color-scheme: dark) { :root { --bg: #15131b; --text: #f1eef8; --soft: #c3bbd8; --purple: #9b84e0; } }
+      body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 16px; box-sizing: border-box;
+             background: var(--bg); color: var(--text); font: 16px/1.5 system-ui, sans-serif; }
+      main { max-width: 26rem; text-align: center; }
+      .badge { display: inline-grid; place-items: center; width: 56px; height: 56px; border-radius: 14px;
+               background: #ffcb57; color: #222221; font: 900 32px/1 system-ui, sans-serif; }
+      h1 { font-size: 1.4rem; margin: 16px 0 8px; }
+      p { color: var(--soft); margin: 0 0 20px; }
+      a { display: inline-block; padding: 10px 18px; border-radius: 10px; background: var(--purple); color: #fff;
+          font-weight: 650; text-decoration: none; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <span class="badge" aria-hidden="true">T</span>
+      <h1>You’re offline</h1>
+      <p>Tuklas needs a connection for this page. Check your Wi-Fi or data, then try again.</p>
+      <a href="/feed">Try again</a>
+    </main>
+  </body>
+</html>

@@ -40,4 +40,23 @@ class SpaController
             'Cache-Control' => 'no-cache, must-revalidate',
         ]);
     }
+
+    /**
+     * GET /sw.js — the service worker from the build (client/public/sw.js). The build lives under
+     * /build/, but a worker only looks after pages below its own address, so it's served from the
+     * root. Never cached, so browsers pick up a new one with each release.
+     */
+    public function serviceWorker(): Response
+    {
+        $file = dirname((string) config('tuklas.spa_index')).'/sw.js';
+        if (! is_file($file)) {
+            throw new NotFoundHttpException;
+        }
+
+        return response((string) file_get_contents($file), 200, [
+            'Content-Type' => 'text/javascript; charset=UTF-8',
+            'Cache-Control' => 'no-cache, must-revalidate',
+            'Service-Worker-Allowed' => '/',
+        ]);
+    }
 }

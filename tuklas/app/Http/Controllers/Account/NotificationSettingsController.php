@@ -16,18 +16,23 @@ class NotificationSettingsController extends Controller
         return response()->json($this->view($request));
     }
 
-    /** PUT /api/account/notifications {email: {category: bool}, digest: bool} */
+    /** PUT /api/account/notifications {email: {category: bool}, push?: {category: bool}, digest: bool} */
     public function update(Request $request): JsonResponse
     {
         $me = $request->user();
-        $keys = array_keys(NotificationPrefs::visibleTo($me));
+        $keys = implode(',', array_keys(NotificationPrefs::visibleTo($me)));
         $input = $request->validate([
-            'email' => ['required', 'array:'.implode(',', $keys)],
+            // Present, but may be empty when only push or the digest changes
+            'email' => ['present', "array:{$keys}"],
             'email.*' => ['boolean'],
+            'push' => ['sometimes', "array:{$keys}"],
+            'push.*' => ['boolean'],
             'digest' => ['required', 'boolean'],
         ]);
+        $current = NotificationPrefs::for($me);
         $me->forceFill(['notification_settings' => [
-            'email' => array_map(fn ($v) => (bool) $v, $input['email']) + NotificationPrefs::for($me)['email'],
+            'email' => array_map(fn ($v) => (bool) $v, $input['email']) + $current['email'],
+            'push' => array_map(fn ($v) => (bool) $v, $input['push'] ?? []) + $current['push'],
             'digest' => (bool) $input['digest'],
         ]])->save();
 

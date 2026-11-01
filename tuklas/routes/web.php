@@ -12,6 +12,9 @@ use Illuminate\Support\Facades\Route;
 Route::get('/sitemap.xml', [SitemapController::class, 'sitemap'])->name('sitemap');
 Route::get('/robots.txt', [SitemapController::class, 'robots'])->name('robots');
 
+// The service worker must be served from the site's root to look after every page (offline, push)
+Route::get('/sw.js', [SpaController::class, 'serviceWorker'])->name('service-worker');
+
 // Not for API, Sanctum, build or storage paths: those stay a 404 (and a POST to one isn't a 405).
 Route::fallback(SpaController::class)
     ->where('fallbackPlaceholder', '(?!(api|sanctum|build|storage)(/|$)).*');

@@ -75,6 +75,9 @@ fi
 echo "==> Database migrations"
 php artisan migrate --force $([[ "$SEED" == true ]] && echo --seed)
 
+# Push notification keys, made once per server and then kept (a new pair would cut off every device)
+php artisan tuklas:vapid-keys --write="$APP_ROOT/shared/.env"
+
 echo "==> Caching config, routes and events"
 php artisan config:cache --quiet
 php artisan route:cache --quiet

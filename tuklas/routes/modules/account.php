@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Account\NotificationSettingsController;
 use App\Http\Controllers\Account\PrivacyController;
+use App\Http\Controllers\Account\PushSubscriptionController;
 use Illuminate\Support\Facades\Route;
 
 // My own account: data export, sessions, consent, email settings and deletion. No account.ready, so someone who still
@@ -14,4 +15,7 @@ Route::middleware(['auth:sanctum', 'throttle:auth'])->prefix('account')->name('a
     Route::delete('/', [PrivacyController::class, 'destroy'])->name('destroy');
     Route::get('/notifications', [NotificationSettingsController::class, 'show'])->name('notifications.show');
     Route::put('/notifications', [NotificationSettingsController::class, 'update'])->name('notifications.update');
+    Route::get('/push', [PushSubscriptionController::class, 'show'])->name('push.show');
+    Route::post('/push', [PushSubscriptionController::class, 'store'])->name('push.store');
+    Route::delete('/push', [PushSubscriptionController::class, 'destroy'])->name('push.destroy');
 });

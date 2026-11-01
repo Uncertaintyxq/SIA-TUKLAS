@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Enums\Role;
+use App\Jobs\SendPushNotifications;
 use App\Models\Notification;
 use App\Models\User;
 use App\Notifications\ActivityEmail;
@@ -52,6 +53,13 @@ class Notifier
         if ($type !== 'announcement') {
             $emailTo = User::whereIn('id', $ids)->whereNotNull('email_verified_at')->get()->filter(fn (User $u) => NotificationPrefs::wantsEmail($u, $type));
             MailNotifications::send($emailTo, new ActivityEmail(Str::limit($message, 297), $link));
+        }
+
+        // A push notification on the phones and browsers of people who turned it on for this kind
+        $pushTo = User::whereIn('id', $ids)->whereHas('pushSubscriptions')->get()
+            ->filter(fn (User $u) => NotificationPrefs::wantsPush($u, $type))->modelKeys();
+        if ($pushTo !== []) {
+            SendPushNotifications::dispatch(array_values($pushTo), Str::limit($message, 297), $link);
         }
     }
 
