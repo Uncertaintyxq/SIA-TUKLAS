@@ -5,10 +5,13 @@ namespace App\Support;
 use App\Enums\Role;
 use App\Models\Notification;
 use App\Models\User;
+use App\Notifications\ActivityEmail;
+use Illuminate\Support\Facades\Notification as MailNotifications;
 use Illuminate\Support\Str;
 
 /**
- * Writes in-app notifications and pushes them to open tabs. The actor never notifies themselves.
+ * Writes in-app notifications, pushes them to open tabs, and emails a copy to people who asked for
+ * that category (NotificationPrefs). The actor never notifies themselves.
  *
  * Types, so the client can pick an icon: work_submitted, work_resubmitted, work_under_review,
  * work_revision, work_approved, work_rejected, work_comment, work_removed, educator_signup,
@@ -43,6 +46,13 @@ class Notifier
 
         // Open tabs refresh their updates (and announcements) right away.
         Realtime::pushTo($ids, ['type' => 'notification', 'kind' => $type]);
+
+        // An email copy for people who chose email for this kind of update. Announcements send their
+        // own, fuller email (AnnouncementPosted).
+        if ($type !== 'announcement') {
+            $emailTo = User::whereIn('id', $ids)->whereNotNull('email_verified_at')->get()->filter(fn (User $u) => NotificationPrefs::wantsEmail($u, $type));
+            MailNotifications::send($emailTo, new ActivityEmail(Str::limit($message, 297), $link));
+        }
     }
 
     /** Notifies every admin account, skipping the actor. */

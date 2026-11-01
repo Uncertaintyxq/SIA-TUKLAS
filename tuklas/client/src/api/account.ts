@@ -1,10 +1,10 @@
 /**
- * Account API hooks — 2FA, passwords, email verification, sessions, privacy consent and data export.
+ * Account API hooks — 2FA, passwords, email verification, sessions, email settings, privacy consent and data export.
  * Sign-in security goes through Fortify under /api/auth; privacy rights live under /api/account.
  */
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import type { PublicUser } from '../types/auth';
-import type { AccountSession, ChangePasswordInput, ResetPasswordInput, TwoFactorChallengeInput, TwoFactorKey } from '../types/account';
+import type { AccountSession, ChangePasswordInput, NotificationSettings, ResetPasswordInput, TwoFactorChallengeInput, TwoFactorKey } from '../types/account';
 import { api } from './client';
 
 const ME = ['me'] as const;
@@ -143,5 +143,20 @@ export function useAcceptPrivacy() {
   return useMutation({
     mutationFn: () => api<void>('/account/privacy', { body: { accept: true } }),
     onSuccess: () => refreshMe(qc),
+  });
+}
+
+const NOTIFICATION_SETTINGS = ['account', 'notifications'] as const;
+
+export function useNotificationSettings() {
+  return useQuery({ queryKey: NOTIFICATION_SETTINGS, queryFn: () => api<NotificationSettings>('/account/notifications') });
+}
+
+/** Saves the email choices and the digest; the answer is the saved settings. */
+export function useSaveNotificationSettings() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (s: Pick<NotificationSettings, 'email' | 'digest'>) => api<NotificationSettings>('/account/notifications', { method: 'PUT', body: s }),
+    onSuccess: (saved) => qc.setQueryData(NOTIFICATION_SETTINGS, saved),
   });
 }

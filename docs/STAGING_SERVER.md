@@ -88,6 +88,27 @@ only if everything worked, so a failed deploy leaves the site running as before.
 | Start over with fresh demo data | **Reset demo data** in the user menu on the site, or `bash ~/SIA-TUKLAS/tuklas/deploy/deploy.sh --seed` |
 | Get changes to the deploy scripts themselves | `git -C ~/SIA-TUKLAS pull` first |
 
+## One-time steps waiting for the next deploy
+
+Some features need a small change on the server itself, once. Do these **before** the next
+`deploy.sh`, then delete each line here when it's done (in a docs branch).
+
+1. *(`feat/search-indexing`)* Let Laravel answer `/robots.txt`:
+   ```bash
+   sudo sed -i '/location = \/robots.txt/d' /etc/nginx/sites-available/tuklas
+   sudo nginx -t && sudo systemctl reload nginx
+   ```
+2. *(`feat/notification-settings`)* Run Laravel's scheduler every minute (it sends the weekly digest):
+   ```bash
+   echo '* * * * * www-data umask 002 && cd /var/www/tuklas/current && php artisan schedule:run >> /dev/null 2>&1' | sudo tee /etc/cron.d/tuklas
+   ```
+3. Optional: put the university's name in `/var/www/tuklas/shared/.env` as `TUKLAS_INSTITUTION=…`
+   (Google Scholar shows it on student research).
+
+Staging writes emails to the log instead of sending them (`MAIL_MAILER=log`), so email settings
+and the digest can be tried there without a mail provider: read them in
+`/var/www/tuklas/shared/storage/logs/`.
+
 ## Check it's healthy
 
 On the server:
