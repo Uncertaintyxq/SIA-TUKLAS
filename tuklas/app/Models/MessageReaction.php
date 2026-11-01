@@ -19,6 +19,7 @@ class MessageReaction extends Model
 
     protected $primaryKey = null;
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

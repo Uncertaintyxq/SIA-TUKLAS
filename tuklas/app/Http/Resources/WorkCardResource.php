@@ -29,11 +29,11 @@ class WorkCardResource extends JsonResource
             'status' => $this->status->value,
             'authors' => UserCardResource::collection(collect([$this->author])->concat($this->coAuthors)),
             'adviser' => new UserCardResource($this->adviser),
-            'department' => $this->author->profile?->department ?? '',
+            'department' => $this->author->profile->department ?? '',
             'approvedAt' => $this->approved_at?->toISOString(),
             'approval' => $approved ? [
                 'approvedAt' => $this->approved_at->toISOString(),
-                'approverName' => $this->approvedBy?->name ?? 'Academic panel',
+                'approverName' => $this->approvedBy->name ?? 'Academic panel',
                 'approverRole' => $this->approvedBy?->role->value ?? 'admin',
             ] : null,
             'removed' => $this->removed_at !== null,

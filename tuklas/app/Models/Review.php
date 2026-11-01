@@ -14,24 +14,24 @@ class Review extends Model
 {
     public const UPDATED_AT = null;
 
-    protected function casts(): array
-    {
-        return [
-            'decision' => ReviewDecision::class,
-            'comment' => 'encrypted',
-        ];
-    }
+    protected $casts = [
+        'decision' => ReviewDecision::class,
+        'comment' => 'encrypted',
+    ];
 
+    /** @return BelongsTo<Work, $this> */
     public function work(): BelongsTo
     {
         return $this->belongsTo(Work::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function reviewer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'reviewer_id');
     }
 
+    /** @return HasMany<RevisionItem, $this> */
     public function revisionItems(): HasMany
     {
         return $this->hasMany(RevisionItem::class);

@@ -333,6 +333,14 @@ branch rule; the deployment plan is in [DEPLOYMENT.md](DEPLOYMENT.md).
   time showed the demo conversations had no fixed ids (MySQL doesn't reuse rolled-back ids), so
   `DemoSeeder` now fixes them at 1–6; and `tests/Unit/.gitkeep` keeps the empty suite folder in git.
 
+- 2026-11-02: `chore/larastan`. Larastan 3 at level 5 (`phpstan.neon`, run in CI) reported 357
+  errors; it now reports none. Most came from two gaps: Larastan 3 doesn't read the `casts()` method,
+  so every model now uses a `$casts` property, and relationships had no generic types, so they now
+  carry `@return BelongsTo<User, $this>` and so on (the `Cards` helpers too). It also found that the
+  logout audit listener returned `false`, which stops the remaining Logout listeners; the auth
+  listeners are now block closures. `database/seeders/` is left out (demo data; PHPStan misreads its
+  tuple lists).
+
 ## How the code is laid out (for the next modules)
 
 - **Routes:** `routes/modules/<module>.php`, required from `routes/api.php`. Signed-in groups use

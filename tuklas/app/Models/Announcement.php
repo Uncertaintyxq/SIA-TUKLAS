@@ -10,20 +10,21 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-/** A system, department or group announcement. The body uses Tuklas's light markup (App\Support\Markup). */
+/**
+ * A system, department or group announcement. The body uses Tuklas's light markup (App\Support\Markup).
+ *
+ * @property-read bool|null $read_by_me Whether the viewer has read it (AnnouncementController)
+ */
 #[Fillable(['scope', 'department', 'research_group_id', 'title', 'body', 'pinned'])]
 class Announcement extends Model
 {
     /** Column defaults, so a new model has them before it's reloaded. */
     protected $attributes = ['pinned' => false];
 
-    protected function casts(): array
-    {
-        return [
-            'scope' => AnnouncementScope::class,
-            'pinned' => 'boolean',
-        ];
-    }
+    protected $casts = [
+        'scope' => AnnouncementScope::class,
+        'pinned' => 'boolean',
+    ];
 
     /** What someone may read: everything for admins; otherwise system-wide, their department, their groups, their own. */
     public function scopeVisibleTo(Builder $query, User $user): void
@@ -57,25 +58,29 @@ class Announcement extends Model
         return match ($this->scope) {
             AnnouncementScope::System => 'Everyone',
             AnnouncementScope::Department => $this->department ?? 'Department',
-            AnnouncementScope::Group => $this->group?->name ?? 'Research group',
+            AnnouncementScope::Group => $this->group->name ?? 'Research group',
         };
     }
 
+    /** @return BelongsTo<User, $this> */
     public function author(): BelongsTo
     {
         return $this->belongsTo(User::class, 'author_id');
     }
 
+    /** @return BelongsTo<ResearchGroup, $this> */
     public function group(): BelongsTo
     {
         return $this->belongsTo(ResearchGroup::class, 'research_group_id');
     }
 
+    /** @return HasMany<AnnouncementAttachment, $this> */
     public function attachments(): HasMany
     {
         return $this->hasMany(AnnouncementAttachment::class);
     }
 
+    /** @return BelongsToMany<User, $this> */
     public function readers(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'announcement_reads')->withPivot('read_at');

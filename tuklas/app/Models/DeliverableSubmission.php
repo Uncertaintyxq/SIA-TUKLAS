@@ -22,33 +22,37 @@ class DeliverableSubmission extends Model
     /** Column defaults, so a new model has them before it's reloaded. */
     protected $attributes = ['version' => 1, 'status' => 'submitted', 'note' => null, 'feedback' => null, 'reviewed_by_id' => null, 'reviewed_at' => null];
 
-    protected function casts(): array
-    {
-        return [
-            'note' => 'encrypted',
-            'feedback' => 'encrypted',
-            'status' => SubmissionStatus::class,
-            'reviewed_at' => 'datetime',
-            'submitted_at' => 'datetime',
-        ];
-    }
+    protected $casts = [
+        'note' => 'encrypted',
+        'feedback' => 'encrypted',
+        'status' => SubmissionStatus::class,
+        'reviewed_at' => 'datetime',
+        'submitted_at' => 'datetime',
+    ];
 
+    /** @return BelongsTo<GroupDeadline, $this> */
     public function deadline(): BelongsTo
     {
         return $this->belongsTo(GroupDeadline::class, 'group_deadline_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function student(): BelongsTo
     {
         return $this->belongsTo(User::class, 'student_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function reviewedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'reviewed_by_id');
     }
 
-    /** Earlier versions, newest first. */
+    /**
+     * Earlier versions, newest first.
+     *
+     * @return HasMany<DeliverableVersion, $this>
+     */
     public function versions(): HasMany
     {
         return $this->hasMany(DeliverableVersion::class)->orderByDesc('version');

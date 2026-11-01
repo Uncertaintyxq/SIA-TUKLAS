@@ -17,13 +17,10 @@ class Conversation extends Model
     /** Column defaults, so a new model has them before it's reloaded. */
     protected $attributes = ['name' => ''];
 
-    protected function casts(): array
-    {
-        return [
-            'kind' => ConversationKind::class,
-            'last_message_at' => 'datetime',
-        ];
-    }
+    protected $casts = [
+        'kind' => ConversationKind::class,
+        'last_message_at' => 'datetime',
+    ];
 
     /** Direct chats have one conversation per pair: the two ids, sorted ("3:7"). */
     public static function directKey(int $a, int $b): string
@@ -31,16 +28,19 @@ class Conversation extends Model
         return min($a, $b).':'.max($a, $b);
     }
 
+    /** @return BelongsTo<ResearchGroup, $this> */
     public function group(): BelongsTo
     {
         return $this->belongsTo(ResearchGroup::class, 'research_group_id');
     }
 
+    /** @return HasMany<ConversationMember, $this> */
     public function members(): HasMany
     {
         return $this->hasMany(ConversationMember::class);
     }
 
+    /** @return HasMany<Message, $this> */
     public function messages(): HasMany
     {
         return $this->hasMany(Message::class);

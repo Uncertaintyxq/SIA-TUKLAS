@@ -21,7 +21,7 @@ class Audit
             'subject_type' => $subject ? class_basename($subject) : null,
             'subject_id' => $subject?->getKey(),
             'meta' => $meta === [] ? null : $meta,
-            'ip_address' => request()?->ip(),
+            'ip_address' => request()->ip(),
         ]);
     }
 }
