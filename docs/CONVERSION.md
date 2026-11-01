@@ -281,6 +281,16 @@ branch rule; the deployment plan is in [DEPLOYMENT.md](DEPLOYMENT.md).
   script. `upgrade-insecure-requests` is only sent when `APP_URL` is HTTPS, so a server still on
   plain HTTP works. Development is unchanged (Vite at :5173).
 
+- 2026-11-01: `chore/deploy-server-config`. `tuklas/deploy/` holds everything a server needs:
+  `setup-server.sh` (run once with sudo: packages, MySQL user with a generated password, the
+  server's `.env` from `.env.production.example` with fresh keys, Nginx site, Supervisor programs,
+  Let's Encrypt), `deploy.sh` (each release: clone into `releases/<time>/`, link the shared `.env`
+  and `storage/`, composer, build the client, migrate, cache, switch the `current` symlink, reload
+  PHP-FPM, restart the queue worker and Reverb, check `/up`), and the settings they install.
+  PHP-FPM and Supervisor run as `www-data` with umask 002; only `shared/storage` is writable by
+  PHP. Reverb listens on 127.0.0.1:8080 behind Nginx's `/app/`, and `REVERB_ALLOWED_ORIGINS`
+  limits WebSocket origins to the site.
+
 ## How the code is laid out (for the next modules)
 
 - **Routes:** `routes/modules/<module>.php`, required from `routes/api.php`. Signed-in groups use
