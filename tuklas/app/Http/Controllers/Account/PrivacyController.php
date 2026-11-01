@@ -45,6 +45,8 @@ class PrivacyController extends Controller
             'comments' => Comment::where('author_id', $me->id)->get()->map->only(['work_id', 'scope', 'text', 'created_at']),
             'messages' => Message::where('sender_id', $me->id)->whereNull('deleted_at')->get()->map->only(['conversation_id', 'text', 'file_name', 'created_at', 'edited_at']),
             'messageReactions' => DB::table('message_reactions')->where('user_id', $me->id)->get(['message_id', 'emoji', 'created_at']),
+            // Devices with push notifications on (not their push addresses or keys)
+            'pushDevices' => DB::table('push_subscriptions')->where('user_id', $me->id)->get(['device', 'created_at']),
             // What they reported and why (not the copy of the reported content, which is someone else's)
             'reports' => Report::where('reporter_id', $me->id)->get()->map(fn (Report $r) => [
                 'type' => $r->target_type->value, 'reason' => $r->reason->value, 'details' => $r->details, 'status' => $r->status->value, 'createdAt' => $r->created_at->toISOString(),
