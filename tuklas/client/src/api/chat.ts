@@ -1,9 +1,9 @@
-/** Chat API: conversations, messages, threads, files and search. New messages arrive through lib/realtime. */
-import { keepPreviousData, useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { ConversationPage, ConversationSummary, MessageInput, MessageView, SearchHit, ThreadView } from '../types/chat';
+/** Chat API: conversations, messages, threads and files. New messages arrive through lib/realtime. */
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { ConversationPage, ConversationSummary, MessageInput, MessageView, ThreadView } from '../types/chat';
 import { api, upload } from './client';
 
-export type { ConversationPage, ConversationSummary, MessageView, SearchHit, ThreadView };
+export type { ConversationPage, ConversationSummary, MessageView, ThreadView };
 
 export const useConversations = (enabled = true) =>
   useQuery({ queryKey: ['chat', 'conversations'], queryFn: () => api<ConversationSummary[]>('/chat/conversations'), enabled });
@@ -31,15 +31,6 @@ export const useThread = (messageId: number | null) =>
     enabled: messageId !== null,
   });
 
-export function useChatSearch(q: string) {
-  const term = q.trim();
-  return useQuery({
-    queryKey: ['chat', 'search', term],
-    queryFn: () => api<SearchHit[]>(`/chat/search?q=${encodeURIComponent(term)}`),
-    enabled: term.length >= 2,
-    placeholderData: keepPreviousData,
-  });
-}
 
 /** Chat mutations refresh only chat (and group) queries; the realtime push covers everyone else. */
 function useChatAction<TVars, TResult = void>(fn: (vars: TVars) => Promise<TResult>) {

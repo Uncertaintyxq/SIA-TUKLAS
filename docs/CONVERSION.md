@@ -130,7 +130,7 @@ branch rule; the deployment plan is in [DEPLOYMENT.md](DEPLOYMENT.md).
 | Client: proxy, CSRF, `/auth/register`, privacy consent at signup | `client/` | ☑ | smoke test | |
 | Client: 2FA setup and login code, email verification, password reset, sessions, privacy, data export | `client/` | ☑ | smoke test | |
 | Client: Echo on Reverb (live updates, presence) | `client/` | ☑ | smoke test | |
-| Client: chat search | `client/` | ☐ | ☐ | |
+| Client: chat search (D7) | `client/` | ☑ | typecheck | |
 | Remove Node server and Prisma | | ☐ | | |
 
 ## Client changes this causes
@@ -251,6 +251,13 @@ branch rule; the deployment plan is in [DEPLOYMENT.md](DEPLOYMENT.md).
   `VITE_*` reach the browser), and `VITE_DEMO_LOGIN` now follows `DEMO_MODE`. Removing the dead
   `/api/ws` socket also removes what was crashing the Vite dev server (an unhandled ECONNRESET when
   a browser closed while that request hung).
+
+- 2026-11-01: `feat/client-chat-search` (D7). The Messages list searches chats by the other person's
+  name, the channel or the group, with All / Direct / Channels / Unread chips and counts, and
+  highlights the match. It filters the conversation list the client already has (the API returns
+  every conversation), so new chats with no messages are found too. The old message-text results
+  ("No messages mention …") are gone; an empty search says why messages aren't searched.
+  `/api/chat/search` stays on the server but the client no longer calls it.
 
 ## How the code is laid out (for the next modules)
 

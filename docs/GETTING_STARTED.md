@@ -4,8 +4,8 @@ What to install, how to run and test Tuklas on your machine, and what's left to 
 
 **Where things stand (2026-10-31):** Tuklas has moved from a Node/Express server to a Laravel
 API. The API is finished and tested, and the React app now talks to it, including the 2FA,
-email-verification, password-reset and account screens and live updates. Still missing on the
-client: the new chat search (see [TODO.md](TODO.md)). The old Node server in `server/` is no longer used and will be deleted.
+email-verification, password-reset and account screens, live updates and chat search. What's
+left is tooling, removing the old Node server, and deployment (see [TODO.md](TODO.md)). The old Node server in `server/` is no longer used and will be deleted.
 
 To run the site you start the Laravel API (section 3) and then the React app (section 4).
 
@@ -162,8 +162,7 @@ the 2FA requirement, so these accounts sign in straight away. Turn it off to tes
 The full list, with the branch name to use for each item and the files it may touch, is
 [TODO.md](TODO.md). In short:
 
-1. **React client**: the new chat search (`feat/client-chat-search`). (Types, the API connection,
-   account screens and live updates are done.)
+1. **React client**: done (types, API connection, account screens, live updates, chat search).
 2. (Account deletion and group deliverables are done.)
 3. **Tooling**: Claude Code kit, CI on GitHub Actions, Larastan.
 4. **Remove the old Node server** (`chore/remove-node-server`), last.
