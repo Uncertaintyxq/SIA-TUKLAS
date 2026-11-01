@@ -102,7 +102,11 @@ Some features need a small change on the server itself, once. Do these **before*
    ```bash
    echo '* * * * * www-data umask 002 && cd /var/www/tuklas/current && php artisan schedule:run >> /dev/null 2>&1' | sudo tee /etc/cron.d/tuklas
    ```
-3. Optional: put the university's name in `/var/www/tuklas/shared/.env` as `TUKLAS_INSTITUTION=…`
+3. *(`chore/deploy-backups`)* The nightly backup: `git -C ~/SIA-TUKLAS pull`, then rerun
+   `sudo bash ~/SIA-TUKLAS/tuklas/deploy/setup-server.sh --domain tuklas-sia-jm.japaneast.cloudapp.azure.com`
+   (it keeps the `.env`; it installs `age`, the backup folder and the cron line), deploy, then
+   "Turn them on" in [`tuklas/deploy/README.md`](../tuklas/deploy/README.md#backups).
+4. Optional: put the university's name in `/var/www/tuklas/shared/.env` as `TUKLAS_INSTITUTION=…`
    (Google Scholar shows it on student research).
 
 Staging writes emails to the log instead of sending them (`MAIL_MAILER=log`), so email settings

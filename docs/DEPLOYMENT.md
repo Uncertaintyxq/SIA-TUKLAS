@@ -106,13 +106,19 @@ messages, review text and 2FA secrets stay readable.
 
 ## Backups and recovery
 
-From `chore/deploy-backups`:
+Built in `chore/deploy-backups` (`tuklas/deploy/backup.sh`, `restore.sh`; how to turn them on and
+restore: [`tuklas/deploy/README.md`](../tuklas/deploy/README.md#backups)):
 - **What:** the MySQL database (`mysqldump --single-transaction`) and `storage/app/private`
-  (uploads). The `.env` lives in the password manager, not in backups.
-- **When:** nightly, plus right before every production migration.
-- **Where:** encrypted, off the server (another provider or region), kept 30 days.
-- **Proof:** restore a backup to staging once a month, and before launch. A backup that has
-  never been restored doesn't count.
+  (uploads), in one file with checksums. The `.env` lives in the password manager, not in backups.
+- **When:** nightly at 10:30 PM Philippine time (the staging server shuts down at 11), plus right
+  before every deploy that runs a migration (`deploy.sh`).
+- **Encryption:** age, with only the public key on the server; the private key is in the password
+  manager.
+- **Where:** `/var/backups/tuklas/` on the server, kept 30 days, plus an off-server copy through
+  rclone when `BACKUP_RCLONE_REMOTE` is set (needed before real data: a backup on the same server
+  is lost with it).
+- **Proof:** CI backs up a seeded MySQL database, damages it, restores it and checks it on every
+  push. Also restore a real backup to staging once a month, and before launch.
 
 ## Monitoring
 
