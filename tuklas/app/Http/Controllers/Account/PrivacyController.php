@@ -6,6 +6,7 @@ use App\Actions\Account\DeleteAccount;
 use App\Http\Controllers\Controller;
 use App\Models\Comment;
 use App\Models\Message;
+use App\Models\Report;
 use App\Models\User;
 use App\Support\Audit;
 use Illuminate\Http\JsonResponse;
@@ -42,6 +43,10 @@ class PrivacyController extends Controller
             'publications' => $me->publications()->get()->map->only(['id', 'title', 'abstract', 'keywords', 'visibility', 'published_at']),
             'comments' => Comment::where('author_id', $me->id)->get()->map->only(['work_id', 'scope', 'text', 'created_at']),
             'messages' => Message::where('sender_id', $me->id)->whereNull('deleted_at')->get()->map->only(['conversation_id', 'text', 'file_name', 'created_at']),
+            // What they reported and why (not the copy of the reported content, which is someone else's)
+            'reports' => Report::where('reporter_id', $me->id)->get()->map(fn (Report $r) => [
+                'type' => $r->target_type->value, 'reason' => $r->reason->value, 'details' => $r->details, 'status' => $r->status->value, 'createdAt' => $r->created_at->toISOString(),
+            ]),
             'eventRegistrations' => DB::table('event_registrations')->where('user_id', $me->id)->get(['event_id', 'created_at']),
             'opportunityApplications' => DB::table('opportunity_applications')->where('user_id', $me->id)->get(['opportunity_id', 'message', 'created_at']),
             'notifications' => $me->appNotifications()->latest('created_at')->get()->map->only(['type', 'message', 'read', 'created_at']),

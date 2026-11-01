@@ -85,6 +85,10 @@ class DeleteAccount
             ]);
             DB::table('conversation_members')->where('user_id', $id)->delete();
 
+            // Reports: the ones they filed go; copies of their content kept as evidence in reports about them are blanked
+            DB::table('reports')->where('reporter_id', $id)->delete();
+            DB::table('reports')->where('target_owner_id', $id)->update(['snapshot' => Crypt::encryptString('(deleted account)')]);
+
             // Their name in what other people see: the group logs and others' notifications
             foreach (['group_activities' => 'detail', 'notifications' => 'message'] as $table => $column) {
                 DB::table($table)->where($column, 'like', '%'.addcslashes($name, '%_\\').'%')

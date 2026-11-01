@@ -22,6 +22,7 @@ require __DIR__.'/modules/announcements.php';
 require __DIR__.'/modules/chat.php';
 require __DIR__.'/modules/admin.php';
 require __DIR__.'/modules/account.php';
+require __DIR__.'/modules/reports.php';
 
 // Real-time: POST /api/broadcasting/auth signs Reverb channel subscriptions (routes/channels.php)
 Broadcast::routes(['middleware' => ['auth:sanctum', 'account.ready']]);

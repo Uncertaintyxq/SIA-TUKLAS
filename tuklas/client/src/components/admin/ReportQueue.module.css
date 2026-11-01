@@ -1,0 +1,86 @@
+.queue {
+  display: grid;
+  gap: var(--s-3);
+}
+
+.skeleton {
+  height: 240px;
+  border-radius: var(--radius-sheet);
+}
+
+.open {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  min-height: var(--tap);
+  padding: 0 var(--s-2);
+  font-size: var(--fs-small);
+  font-weight: 600;
+}
+
+.card {
+  display: grid;
+  gap: var(--s-3);
+}
+
+.subject {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2);
+}
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1);
+}
+
+/* What was reported, as it was: kept even if the author deleted it */
+.snapshot {
+  margin: 0;
+  max-height: 12em;
+  overflow: auto;
+  padding: var(--s-2) var(--s-3);
+  border-left: 3px solid var(--rule-strong);
+  background: var(--paper);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.reports {
+  display: grid;
+  gap: var(--s-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.report {
+  display: grid;
+  gap: 2px;
+}
+
+.reason {
+  font-weight: 650;
+}
+
+.meta {
+  margin: 0;
+  color: var(--text-faint);
+  font-size: var(--fs-small);
+}
+
+.details {
+  margin: 0;
+  max-width: var(--measure);
+  color: var(--text-soft);
+  overflow-wrap: anywhere;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+}

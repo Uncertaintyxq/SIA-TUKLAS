@@ -117,6 +117,10 @@
   min-width: 0;
 }
 
+.report {
+  justify-self: start;
+}
+
 .bio {
   display: grid;
   gap: var(--s-2);
