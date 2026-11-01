@@ -35,6 +35,18 @@ class ResearchGroupPolicy
         return $this->moderate($user, $group) || $group->seatOf($user) === 'leader';
     }
 
+    /** Handing in deliverables: the group's students (its leader and members). */
+    public function submit(User $user, ResearchGroup $group): bool
+    {
+        return in_array($group->seatOf($user), ['leader', 'member'], true);
+    }
+
+    /** Seeing every deliverable submission and giving feedback: the adviser, mentors and admins. */
+    public function review(User $user, ResearchGroup $group): bool
+    {
+        return $user->isAdmin() || in_array($group->seatOf($user), ['adviser', 'mentor'], true);
+    }
+
     /** Group announcements: the adviser or a mentor who holds the broadcast right, or an admin. */
     public function announce(User $user, ResearchGroup $group): bool
     {

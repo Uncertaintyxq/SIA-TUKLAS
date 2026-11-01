@@ -312,3 +312,25 @@
     height: calc(100dvh - 240px);
   }
 }
+
+.full {
+  flex: 1 1 100%;
+}
+
+.selected {
+  background: var(--tab);
+}
+
+.deadlineLink {
+  justify-self: start;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--action-text);
+  font: inherit;
+  font-weight: 650;
+  text-align: left;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}

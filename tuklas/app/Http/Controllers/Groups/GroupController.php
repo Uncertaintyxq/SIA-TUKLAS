@@ -4,8 +4,11 @@ namespace App\Http\Controllers\Groups;
 
 use App\Enums\GroupRole;
 use App\Enums\Role;
+use App\Enums\SubmissionMode;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserCardResource;
+use App\Models\DeliverableSubmission;
+use App\Models\GroupDeadline;
 use App\Models\GroupMember;
 use App\Models\ResearchGroup;
 use App\Models\User;
@@ -26,6 +29,7 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 /**
  * Research groups: an adviser, students (one may lead), educator mentors, shared files, deadlines,
  * text channels and an activity log. /api/groups/…  The rules are in ResearchGroupPolicy.
+ * Deliverables handed in against a deadline are in DeliverableController.
  */
 class GroupController extends Controller
 {
@@ -97,10 +101,13 @@ class GroupController extends Controller
             ...Cards::user('files.uploadedBy'),
             'channels' => fn ($q) => $q->orderBy('created_at')->orderBy('id'),
             'activities' => fn ($q) => $q->limit(40),
+            'deadlines.deliverables:id,group_deadline_id,student_id,status',
             ...Cards::user('activities.actor'),
         ])->findOrFail($id);
         $unread = Chat::unreadByConversation($me->id);
         $moderate = Gate::allows('moderate', $access);
+        $review = Gate::allows('review', $access);
+        $studentIds = $group->members->where('role', '!=', GroupRole::Mentor)->pluck('user_id');
 
         return response()->json([
             ...$this->summary($group, $me, $access),
@@ -113,7 +120,10 @@ class GroupController extends Controller
                 'uploadedBy' => new UserCardResource($f->uploadedBy), 'createdAt' => $f->created_at->toISOString(),
                 'canDelete' => $f->uploaded_by_id === $me->id || $moderate,
             ]),
-            'deadlines' => $group->deadlines->map(fn ($d) => ['id' => $d->id, 'title' => $d->title, 'dueAt' => $d->due_at->toISOString()]),
+            'deadlines' => $group->deadlines->map(fn (GroupDeadline $d) => [
+                'id' => $d->id, 'title' => $d->title, 'dueAt' => $d->due_at->toISOString(), 'submissionMode' => $d->submission_mode->value, 'instructions' => $d->instructions,
+                ...$this->deliverableStatus($d, $me, $review, $studentIds->all()),
+            ]),
             // #general first, then the rest in the order they were opened
             'channels' => $group->channels->sortByDesc(fn ($c) => $c->name === 'general')->values()->map(fn ($c) => [
                 'id' => $c->id, 'name' => $c->name, 'unread' => $unread[$c->id] ?? 0, 'lastMessageAt' => $c->last_message_at->toISOString(),
@@ -123,6 +133,8 @@ class GroupController extends Controller
             ]),
             'can' => [
                 'manage' => Gate::allows('manage', $access),
+                'review' => $review,
+                'submit' => Gate::allows('submit', $access),
                 'moderate' => $moderate,
                 'organize' => Gate::allows('organize', $access),
                 'announce' => Gate::allows('announce', $access),
@@ -139,11 +151,11 @@ class GroupController extends Controller
         return response()->noContent();
     }
 
-    /** DELETE /api/groups/{id} — removes its channels, files and announcements too */
+    /** DELETE /api/groups/{id} — removes its channels, files, deliverables and announcements too */
     public function destroy(int $id): Response
     {
         $group = self::load($id, 'manage');
-        $files = $group->files()->pluck('file');
+        $files = $group->files()->pluck('file')->merge(DeliverableSubmission::filesOf(DeliverableSubmission::whereIn('group_deadline_id', $group->deadlines()->select('id'))));
         $group->delete();
         $files->each(fn ($f) => Uploads::delete($f));
 
@@ -284,25 +296,61 @@ class GroupController extends Controller
         return response()->noContent();
     }
 
-    /** POST /api/groups/{id}/deadlines {title, dueAt} */
+    /**
+     * POST /api/groups/{id}/deadlines {title, dueAt, submissionMode?, instructions?}
+     * `submissionMode` (none, each, group) makes it a deliverable that students hand work in for.
+     */
     public function addDeadline(Request $request, int $id): Response
     {
-        $input = $request->validate(['title' => ['required', 'string', 'min:3', 'max:160'], 'dueAt' => ['required', 'date']], ['title.*' => 'Describe the deadline', 'dueAt.*' => 'Enter the due date']);
+        $input = $request->validate([
+            'title' => ['required', 'string', 'min:3', 'max:160'],
+            'dueAt' => ['required', 'date'],
+            'submissionMode' => ['nullable', Rule::enum(SubmissionMode::class)],
+            'instructions' => ['nullable', 'string', 'max:2000'],
+        ], ['title.*' => 'Describe the deadline', 'dueAt.*' => 'Enter the due date', 'submissionMode.*' => 'Choose who hands in work']);
         $me = $request->user();
         $group = self::load($id, 'organize');
-        $group->deadlines()->create(['title' => $input['title'], 'due_at' => $request->date('dueAt')]);
-        Groups::log($group, $me->id, 'deadline_added', "{$me->name} added the deadline “{$input['title']}”.");
-        Notifier::notify($group->participantIds(), 'group_deadline', "New deadline in “{$group->name}”: {$input['title']}.", "/groups/{$group->id}", $me->id);
+        $mode = SubmissionMode::from($input['submissionMode'] ?? 'none');
+        $group->deadlines()->create(['title' => $input['title'], 'due_at' => $request->date('dueAt'), 'submission_mode' => $mode, 'instructions' => trim($input['instructions'] ?? '')]);
+        $kind = $mode === SubmissionMode::None ? 'deadline' : 'deliverable';
+        Groups::log($group, $me->id, 'deadline_added', "{$me->name} added the {$kind} “{$input['title']}”.");
+        Notifier::notify($group->participantIds(), 'group_deadline', "New {$kind} in “{$group->name}”: {$input['title']}.", "/groups/{$group->id}?tab=deadlines", $me->id);
 
         return response()->noContent(201);
     }
 
-    /** DELETE /api/groups/{id}/deadlines/{deadlineId} */
+    /** DELETE /api/groups/{id}/deadlines/{deadlineId} — with any work handed in for it */
     public function deleteDeadline(int $id, int $deadlineId): Response
     {
-        self::load($id, 'organize')->deadlines()->whereKey($deadlineId)->delete();
+        $deadline = self::load($id, 'organize')->deadlines()->find($deadlineId);
+        if ($deadline !== null) {
+            $files = DeliverableSubmission::filesOf($deadline->deliverables());
+            $deadline->delete();
+            array_map(Uploads::delete(...), $files);
+        }
 
         return response()->noContent();
+    }
+
+    /**
+     * A deliverable at a glance. Students: where theirs (or the group's) stands. Reviewers: how many handed in.
+     *
+     * @param  list<int>  $studentIds
+     * @return array<string, mixed>
+     */
+    private function deliverableStatus(GroupDeadline $d, User $me, bool $review, array $studentIds): array
+    {
+        if ($d->submission_mode === SubmissionMode::None) {
+            return [];
+        }
+        $group = $d->submission_mode === SubmissionMode::Group;
+        $mine = $group ? $d->deliverables->first() : $d->deliverables->firstWhere('student_id', $me->id);
+
+        return [
+            'myStatus' => in_array($me->id, $studentIds, true) ? $mine?->status->value : null,
+            'handedIn' => $review ? ($group ? min(1, $d->deliverables->count()) : $d->deliverables->whereIn('student_id', $studentIds)->count()) : null,
+            'expected' => $review ? ($group ? 1 : count($studentIds)) : null,
+        ];
     }
 
     /** @return array{name: string, description: string} */
