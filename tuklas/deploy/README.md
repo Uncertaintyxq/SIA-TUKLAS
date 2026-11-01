@@ -6,7 +6,9 @@ other) to the live site. Two scripts do the work:
 | Script | Run | Does |
 |---|---|---|
 | `setup-server.sh` | once, with `sudo` | Installs Nginx, PHP 8.4, MySQL, Node 22, Composer and Supervisor; creates the database, the server's `.env` with fresh keys, the Nginx site and the HTTPS certificate |
-| `deploy.sh` | every release, as your login user | Puts the latest `main` live in a new release folder and switches to it |
+| `deploy.sh` | every release, as your login user | Puts the latest `main` live in a new release folder and switches to it (with a backup first when there are migrations) |
+| `backup.sh` | nightly by cron, or by hand | An encrypted backup of the database and the uploads |
+| `restore.sh` | when you need it | Puts a backup back: the database and the uploads |
 
 The other files are the settings those scripts install: `nginx.conf`, `supervisor.conf` (queue
 worker and Reverb), `php.ini`, `mysql.cnf`, and `../.env.production.example`.
@@ -48,6 +50,42 @@ It clones `main` fresh, so the `~/SIA-TUKLAS` copy only matters for the scripts 
 `git -C ~/SIA-TUKLAS pull` when they change). `--ref <tag or branch>` deploys something other
 than `main`. `chore/deploy-pipeline` will run this automatically from GitHub.
 
+## Backups
+
+Nightly at **10:30 PM** Philippine time (before the 11 PM shutdown), `backup.sh` saves the database
+and the uploads in one file in `/var/backups/tuklas/`, encrypted with [age](https://age-encryption.org).
+The server holds only the **public** key, so someone who gets into the server can't read old
+backups. The **private** key opens them; it lives in the team's password manager. Backups are kept
+30 days. Every push to GitHub also tests a backup and a restore (the `backups` job in CI).
+
+**Turn them on (once):**
+1. Make the key pair on the server, and copy **all three lines** it prints into the password manager
+   (a note called "Tuklas backup key"):
+   ```bash
+   age-keygen
+   ```
+   The line starting `AGE-SECRET-KEY-` is the private key: it must not stay on the server, so don't
+   save it to a file there. The `# public key: age1…` line is the public key.
+2. Put the public key in the server's settings, then check a backup works:
+   ```bash
+   nano /var/www/tuklas/shared/.env        # set BACKUP_AGE_RECIPIENT=age1… (the public key)
+   bash /var/www/tuklas/current/deploy/backup.sh
+   ```
+3. **Optional, recommended:** a copy off the server, so a lost server doesn't take its backups with
+   it. `rclone config` connects a Google Drive or OneDrive folder (any rclone remote works); then set
+   `BACKUP_RCLONE_REMOTE=<remote>:tuklas-backups` in the `.env`.
+
+**Restore a backup** (replaces everything in the database and the uploads):
+```bash
+ls -lt /var/backups/tuklas/                       # newest first; pre-migrate ones are from deploys
+nano ~/backup-key.txt                             # paste the AGE-SECRET-KEY- line, save
+bash /var/www/tuklas/current/deploy/restore.sh /var/backups/tuklas/<file>.tar.age --identity ~/backup-key.txt
+rm ~/backup-key.txt                               # the private key never stays on the server
+```
+It asks you to type the database name before it changes anything, and keeps the site in maintenance
+mode while it works. If the backup is older than the code, run `deploy.sh` afterwards. Log of the
+nightly runs: `/var/backups/tuklas/backup.log`.
+
 ## Where things are
 
 | What | Where |
@@ -56,6 +94,7 @@ than `main`. `chore/deploy-pipeline` will run this automatically from GitHub.
 | Settings | `/var/www/tuklas/shared/.env` (only you and PHP can read it; never copy it into chat or git) |
 | Uploads, logs | `/var/www/tuklas/shared/storage/` (`logs/laravel-<date>.log`, `queue.log`, `reverb.log`) |
 | Nginx errors | `/var/log/nginx/error.log` |
+| Backups | `/var/backups/tuklas/` (`backup.log` for the nightly runs) |
 
 ## When something's wrong
 
