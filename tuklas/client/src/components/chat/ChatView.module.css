@@ -150,6 +150,14 @@
   text-align: center;
 }
 
+/* "Seen by" under my latest message */
+.seen {
+  padding: 0 var(--s-3) var(--s-2);
+  color: var(--text-faint);
+  font-size: var(--fs-tiny);
+  text-align: right;
+}
+
 /* Day breaks: a ruled line with the date set in mono, like a dated notebook page */
 .day {
   display: flex;
