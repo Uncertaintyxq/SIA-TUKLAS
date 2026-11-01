@@ -16,7 +16,8 @@ How Tuklas goes from the repo to a public, secure site. The work is split into t
          ──► queue (database) ──► queue worker (Supervisor) ──► SMTP (emails)
 ```
 
-One server is enough at Tuklas's scale: one university, hundreds to a few thousand users.
+One server is enough at Tuklas's scale: one university, hundreds to a few thousand users. (Several
+schools on one site is planned but waits on the client: `docs/TODO.md`, "Future" section.)
 Everything is on one domain, so the session cookie, CSRF and WebSocket all stay same-origin.
 
 | Piece | Choice | Why |
