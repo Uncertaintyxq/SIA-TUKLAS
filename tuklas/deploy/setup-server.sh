@@ -58,7 +58,7 @@ fi
 apt-get update -q
 apt-get install -yq nginx mysql-server supervisor certbot python3-certbot-nginx nodejs \
   php8.4-fpm php8.4-cli php8.4-mysql php8.4-mbstring php8.4-xml php8.4-curl php8.4-zip \
-  php8.4-intl php8.4-bcmath php8.4-opcache php8.4-readline
+  php8.4-intl php8.4-bcmath php8.4-opcache php8.4-readline age rclone
 
 if ! command -v composer >/dev/null; then
   echo "==> Composer (checked against its published signature)"
@@ -136,9 +136,16 @@ install -m 644 "$HERE/supervisor.conf" /etc/supervisor/conf.d/tuklas.conf
 supervisorctl reread >/dev/null
 supervisorctl update >/dev/null || true
 
-echo "==> Scheduler (Laravel's scheduled jobs, such as the weekly digest email)"
-# umask 002 like PHP-FPM and Supervisor, so logs it starts stay writable by the deploy user
-echo '* * * * * www-data umask 002 && cd /var/www/tuklas/current && php artisan schedule:run >> /dev/null 2>&1' > /etc/cron.d/tuklas
+echo "==> Scheduler and nightly backup"
+install -d -m 700 -o "$DEPLOY_USER" -g "$DEPLOY_USER" /var/backups/tuklas
+# The scheduler runs Laravel's scheduled jobs (the weekly digest), with umask 002 like PHP-FPM and
+# Supervisor so logs it starts stay writable by the deploy user. The backup runs at 14:30 UTC,
+# 10:30 PM in the Philippines: before the 11 PM auto-shutdown, while the server is still on.
+# It does nothing useful until BACKUP_AGE_RECIPIENT is in the .env (deploy/README.md).
+cat > /etc/cron.d/tuklas <<CRON
+* * * * * www-data umask 002 && cd /var/www/tuklas/current && php artisan schedule:run >> /dev/null 2>&1
+30 14 * * * $DEPLOY_USER bash /var/www/tuklas/current/deploy/backup.sh >> /var/backups/tuklas/backup.log 2>&1
+CRON
 chmod 644 /etc/cron.d/tuklas
 
 # deploy.sh needs these without a password prompt (Azure's login user already has full sudo)
