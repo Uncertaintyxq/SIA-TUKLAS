@@ -7,6 +7,7 @@ Each `.pdf` is the original record. The `.md` files hold the same text in search
 |---|---|
 | [August_31_2026.md](August_31_2026.md) · `.pdf` | Kickoff meeting with the client (the client): scope, approval rule, ads, timeline, plus the written Q&A |
 | [October_1_2026.md](October_1_2026.md) · `.pdf` · `.docx` | UI design progress: login screen, palette, open questions |
+| [FEATURES.md](FEATURES.md) | Feature inventory by role (2026-11-01), comparison with social media and research sites, and the ten features decided from it |
 | `prototype.html` | Working single-file prototype: the feature spec, copy and demo data (also at the repo root as `index.html`) |
 
 ## Client requirements in short
