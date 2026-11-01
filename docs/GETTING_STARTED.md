@@ -104,6 +104,10 @@ so the browser sees one site and the sign-in cookies work. Ctrl+C stops all four
 You can still run the parts separately, each in its own terminal (`php artisan serve`, and so on,
 plus `npm run dev -w client` for the site).
 
+On a server there is no Vite: `npm run build` writes the site to `tuklas/public/build/` and Laravel
+hands out its page for every address (`routes/web.php`). Locally, keep using :5173; the build at
+:8000 has no hot reload, live updates or sign-in (those are set up for :5173).
+
 **Testing sign-in security:** set `DEMO_MODE=false` in `.env` and restart `npm run dev`.
 Educators and admins are then asked to set up 2FA (any authenticator app works), and new
 accounts must confirm their email. Emails go to `storage/logs/laravel.log`: copy the link from
