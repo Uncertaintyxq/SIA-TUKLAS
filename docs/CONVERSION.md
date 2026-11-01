@@ -299,6 +299,16 @@ branch rule; the deployment plan is in [DEPLOYMENT.md](DEPLOYMENT.md).
   Every reporter is told the outcome; nobody is told who reported them. Admins can't resolve reports
   about themselves. Reports are in the data export, and go with a deleted account.
 
+- 2026-11-02: `feat/search-indexing`. Public work, publication and portfolio pages are served with
+  their own title, description, canonical link, Open Graph/Twitter tags and Google Scholar
+  `citation_*` tags (`app/Support/PageMeta.php`, used by `SpaController`), plus a plain copy of the
+  content inside `#root` for crawlers without JavaScript; React replaces it on load. Everything else
+  is served with `noindex` (except `/`). `/sitemap.xml` lists public works, publications and the
+  portfolios of their authors only; `/robots.txt` is generated and keeps crawlers out of `/api/`
+  except public PDFs and photos. Browser tabs now show the page's title (`usePageTitle`).
+  **Existing servers:** remove the old `location = /robots.txt` line from the installed Nginx site
+  (`deploy/nginx.conf` no longer has it), or robots.txt answers 404.
+
 ## How the code is laid out (for the next modules)
 
 - **Routes:** `routes/modules/<module>.php`, required from `routes/api.php`. Signed-in groups use

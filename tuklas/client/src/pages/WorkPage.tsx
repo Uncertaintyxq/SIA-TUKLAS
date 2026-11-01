@@ -26,11 +26,13 @@ import { Skeleton } from '../components/ui/Skeleton';
 import { useToast } from '../components/ui/Toast';
 import { workSource } from '../lib/citation';
 import { entryNo, fmtDate, relTime } from '../lib/format';
+import { usePageTitle } from '../lib/usePageTitle';
 import styles from './WorkPage.module.css';
 
 export function WorkPage() {
   const id = Number(useParams().id);
   const { data: work, isPending, error } = useWork(id);
+  usePageTitle(work?.title);
   // Tuko cheers on the approval sheet right after the reviewer approves.
   const [approvedNow, setApprovedNow] = useState(false);
 

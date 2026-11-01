@@ -18,11 +18,13 @@ import { Skeleton } from '../components/ui/Skeleton';
 import { useToast } from '../components/ui/Toast';
 import { publicationSource } from '../lib/citation';
 import { fmtDate } from '../lib/format';
+import { usePageTitle } from '../lib/usePageTitle';
 import styles from './PublicationPage.module.css';
 
 export function PublicationPage() {
   const id = Number(useParams().id);
   const { data: p, isPending, error } = usePublication(id);
+  usePageTitle(p?.title);
   const del = useDeletePublication();
   const share = useShare();
   const toast = useToast();

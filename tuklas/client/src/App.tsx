@@ -36,6 +36,7 @@ import { PublicationPage } from './pages/PublicationPage';
 import { ReviewPage } from './pages/ReviewPage';
 import { WorkPage } from './pages/WorkPage';
 import styles from './App.module.css';
+import { resetTitleOnNavigate } from './lib/usePageTitle';
 
 function RequireAuth() {
   const { data: me, isPending, error } = useMe();
@@ -147,6 +148,7 @@ const router = createBrowserRouter([
     ],
   },
 ]);
+resetTitleOnNavigate(router);
 
 export function App() {
   const { data: me } = useMe();
