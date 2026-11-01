@@ -1,8 +1,7 @@
 # Free staging server on Azure for Students
 
 One script creates a small Ubuntu server for public testing, set up so it stays inside the student
-credit. It only creates the server; installing Tuklas on it is `chore/deploy-server-config` (see
-`docs/TODO.md`). Prices and student benefits change: check the figures in the portal.
+credit. It only creates the server; installing Tuklas on it is [`../README.md`](../README.md). Prices and student benefits change: check the figures in the portal.
 
 ## What you get
 
@@ -43,8 +42,8 @@ out, Azure turns the services off instead of billing you.
    ```
    Optional: `--dns-label tuklas-sia` to choose the address (it must be free in the region).
 
-It prints the address and the SSH command when it's done (a few minutes). Keep the address: Tuklas's
-`APP_URL` will use it.
+It prints the address and the SSH command when it's done (a few minutes). Keep the address, then
+install Tuklas: [`../README.md`](../README.md).
 
 ## 3. Day to day
 
