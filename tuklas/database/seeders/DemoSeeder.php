@@ -467,7 +467,7 @@ class DemoSeeder extends Seeder
     {
         $lab = [self::SANTOS, self::ANDREA, self::KIM, self::AQUINO];
 
-        $this->conversation(['kind' => 'direct', 'direct_key' => Conversation::directKey(self::ANDREA, self::KIM)], [self::ANDREA, self::KIM], [
+        $this->conversation(['id' => 1, 'kind' => 'direct', 'direct_key' => Conversation::directKey(self::ANDREA, self::KIM)], [self::ANDREA, self::KIM], [
             [self::KIM, 30, 'Hi Andrea! Saw your comment on the flood mesh. Want to try feeding my river sensor readings into it?'],
             [self::ANDREA, 29, 'Yes! The mesh accepts any reading over LoRa. What’s your sensor’s update interval?'],
             [self::KIM, 28.5, 'Every 5 minutes, every minute during heavy rain.'],
@@ -475,26 +475,26 @@ class DemoSeeder extends Seeder
             [self::KIM, 1.5, 'Bringing two kits on Thursday. Can you bring the gateway?'],
         ], [self::ANDREA => 2]);
 
-        $this->conversation(['kind' => 'direct', 'direct_key' => Conversation::directKey(self::ANDREA, self::SANTOS)], [self::ANDREA, self::SANTOS], [
+        $this->conversation(['id' => 2, 'kind' => 'direct', 'direct_key' => Conversation::directKey(self::ANDREA, self::SANTOS)], [self::ANDREA, self::SANTOS], [
             [self::ANDREA, 50, 'Good afternoon, Dr. Santos. I uploaded my Chapter 3 draft to the lab’s files. Could you check the sampling section?'],
             [self::SANTOS, 47, 'Thanks, Andrea. I’ll read it tonight. Make sure you justify why you chose three barangays and not five.'],
             [self::ANDREA, 46, 'Noted, I’ll add that to 3.2. Thank you!'],
         ]);
 
-        $this->conversation(['kind' => 'direct', 'direct_key' => Conversation::directKey(self::SANTOS, self::AQUINO)], [self::SANTOS, self::AQUINO], [
+        $this->conversation(['id' => 3, 'kind' => 'direct', 'direct_key' => Conversation::directKey(self::SANTOS, self::AQUINO)], [self::SANTOS, self::AQUINO], [
             [self::SANTOS, 72, 'Ramon, would you mentor the lab on writing for non-specialist readers? Our alert messages need a writer’s ear.'],
             [self::AQUINO, 70, 'Happy to. Add me to the group and I’ll run a session on plain-language alerts.'],
             [self::SANTOS, 69, 'Done. Thank you!'],
         ]);
 
-        $this->conversation(['kind' => 'channel', 'research_group_id' => 1, 'name' => 'general'], $lab, [
+        $this->conversation(['id' => 4, 'kind' => 'channel', 'research_group_id' => 1, 'name' => 'general'], $lab, [
             [self::SANTOS, 26, 'Welcome back, everyone. Lab meeting moves to Thursday this week (see the announcement).'],
             [self::ANDREA, 25, 'Got it. I’ll present the mesh latency results.'],
             [self::KIM, 24, 'I’ll bring the river sensor kits for a live demo.'],
             [self::AQUINO, 6, 'Looking forward to it. I’ll bring examples of alert messages that residents found clear.'],
         ], [self::ANDREA => 7]);
 
-        [$methods, $ids] = $this->conversation(['kind' => 'channel', 'research_group_id' => 1, 'name' => 'chapter-3-methods'], $lab, [
+        [$methods, $ids] = $this->conversation(['id' => 5, 'kind' => 'channel', 'research_group_id' => 1, 'name' => 'chapter-3-methods'], $lab, [
             [self::ANDREA, 52, 'Chapter 3 outline is in the files. Comments welcome before Friday.'],
             [self::KIM, 20, 'Question: do we report the sensor calibration in Methods or in an appendix?'],
         ]);
@@ -515,7 +515,7 @@ class DemoSeeder extends Seeder
             GroupActivity::create(['research_group_id' => $group, 'actor_id' => $actor, 'action' => $action, 'detail' => $detail, 'created_at' => $at]);
         }
 
-        $this->conversation(['kind' => 'channel', 'research_group_id' => 2, 'name' => 'general'], [self::AQUINO, self::PAOLO], [
+        $this->conversation(['id' => 6, 'kind' => 'channel', 'research_group_id' => 2, 'name' => 'general'], [self::AQUINO, self::PAOLO], [
             [self::AQUINO, 40, 'Folio manuscripts are due in three weeks. Post questions here.'],
             [self::PAOLO, 38, 'Sir, can essays go over 3,000 words if the folio editor agrees?'],
             [self::AQUINO, 37, 'Yes, up to 4,000 with the editor’s approval.'],
@@ -524,7 +524,8 @@ class DemoSeeder extends Seeder
 
     /**
      * A conversation with its members and messages. Everyone has read everything unless $readUpTo
-     * says how many hours back they stopped.
+     * says how many hours back they stopped. Ids are fixed, like the other demo rows, so links and
+     * tests mean the same conversation on every database (MySQL doesn't reuse rolled-back ids).
      *
      * @param  array<string, mixed>  $attributes
      * @param  list<int>  $memberIds

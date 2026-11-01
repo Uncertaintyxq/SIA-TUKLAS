@@ -77,9 +77,14 @@ Listed in `.claude/scope.json` under `hotFiles`. Rules:
 review the diff against these conventions and the row's Scope, offers a browser check for UI
 changes, marks the row Done in `docs/TODO.md`, and asks before merging.
 
+GitHub Actions (`.github/workflows/ci.yml`) checks every pushed branch: Pint, the tests on MySQL 8,
+`composer audit` and `npm audit` for shipped packages, and the client's typecheck, lint and build.
+Merge only when your branch's latest run is green: the **Actions** tab on GitHub, or the ✓/✗ next to
+the commit.
+
 ## Recommended GitHub settings (repo owner)
 
-- Branch protection on `main`: require a pull request and passing checks (once `chore/ci` lands),
+- Branch protection on `main`: require a pull request and the passing `ci` checks,
   block force pushes. If you adopt this, merge through PRs instead of local `--no-ff` merges.
 - "Automatically delete head branches".
 - Fill in `.github/CODEOWNERS` with GitHub usernames.

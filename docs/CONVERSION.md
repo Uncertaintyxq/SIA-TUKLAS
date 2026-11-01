@@ -326,6 +326,13 @@ branch rule; the deployment plan is in [DEPLOYMENT.md](DEPLOYMENT.md).
   reacted message without counting it as new; `conversation_read` is pushed only when the reader
   had something unread, so two open tabs can't keep waking each other.
 
+- 2026-11-02: `chore/ci`. `.github/workflows/ci.yml` runs on every pushed branch: Laravel (Pint,
+  `composer audit --no-dev`, the suite on MySQL 8.4 with PHP 8.4, like the servers) and the React app
+  (`npm audit` for shipped packages, typecheck, lint, build). When tests fail, the failing test names
+  and the end of the output appear as an annotation on the run's page. Running on MySQL for the first
+  time showed the demo conversations had no fixed ids (MySQL doesn't reuse rolled-back ids), so
+  `DemoSeeder` now fixes them at 1–6; and `tests/Unit/.gitkeep` keeps the empty suite folder in git.
+
 ## How the code is laid out (for the next modules)
 
 - **Routes:** `routes/modules/<module>.php`, required from `routes/api.php`. Signed-in groups use
