@@ -106,3 +106,18 @@ Decided 2026-11-01. Each is a row in `docs/TODO.md`.
 later). **Only if the university asks:** DOIs (they need a Crossref membership), an OAI-PMH feed
 for repository harvesters, full-text search inside PDFs. **Not planned:** reposts, stories and
 polls; Tuklas is academic, not general social media (client requirement 1).
+
+## 4. Several schools on one site (2026-11-02)
+
+The build assumes one university per Tuklas site (`docs/DEPLOYMENT.md`); the client's notes don't say
+either way. Users from several schools on one site would break a few things: department
+announcements reach every school with a department of the same name, the digest and library mix
+schools, one set of admins handles every school, and Google Scholar gets one university name
+(`TUKLAS_INSTITUTION`) for everyone.
+
+Decided: if the client wants several schools on one site, build all of it: an institution for every
+person (picked at signup, matched by email domain), departments, announcements, the digest and
+browsing scoped to the institution, admins per institution with super-admins, and Google Scholar
+using each author's own institution. Three rows in `docs/TODO.md` ("Future: several schools on one
+site"), waiting on the client's answer. If the answer is one site per school, nothing changes and
+each server sets `TUKLAS_INSTITUTION`.
