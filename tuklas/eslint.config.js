@@ -25,6 +25,11 @@ export default tseslint.config(
     languageOptions: { sourceType: 'script', globals: globals.browser },
   },
   {
+    // The service worker runs in its own scope (self.registration, clients, caches)
+    files: ['client/public/sw.js'],
+    languageOptions: { sourceType: 'script', globals: globals.serviceworker },
+  },
+  {
     files: ['client/**/*.{ts,tsx}'],
     languageOptions: { globals: globals.browser },
     plugins: { react, 'react-hooks': reactHooks },

@@ -32,7 +32,8 @@ class SecurityHeaders
             // doesn't run under `sandbox`. The type is fixed by the server and nosniff is on.
             $headers->set('X-Frame-Options', 'SAMEORIGIN');
             $headers->set('Content-Security-Policy', "frame-ancestors 'self'");
-        } elseif (str_contains($type, 'text/html') && ! $request->is('api/*')) {
+        } elseif ((str_contains($type, 'text/html') && ! $request->is('api/*')) || $request->is('sw.js')) {
+            // The service worker runs under its own response's policy, so it gets the app's (it fetches pages)
             $headers->set('Content-Security-Policy', config('tuklas.csp'));
         } else {
             $headers->set('Content-Security-Policy', "default-src 'none'; frame-ancestors 'none'; sandbox");

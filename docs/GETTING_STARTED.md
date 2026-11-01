@@ -108,6 +108,11 @@ On a server there is no Vite: `npm run build` writes the site to `tuklas/public/
 hands out its page for every address (`routes/web.php`). Locally, keep using :5173; the build at
 :8000 has no hot reload, live updates or sign-in (those are set up for :5173).
 
+**Testing push notifications** (Account and security → Notifications): make the server's push keys
+once with `php artisan tuklas:vapid-keys --write=.env`, restart `npm run dev`, and use Chrome or Edge
+at <http://localhost:5173> (browsers allow push on localhost without HTTPS). The service worker is
+registered in development too; to start clean, DevTools → Application → Service workers → Unregister.
+
 **Testing sign-in security:** set `DEMO_MODE=false` in `.env` and restart `npm run dev`.
 Educators and admins are then asked to set up 2FA (any authenticator app works), and new
 accounts must confirm their email. Emails go to `storage/logs/laravel.log`: copy the link from
