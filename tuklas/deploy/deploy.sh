@@ -65,6 +65,13 @@ if [[ "$SEED" == true ]] && grep -q '^APP_ENV=production' .env; then
   echo "--seed loads demo accounts; it's refused when APP_ENV=production." >&2
   exit 1
 fi
+# A migration can't be undone by switching the symlink back, so take a backup first (backup.sh).
+# Skipped until backups are set up (BACKUP_AGE_RECIPIENT in .env), and when nothing is pending.
+if grep -q '^BACKUP_AGE_RECIPIENT=age1' .env && php artisan migrate:status --pending 2>/dev/null | grep -q 'Pending'; then
+  echo "==> Backup before migrating"
+  bash "$APP/deploy/backup.sh" --label pre-migrate
+fi
+
 echo "==> Database migrations"
 php artisan migrate --force $([[ "$SEED" == true ]] && echo --seed)
 

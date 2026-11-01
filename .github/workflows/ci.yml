@@ -108,3 +108,76 @@ jobs:
       - run: npm run typecheck
       - run: npm run lint
       - run: npm run build
+
+  # A backup that has never been restored doesn't count (docs/DEPLOYMENT.md). This backs up a seeded
+  # MySQL database and some uploads with deploy/backup.sh, damages both, restores with
+  # deploy/restore.sh and checks everything came back.
+  backups:
+    name: Backup and restore (deploy/backup.sh, restore.sh)
+    runs-on: ubuntu-24.04
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_DATABASE: tuklas
+          MYSQL_USER: tuklas
+          MYSQL_PASSWORD: tuklas
+          MYSQL_ROOT_PASSWORD: root
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=5s --health-timeout=5s --health-retries=20
+    steps:
+      - uses: actions/checkout@v5
+
+      # The server's layout (setup-server.sh), with this checkout as the live release
+      - name: Paths
+        working-directory: .
+        run: |
+          echo "APP_ROOT=$RUNNER_TEMP/app" >> "$GITHUB_ENV"
+          echo "BACKUP_DIR=$RUNNER_TEMP/backups" >> "$GITHUB_ENV"
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, intl, pdo_mysql, sodium, zip, bcmath
+          coverage: none
+
+      - run: composer install --no-interaction --prefer-dist --no-progress
+      - run: sudo apt-get install -y -q age
+
+      - name: Lay out a server, seed the database, add uploads, make a backup key
+        run: |
+          mkdir -p "$APP_ROOT/shared/storage/app/private/works"
+          ln -s "$GITHUB_WORKSPACE/tuklas" "$APP_ROOT/current"
+          cp .env.example "$APP_ROOT/shared/.env"
+          ln -sf "$APP_ROOT/shared/.env" .env
+          php artisan key:generate
+          age-keygen -o "$RUNNER_TEMP/backup-key.txt" 2>/dev/null
+          echo "BACKUP_AGE_RECIPIENT=$(age-keygen -y "$RUNNER_TEMP/backup-key.txt")" >> "$APP_ROOT/shared/.env"
+          php artisan migrate --seed --force
+          echo "the original paper" > "$APP_ROOT/shared/storage/app/private/works/paper.pdf"
+
+      - name: Back up
+        run: bash deploy/backup.sh
+
+      - name: Damage the database and the uploads
+        run: |
+          mysql -h 127.0.0.1 -utuklas -ptuklas tuklas -e "DELETE FROM messages; DROP TABLE reports; UPDATE works SET title = 'Vandalised';"
+          echo "changed" > "$APP_ROOT/shared/storage/app/private/works/paper.pdf"
+          echo "not in the backup" > "$APP_ROOT/shared/storage/app/private/stray.txt"
+
+      - name: Restore
+        run: bash deploy/restore.sh "$(ls "$BACKUP_DIR"/tuklas-*.tar.age)" --identity "$RUNNER_TEMP/backup-key.txt" --yes
+
+      - name: Check everything came back
+        run: |
+          q() { mysql -h 127.0.0.1 -utuklas -ptuklas tuklas -N -e "$1"; }
+          test "$(q 'SELECT COUNT(*) FROM messages')" -gt 0
+          test "$(q "SELECT COUNT(*) FROM works WHERE title = 'Vandalised'")" -eq 0
+          q 'SELECT COUNT(*) FROM reports' > /dev/null
+          test "$(cat "$APP_ROOT/shared/storage/app/private/works/paper.pdf")" = "the original paper"
+          test ! -e "$APP_ROOT/shared/storage/app/private/stray.txt"
+          test ! -e storage/framework/down
+          ! php artisan migrate:status --pending | grep -q Pending
+          echo "Restored and checked."
