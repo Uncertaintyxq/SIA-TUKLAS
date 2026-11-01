@@ -9,6 +9,7 @@ use App\Http\Resources\UserCardResource;
 use App\Models\Conversation;
 use App\Models\ConversationMember;
 use App\Models\Message;
+use App\Models\MessageReaction;
 use App\Models\User;
 use App\Support\Cards;
 use App\Support\Chat;
@@ -19,6 +20,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
@@ -97,16 +99,31 @@ class ChatController extends Controller
 
         return response()->json([
             'conversation' => $this->summary($c, $me),
-            'messages' => $rows->take(self::PAGE)->reverse()->values()->map(fn (Message $m) => $this->view($m, $this->mayDelete($c, $m, $me))),
+            'messages' => $rows->take(self::PAGE)->reverse()->values()->map(fn (Message $m) => $this->view($m, $this->mayDelete($c, $m, $me), $me->id)),
             'hasMore' => $rows->count() > self::PAGE,
+            // How far everyone else has read, for "Seen by" under my latest message
+            'readers' => ConversationMember::with('user:id,name')->where('conversation_id', $c->id)->where('user_id', '!=', $me->id)->get()
+                ->filter(fn ($r) => $r->user !== null)
+                ->map(fn ($r) => ['id' => $r->user_id, 'name' => $r->user->name, 'readAt' => $r->last_read_at->toISOString()])->values(),
         ]);
     }
 
     /** POST /api/chat/conversations/{id}/read — moves my read marker to now */
     public function markRead(Request $request, int $id): Response
     {
-        $c = $this->open($id, $request->user());
-        ConversationMember::where('conversation_id', $c->id)->where('user_id', $request->user()->id)->update(['last_read_at' => now()]);
+        $me = $request->user();
+        $c = $this->open($id, $me);
+        $marker = ConversationMember::where('conversation_id', $c->id)->where('user_id', $me->id);
+        $before = $marker->value('last_read_at');
+        $marker->update(['last_read_at' => now()]);
+
+        // The others' "Seen by" changes only when there was something new to read. Telling them on every
+        // call would loop: their tab refetches, marks read, and tells me back.
+        $hadUnread = Message::where('conversation_id', $c->id)->where('sender_id', '!=', $me->id)
+            ->when($before, fn ($q) => $q->where('created_at', '>', $before))->exists();
+        if ($hadUnread) {
+            Chat::announceRead($c->id, $me->id);
+        }
 
         return response()->noContent();
     }
@@ -127,7 +144,7 @@ class ChatController extends Controller
 
         $m = $this->deliver($c, $me, ['parent_id' => $parentId, 'text' => $input['text']]);
 
-        return response()->json($this->view($m, true), 201);
+        return response()->json($this->view($m, true, $me->id), 201);
     }
 
     /**
@@ -150,7 +167,7 @@ class ChatController extends Controller
             $fields['file'] = $upload['file'];
         }
 
-        return response()->json($this->view($this->deliver($c, $me, $fields), true), 201);
+        return response()->json($this->view($this->deliver($c, $me, $fields), true, $me->id), 201);
     }
 
     /** GET /api/chat/messages/{id}/replies — a thread: the message and its replies, oldest first */
@@ -165,9 +182,46 @@ class ChatController extends Controller
         $replies = $this->withMessageData(Message::where('parent_id', $parent->id))->orderBy('id')->get();
 
         return response()->json([
-            'parent' => $this->view($parent, $this->mayDelete($c, $parent, $me)),
-            'replies' => $replies->map(fn (Message $m) => $this->view($m, $this->mayDelete($c, $m, $me))),
+            'parent' => $this->view($parent, $this->mayDelete($c, $parent, $me), $me->id),
+            'replies' => $replies->map(fn (Message $m) => $this->view($m, $this->mayDelete($c, $m, $me), $me->id)),
         ]);
+    }
+
+    /** PATCH /api/chat/messages/{id} {text} — the sender changes their message; it shows "edited" */
+    public function update(Request $request, int $id): JsonResponse
+    {
+        $me = $request->user();
+        $m = Message::whereNull('deleted_at')->find($id) ?? throw new HttpException(404, self::NOT_FOUND);
+        $this->open($m->conversation_id, $me);
+        if ($m->sender_id !== $me->id) {
+            throw new HttpException(403, 'Only the sender can edit a message.');
+        }
+        // A file's caption may be emptied; a text message needs text
+        $text = trim((string) $request->validate(
+            ['text' => [$m->file_name ? 'nullable' : 'required', 'string', 'max:4000']],
+            ['text.max' => 'Keep a message under 4,000 characters', 'text.required' => 'Write a message first'],
+        )['text'] ?? '');
+        if ($text !== $m->text) {
+            $m->forceFill(['text' => $text, 'edited_at' => now()])->save();
+            Chat::announceChange($m->conversation_id, $m->id);
+        }
+
+        return response()->json($this->view($this->withMessageData(Message::query())->findOrFail($m->id), true, $me->id));
+    }
+
+    /** POST /api/chat/messages/{id}/reactions {emoji} — adds my reaction, or takes it back if it's there */
+    public function react(Request $request, int $id): JsonResponse
+    {
+        $me = $request->user();
+        $emoji = $request->validate(['emoji' => ['required', Rule::in(MessageReaction::EMOJI)]], ['emoji.*' => 'Pick one of the reactions.'])['emoji'];
+        $m = Message::whereNull('deleted_at')->find($id) ?? throw new HttpException(404, self::NOT_FOUND);
+        $c = $this->open($m->conversation_id, $me);
+
+        $mine = MessageReaction::where(['message_id' => $m->id, 'user_id' => $me->id, 'emoji' => $emoji]);
+        $mine->exists() ? $mine->delete() : MessageReaction::create(['message_id' => $m->id, 'user_id' => $me->id, 'emoji' => $emoji]);
+        Chat::announceChange($m->conversation_id, $m->id);
+
+        return response()->json($this->view($this->withMessageData(Message::query())->findOrFail($m->id), $this->mayDelete($c, $m, $me), $me->id));
     }
 
     /** GET /api/chat/messages/{id}/file — PDFs and images open inline; everything else downloads */
@@ -229,7 +283,7 @@ class ChatController extends Controller
                 $last = $this->withMessageData(Message::where('conversation_id', $c->id)->whereNull('deleted_at'))->latest('id')->first();
 
                 return $last === null ? null : [
-                    'message' => $this->view($last, false),
+                    'message' => $this->view($last, false, $me->id),
                     'conversation' => [
                         'id' => $c->id, 'kind' => $c->kind->value, 'name' => $this->nameOf($c, $me),
                         'group' => $c->group?->only(['id', 'name']),
@@ -286,11 +340,11 @@ class ChatController extends Controller
 
     private function withMessageData($query)
     {
-        return $query->with(Cards::user('sender'))->withCount(['replies' => fn ($q) => $q->whereNull('deleted_at')]);
+        return $query->with([...Cards::user('sender'), 'reactions.user:id,name'])->withCount(['replies' => fn ($q) => $q->whereNull('deleted_at')]);
     }
 
     /** @return array<string, mixed> */
-    private function view(Message $m, bool $canDelete): array
+    private function view(Message $m, bool $canDelete, int $meId): array
     {
         $deleted = $m->deleted_at !== null;
         $stored = $m->file !== null || $m->group_file_id !== null;
@@ -309,7 +363,19 @@ class ChatController extends Controller
             'removedFile' => ! $deleted && ! $stored && $m->file_name ? $m->file_name : null,
             'replyCount' => (int) $m->replies_count,
             'createdAt' => $m->created_at->toISOString(),
+            'editedAt' => $deleted ? null : $m->edited_at?->toISOString(),
+            // Grouped by emoji, in the picker's order, with who reacted (names only)
+            'reactions' => $deleted ? [] : collect(MessageReaction::EMOJI)
+                ->map(fn ($e) => [$e, $m->reactions->where('emoji', $e)])
+                ->filter(fn ($pair) => $pair[1]->isNotEmpty())
+                ->map(fn ($pair) => [
+                    'emoji' => $pair[0],
+                    'count' => $pair[1]->count(),
+                    'mine' => $pair[1]->contains('user_id', $meId),
+                    'people' => $pair[1]->map(fn ($r) => $r->user?->name ?? 'Former member')->values(),
+                ])->values(),
             'canDelete' => ! $deleted && $canDelete,
+            'canEdit' => ! $deleted && $m->sender_id === $meId,
         ];
     }
 

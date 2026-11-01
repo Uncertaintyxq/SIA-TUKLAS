@@ -56,6 +56,11 @@ export const useSendFile = () =>
 
 export const useDeleteMessage = () => useChatAction((id: number) => api(`/chat/messages/${id}`, { method: 'DELETE' }));
 
+export const useEditMessage = () => useChatAction(({ id, text }: { id: number; text: string }) => api<MessageView>(`/chat/messages/${id}`, { method: 'PATCH', body: { text } }));
+
+/** Adds my reaction, or takes it back if it's already there. */
+export const useReactToMessage = () => useChatAction(({ id, emoji }: { id: number; emoji: string }) => api<MessageView>(`/chat/messages/${id}/reactions`, { body: { emoji } }));
+
 /** Moves my read marker; only the lists and badges need refreshing, not the open conversation. */
 export function useMarkConversationRead() {
   const qc = useQueryClient();

@@ -318,6 +318,14 @@ branch rule; the deployment plan is in [DEPLOYMENT.md](DEPLOYMENT.md).
   suite at about 20 seconds. **Servers** need the scheduler's cron line (`docs/STAGING_SERVER.md`,
   one-time steps). Locally, `php artisan schedule:work` runs scheduled jobs.
 
+- 2026-11-02: `feat/chat-polish`. Senders edit their messages in place (`PATCH /api/chat/messages/{id}`;
+  "(edited)" shows, the earlier text isn't kept). Anyone in the chat reacts with one of six emoji
+  (`POST …/reactions` toggles; `message_reactions`), with who reacted on hover. "Seen" (direct) or
+  "Seen by …" (channel) shows under my latest message, from the others' `last_read_at`, which the
+  conversation response now includes as `readers`. Live: `message_changed` refetches an edited or
+  reacted message without counting it as new; `conversation_read` is pushed only when the reader
+  had something unread, so two open tabs can't keep waking each other.
+
 ## How the code is laid out (for the next modules)
 
 - **Routes:** `routes/modules/<module>.php`, required from `routes/api.php`. Signed-in groups use

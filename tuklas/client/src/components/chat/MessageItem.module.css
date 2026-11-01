@@ -95,6 +95,109 @@
   border-color: var(--action);
 }
 
+/* ---------- Edited, reactions, editing ---------- */
+
+.edited {
+  color: var(--text-faint);
+  font-size: var(--fs-tiny);
+}
+
+.reactions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1);
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.reaction {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 28px;
+  padding: 0 var(--s-2);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-pill);
+  background: var(--sheet);
+  font-size: var(--fs-small);
+  cursor: pointer;
+}
+
+.reaction:hover {
+  border-color: var(--rule-strong);
+}
+
+.reaction[aria-pressed='true'] {
+  border-color: var(--action);
+  background: color-mix(in srgb, var(--lavender) 45%, var(--sheet));
+}
+
+.reactionCount {
+  font-family: var(--font-mono);
+  font-size: var(--fs-tiny);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-soft);
+}
+
+.picker {
+  justify-self: start;
+  display: flex;
+  gap: 2px;
+  margin-top: 2px;
+  padding: 2px;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-pill);
+  background: var(--sheet);
+  box-shadow: var(--lift-2);
+}
+
+.pick {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: none;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.pick:hover,
+.pick[aria-pressed='true'] {
+  background: var(--tab);
+}
+
+.editBox {
+  display: grid;
+  gap: var(--s-2);
+}
+
+.editInput {
+  width: 100%;
+  padding: var(--s-2) var(--s-3);
+  border: 1px solid var(--action);
+  border-radius: var(--radius-control);
+  background: var(--sheet);
+  line-height: 1.4;
+  resize: vertical;
+}
+
+.editActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--s-2);
+}
+
+.editHint {
+  margin-right: auto;
+  color: var(--text-faint);
+  font-size: var(--fs-tiny);
+}
+
 /* Hover tools, top right, like a margin note */
 .actions {
   position: absolute;
