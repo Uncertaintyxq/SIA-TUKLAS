@@ -1,0 +1,74 @@
+name: scope-overlap
+
+# Comments on a PR when it changes files that another open PR also changes,
+# so both developers know about a likely conflict early. Informational only:
+# it never fails the build.
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: scope-overlap-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  overlap:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: Compare changed files with other open PRs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          MARKER='<!-- scope-overlap -->'
+
+          gh pr list -R "$REPO" --state open --limit 100 \
+            --json number,title,author,headRefName,files > prs.json
+
+          jq -r --argjson pr "$PR" '
+            ((map(select(.number == $pr))[0].files // []) | map(.path)) as $mine
+            | map(select(.number != $pr))
+            | map({
+                number, title,
+                author: .author.login,
+                shared: ([.files[].path] - ([.files[].path] - $mine))
+              })
+            | map(select(.shared | length > 0))
+            | .[]
+            | "- #\(.number) **\(.title)** (@\(.author)) — " + (.shared | map("`" + . + "`") | join(", "))
+          ' prs.json > overlaps.md
+
+          existing=$(gh api "repos/$REPO/issues/$PR/comments" --paginate \
+            --jq ".[] | select(.body | contains(\"$MARKER\")) | .id" | head -n1 || true)
+
+          if [ -s overlaps.md ]; then
+            {
+              echo "$MARKER"
+              echo "### ⚠ Files shared with other open PRs"
+              echo
+              cat overlaps.md
+              echo
+              echo "Coordinate before merging: sequence the PRs, extract the shared change into a small PR, or agree who edits what. See \`docs/COLLABORATION.md\`."
+            } > body.md
+            echo "::warning::This PR shares files with other open PRs"
+          elif [ -n "$existing" ]; then
+            printf '%s\n### ✅ No file overlap with other open PRs anymore\n' "$MARKER" > body.md
+          else
+            echo "No overlap."
+            exit 0
+          fi
+
+          if [ -n "$existing" ]; then
+            gh api -X PATCH "repos/$REPO/issues/comments/$existing" -F body=@body.md > /dev/null
+          else
+            gh pr comment "$PR" -R "$REPO" --body-file body.md
+          fi

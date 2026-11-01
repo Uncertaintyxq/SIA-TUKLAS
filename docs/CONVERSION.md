@@ -265,6 +265,14 @@ branch rule; the deployment plan is in [DEPLOYMENT.md](DEPLOYMENT.md).
   `tuklas_laravel` database is no longer needed). `npm run dev` now starts `php artisan serve`,
   `reverb:start`, `queue:work` and Vite together.
 
+- 2026-11-01: `chore/claude-code-kit`. The team's Claude Code setup is in the repo: `CLAUDE.md`,
+  `docs/PROJECT.md`, `ARCHITECTURE.md`, `CONVENTIONS.md`, `COLLABORATION.md`, `docs/decisions/`,
+  `.claude/` (settings, hooks, path rules, six commands, a review subagent) and `.github/`
+  (PR and task templates, CODEOWNERS, scope-overlap workflow). Adapted from the generic kit: the
+  workflow uses `docs/TODO.md` rows instead of GitHub issues, rules match this codebase (React
+  client, demo-seeded tests, 404 for hidden things), hot files carry the `tuklas/` prefix, and the
+  format hook runs Pint from `tuklas/` after a syntax check, never Prettier.
+
 ## How the code is laid out (for the next modules)
 
 - **Routes:** `routes/modules/<module>.php`, required from `routes/api.php`. Signed-in groups use
