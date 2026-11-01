@@ -85,6 +85,17 @@ class LoginTest extends TestCase
             ->assertJsonPath('user.twoFactorRequired', true);
     }
 
+    public function test_logging_in_counts_as_confirming_the_password(): void
+    {
+        User::factory()->educator()->withoutTwoFactor()->create(['email' => 'new.adviser@tuklas.edu']);
+
+        $this->postJson('/api/auth/login', ['email' => 'new.adviser@tuklas.edu', 'password' => UserFactory::PASSWORD])->assertOk();
+
+        // Setting up 2FA right away needs no second password prompt
+        $this->getJson('/api/auth/user/confirmed-password-status')->assertJsonPath('confirmed', true);
+        $this->postJson('/api/auth/user/two-factor-authentication')->assertOk();
+    }
+
     public function test_demo_mode_does_not_ask_for_setup(): void
     {
         config(['tuklas.demo_mode' => true]);

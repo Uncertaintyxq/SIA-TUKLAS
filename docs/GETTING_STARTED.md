@@ -120,6 +120,26 @@ Educators and admins are then asked to set up 2FA (any authenticator app works),
 accounts must confirm their email. Emails go to `storage/logs/laravel.log`: copy the link from
 there into the browser. Run `php artisan queue:work` too, or queued emails never arrive.
 
+## Let Claude see the site while it builds (recommended)
+
+Tests and API scripts prove the rules, not the screens. When you build with Claude Code, connect
+**Claude in Chrome** so Claude opens the running site in your Chrome, logs in as the demo accounts,
+clicks through what it changed, reads the browser console and fixes what looks wrong, before
+calling a feature done.
+
+1. Install the **Claude** extension from the Chrome Web Store and sign in with the same account
+   you use for Claude Code.
+2. In Claude Code, run `/chrome` and connect it (from a terminal you can also start with
+   `claude --chrome`). Reopen the Claude Code panel if the browser tools don't appear.
+3. Ask Claude to check the change in the browser. It starts `php artisan serve` and
+   `npm run dev -w client` itself, works in its own tab at <http://localhost:5173>, and asks
+   before visiting any other site.
+
+Good habits: say which account and page to check ("as `kim@tuklas.edu`, hand in Chapter 3"),
+avoid running two sessions' dev servers on the same ports (see
+[PARALLEL_SESSION_PROMPT.md](PARALLEL_SESSION_PROMPT.md)), and close confirm dialogs ("Delete …?")
+yourself if one appears: they pause the extension until dismissed.
+
 ## Demo accounts
 
 Password `tuklas123` for all:
@@ -141,7 +161,7 @@ The full list, with the branch name to use for each item and the files it may to
 
 1. **React client** (`feat/client-*` branches): live updates through Reverb and the new chat
    search. (Shared types, the API connection and the account screens are done.)
-2. **Account deletion** (`feat/account-deletion`) and **group deliverables** (`feat/group-deliverables`).
+2. **Account deletion** (`feat/account-deletion`). (Group deliverables are done.)
 3. **Tooling**: Claude Code kit, CI on GitHub Actions, Larastan.
 4. **Remove the old Node server** (`chore/remove-node-server`), last.
 5. **Deployment** (`chore/deploy-*`), planned in [DEPLOYMENT.md](DEPLOYMENT.md).
@@ -170,5 +190,6 @@ someone is working on it. The full rule is at the top of [TODO.md](TODO.md).
 | Port 3306 already in use | Another MySQL is running; stop it, or change the port in `docker-compose.yml` and `.env` |
 | `MissingAttributeException` in a test | Strict mode caught a missing default; add it to the model's `$attributes` |
 | "Your session expired" (419) on every form | `APP_URL` in `.env` must be `http://localhost:5173` and `SANCTUM_STATEFUL_DOMAINS` must list `localhost:5173` (both in `.env.example`); then `php artisan config:clear` |
+| Edits don't show until you reload; the browser console keeps saying `[vite] connecting...` | Chrome can't open WebSockets to localhost (curl can). Usually an antivirus "web shield" or a browser extension. Allow `localhost` in it, or try another browser. Live updates (Reverb) need WebSockets too |
 | An emailed link opens `localhost:8000` | Restart Vite after pulling: `client/vite.config.ts` must keep `changeOrigin: false` |
 | 403 with `"code": "two_factor_required"` | Expected for educators/admins when `DEMO_MODE=false`; set up 2FA or turn demo mode on |

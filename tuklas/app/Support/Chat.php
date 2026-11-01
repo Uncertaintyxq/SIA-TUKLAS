@@ -2,6 +2,9 @@
 
 namespace App\Support;
 
+use App\Models\Conversation;
+use App\Models\ConversationMember;
+use App\Models\Message;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -30,6 +33,27 @@ class Chat
     public static function isOnline(?\DateTimeInterface $lastSeenAt): bool
     {
         return $lastSeenAt !== null && $lastSeenAt >= now()->subMinutes(2);
+    }
+
+    /**
+     * Saves a message, moves the conversation to the top, marks it read for the sender and tells
+     * every member's open tabs.
+     *
+     * @param  array<string, mixed>  $fields  text, parent_id, file fields
+     */
+    public static function post(Conversation $c, int $senderId, array $fields): Message
+    {
+        $m = DB::transaction(function () use ($c, $senderId, $fields) {
+            $m = new Message($fields + ['sender_id' => $senderId]);
+            $m->conversation()->associate($c)->save();
+            $c->forceFill(['last_message_at' => now()])->save();
+            ConversationMember::where('conversation_id', $c->id)->where('user_id', $senderId)->update(['last_read_at' => now()]);
+
+            return $m;
+        });
+        self::announce($c->id, $m->id, $m->parent_id);
+
+        return $m;
     }
 
     /** Tells every member's open tabs that a conversation changed; they refetch through the API. */
