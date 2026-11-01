@@ -1,7 +1,7 @@
 # Deployment plan
 
 How Tuklas goes from the repo to a public, secure site. The work is split into the
-`chore/deploy-*` branches in [TODO.md](TODO.md). Nothing here is set up yet.
+`chore/deploy-*` branches in [TODO.md](TODO.md). Installing on a server: [`tuklas/deploy/README.md`](../tuklas/deploy/README.md).
 
 ## What runs in production
 

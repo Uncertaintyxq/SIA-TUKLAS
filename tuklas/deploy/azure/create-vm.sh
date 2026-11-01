@@ -145,6 +145,6 @@ Done. Your staging server:
   SSH:       ssh $ADMIN@$HOST     (from the PC that has the private key)
   Shutdown:  every day 11:00 PM Philippine time; start it again with: bash vm.sh start
 
-The swap file and updates finish a few minutes after first boot. Next: installing Tuklas
-(chore/deploy-server-config). Keep the address above; Tuklas's APP_URL will use it.
+The swap file and updates finish a few minutes after first boot. Next: install Tuklas on it
+with deploy/README.md (setup-server.sh --domain $HOST, then deploy.sh --seed).
 EOF
