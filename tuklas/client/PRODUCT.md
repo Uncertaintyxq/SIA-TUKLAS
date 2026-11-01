@@ -43,7 +43,7 @@ Every public piece of student work has been signed off by a named adviser or the
   - Honors show as "Pending verification" until an admin verifies them.
 - Content priority on profiles and the feed: research and literary works first, then Academic Background (diplomas and degrees), then Honors & Awards (awards, grants, certifications).
 - Two appearance options were requested by the client: Modern, and Classic (early-to-mid-2000s LinkedIn). Plus dark mode.
-- Stack: React + Vite + TypeScript with CSS Modules (no inline styles), Framer Motion, Lucide; Express + Zod + JWT; MySQL 8 + Prisma.
+- Stack: React + Vite + TypeScript with CSS Modules (no inline styles), Framer Motion, Lucide; a Laravel 13 JSON API (Sanctum, Fortify, Reverb); MySQL 8.
 
 ## Brand Commitments
 

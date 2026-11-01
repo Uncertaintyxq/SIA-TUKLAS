@@ -2,12 +2,11 @@
 
 What to install, how to run and test Tuklas on your machine, and what's left to build.
 
-**Where things stand (2026-10-31):** Tuklas has moved from a Node/Express server to a Laravel
-API. The API is finished and tested, and the React app now talks to it, including the 2FA,
-email-verification, password-reset and account screens, live updates and chat search. What's
-left is tooling, removing the old Node server, and deployment (see [TODO.md](TODO.md)). The old Node server in `server/` is no longer used and will be deleted.
+**Where things stand (2026-11-01):** Tuklas is a Laravel 13 JSON API with a React app in
+`client/`. The move from the original Node/Express server is complete and that server has been
+removed. What's left is tooling and deployment (see [TODO.md](TODO.md)).
 
-To run the site you start the Laravel API (section 3) and then the React app (section 4).
+To run the site: set it up once (section 3), then `npm run dev` starts everything (section 4).
 
 ## 1. Install these
 
@@ -58,13 +57,9 @@ php artisan reverb:install    # live-update keys in your .env (answer "no" to an
 
 Pick a database in `.env`:
 
-- **MySQL in Docker** (recommended):
-  ```bash
-  npm run db:up                                   # starts MySQL 8 in Docker
-  docker exec tuklas-mysql mysql -utuklas -ptuklas -e "CREATE DATABASE IF NOT EXISTS tuklas_laravel"
-  ```
-  `.env.example` already points at `tuklas_laravel` on `127.0.0.1:3306`. Laravel uses its own
-  database so it doesn't overwrite the old Node server's `tuklas` database.
+- **MySQL in Docker** (recommended): `npm run db:up` starts MySQL 8 with a `tuklas` database and
+  user, which is what `.env.example` already points at (`127.0.0.1:3306`).
+- **MySQL installed directly**: create a `tuklas` database and user, and put them in `.env`.
 - **SQLite** (no install): in `.env` set `DB_CONNECTION=sqlite`, delete the other `DB_*` lines,
   and create the file: `touch database/database.sqlite` (PowerShell: `New-Item database/database.sqlite`).
 
@@ -74,23 +69,10 @@ Pick a database in `.env`:
 php artisan migrate:fresh --seed
 ```
 
-### 3c. Start it
-
-Three processes, each in its own terminal:
-
-```bash
-php artisan serve             # the API on http://localhost:8000
-php artisan reverb:start      # live updates (WebSocket on :8080)
-php artisan queue:work        # background jobs: emails
-```
-
-Quick check: <http://localhost:8000/up> shows "Application up", and
-<http://localhost:8000/api/users/andrea/portfolio> returns JSON.
-
 Emails (verification, password reset, announcements) aren't sent locally: with `MAIL_MAILER=log`
 they're written to `storage/logs/laravel.log`.
 
-### 3d. Test
+### 3c. Test
 
 ```bash
 php artisan test                    # all tests (SQLite in memory, no setup needed)
@@ -100,28 +82,32 @@ vendor/bin/pint                     # format PHP before committing (PowerShell: 
 
 All tests must pass before a pull request is merged.
 
-## 4. Run the React app
+## 4. Run it
 
-With the Laravel API from 3c running, in a fourth terminal:
+From `tuklas/`, one command starts everything, with each part's output labelled:
 
 ```bash
-npm run dev -w client         # the site on http://localhost:5173
+npm run dev
 ```
 
-Open <http://localhost:5173>. Vite forwards `/api` and `/sanctum` to Laravel on `:8000`, so the
-browser sees one site and the sign-in cookies work. Use `npm run dev -w client`, not
-`npm run dev`: the root script still starts the old Node server too, until
-`chore/remove-node-server`.
+| Label | What | Where |
+|---|---|---|
+| `api` | `php artisan serve`, the Laravel API | :8000 |
+| `live` | `php artisan reverb:start`, live updates (new messages, notifications, who's online) | :8080 |
+| `queue` | `php artisan queue:work`, background jobs such as emails | |
+| `web` | the React app (Vite) | <http://localhost:5173> |
 
-Live updates (new messages, notifications, who's online) need `php artisan reverb:start` from 3c.
-Vite forwards `/app/` to it, and reads `VITE_REVERB_APP_KEY` and `VITE_DEMO_LOGIN` from `tuklas/.env`
-(restart `npm run dev -w client` after changing them). Without Reverb the site still works; lists
-just update when you reload.
+Open <http://localhost:5173>. Vite forwards `/api` and `/sanctum` to Laravel and `/app/` to Reverb,
+so the browser sees one site and the sign-in cookies work. Ctrl+C stops all four. Vite reads
+`VITE_REVERB_APP_KEY` and `VITE_DEMO_LOGIN` from `tuklas/.env`: restart after changing them.
 
-**Testing sign-in security:** set `DEMO_MODE=false` in `.env` and restart `php artisan serve`.
+You can still run the parts separately, each in its own terminal (`php artisan serve`, and so on,
+plus `npm run dev -w client` for the site).
+
+**Testing sign-in security:** set `DEMO_MODE=false` in `.env` and restart `npm run dev`.
 Educators and admins are then asked to set up 2FA (any authenticator app works), and new
 accounts must confirm their email. Emails go to `storage/logs/laravel.log`: copy the link from
-there into the browser. Run `php artisan queue:work` too, or queued emails never arrive.
+there into the browser (`npm run dev` runs the queue worker that sends them).
 
 ## Let Claude see the site while it builds (recommended)
 
@@ -134,8 +120,7 @@ calling a feature done.
    you use for Claude Code.
 2. In Claude Code, run `/chrome` and connect it (from a terminal you can also start with
    `claude --chrome`). Reopen the Claude Code panel if the browser tools don't appear.
-3. Ask Claude to check the change in the browser. It starts `php artisan serve` and
-   `npm run dev -w client` itself, works in its own tab at <http://localhost:5173>, and asks
+3. Ask Claude to check the change in the browser. It starts `npm run dev` itself, works in its own tab at <http://localhost:5173>, and asks
    before visiting any other site.
 
 Good habits: say which account and page to check ("as `kim@tuklas.edu`, hand in Chapter 3"),
@@ -165,8 +150,7 @@ The full list, with the branch name to use for each item and the files it may to
 1. **React client**: done (types, API connection, account screens, live updates, chat search).
 2. (Account deletion and group deliverables are done.)
 3. **Tooling**: Claude Code kit, CI on GitHub Actions, Larastan.
-4. **Remove the old Node server** (`chore/remove-node-server`), last.
-5. **Deployment** (`chore/deploy-*`), planned in [DEPLOYMENT.md](DEPLOYMENT.md).
+4. **Deployment** (`chore/deploy-*`), planned in [DEPLOYMENT.md](DEPLOYMENT.md).
 
 **Before you start one:** check whether its branch already exists on GitHub. If it does,
 someone is working on it. The full rule is at the top of [TODO.md](TODO.md).
@@ -188,11 +172,10 @@ someone is working on it. The full rule is at the top of [TODO.md](TODO.md).
 | `php` or `composer` not found | Open a new terminal after installing Herd; check PATH order |
 | `could not find driver` | Your PHP lacks `pdo_mysql` or `pdo_sqlite`; enable it in `php.ini` (`php --ini` shows which file) |
 | `SQLSTATE[HY000] [2002]` | MySQL isn't running: `npm run db:up`, or check `DB_HOST`/`DB_PORT` in `.env` |
-| `Unknown database 'tuklas_laravel'` | Run the `CREATE DATABASE` command in 3a |
 | Port 3306 already in use | Another MySQL is running; stop it, or change the port in `docker-compose.yml` and `.env` |
 | `MissingAttributeException` in a test | Strict mode caught a missing default; add it to the model's `$attributes` |
 | "Your session expired" (419) on every form | `APP_URL` in `.env` must be `http://localhost:5173` and `SANCTUM_STATEFUL_DOMAINS` must list `localhost:5173` (both in `.env.example`); then `php artisan config:clear` |
-| Messages and notifications only appear after a reload | Start Reverb (`php artisan reverb:start`), check `VITE_REVERB_APP_KEY` is in `tuklas/.env` (`php artisan reverb:install` adds it), and restart Vite |
+| Messages and notifications only appear after a reload | Check the `live` part of `npm run dev` is running, check `VITE_REVERB_APP_KEY` is in `tuklas/.env` (`php artisan reverb:install` adds it), and restart `npm run dev` |
 | Edits don't show until you reload; the browser console keeps saying `[vite] connecting...` | Chrome can't open WebSockets to localhost (curl can). Usually an antivirus "web shield" or a browser extension. Allow `localhost` in it, or try another browser. Live updates (Reverb) need WebSockets too |
 | An emailed link opens `localhost:8000` | Restart Vite after pulling: `client/vite.config.ts` must keep `changeOrigin: false` |
 | 403 with `"code": "two_factor_required"` | Expected for educators/admins when `DEMO_MODE=false`; set up 2FA or turn demo mode on |
