@@ -16,9 +16,13 @@ return [
         'image_max_kb' => 5 * 1024,
     ],
 
+    // The built React app's page (npm run build writes it). routes/web.php returns it for every
+    // page URL, and the React router takes it from there.
+    'spa_index' => env('SPA_INDEX', public_path('build/index.html')),
+
     // Content-Security-Policy for the app page (the React build served by Laravel).
     // API responses get `default-src 'none'` instead (see App\Http\Middleware\SecurityHeaders).
-    'csp' => implode('; ', [
+    'csp' => implode('; ', array_filter([
         "default-src 'self'",
         "script-src 'self'",
         "style-src 'self'",
@@ -29,7 +33,8 @@ return [
         "base-uri 'self'",
         "form-action 'self'",
         "frame-ancestors 'none'",
-        'upgrade-insecure-requests',
-    ]),
+        // Only on an HTTPS site: on plain HTTP (a server before its certificate) it would break every request.
+        str_starts_with((string) env('APP_URL'), 'https://') ? 'upgrade-insecure-requests' : null,
+    ])),
 
 ];

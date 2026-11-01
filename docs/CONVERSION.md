@@ -273,6 +273,14 @@ branch rule; the deployment plan is in [DEPLOYMENT.md](DEPLOYMENT.md).
   client, demo-seeded tests, 404 for hidden things), hot files carry the `tuklas/` prefix, and the
   format hook runs Pint from `tuklas/` after a syntax check, never Prettier.
 
+- 2026-11-01: `chore/deploy-serve-spa`. `npm run build` writes the React app to `public/build/`
+  (base `/build/`; `/app/` is left to Reverb). `Route::fallback` (`SpaController`) returns its
+  `index.html`, uncached, for every page URL except `api/`, `sanctum/`, `build/`, `storage/` and
+  paths with a file extension, which stay 404s; `SecurityHeaders` gives it `config('tuklas.csp')`.
+  The before-paint theme script is now `client/public/theme.js`, because the CSP allows no inline
+  script. `upgrade-insecure-requests` is only sent when `APP_URL` is HTTPS, so a server still on
+  plain HTTP works. Development is unchanged (Vite at :5173).
+
 ## How the code is laid out (for the next modules)
 
 - **Routes:** `routes/modules/<module>.php`, required from `routes/api.php`. Signed-in groups use
