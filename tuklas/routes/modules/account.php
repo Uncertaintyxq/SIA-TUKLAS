@@ -1,9 +1,10 @@
 <?php
 
+use App\Http\Controllers\Account\NotificationSettingsController;
 use App\Http\Controllers\Account\PrivacyController;
 use Illuminate\Support\Facades\Route;
 
-// My own account: data export, sessions, consent and deletion. No account.ready, so someone who still
+// My own account: data export, sessions, consent, email settings and deletion. No account.ready, so someone who still
 // has to confirm their email or set up 2FA can also download their data, accept the notice or leave.
 Route::middleware(['auth:sanctum', 'throttle:auth'])->prefix('account')->name('account.')->group(function () {
     Route::get('/export', [PrivacyController::class, 'export'])->name('export');
@@ -11,4 +12,6 @@ Route::middleware(['auth:sanctum', 'throttle:auth'])->prefix('account')->name('a
     Route::post('/sessions/logout-others', [PrivacyController::class, 'logoutOthers'])->name('sessions.logout-others');
     Route::post('/privacy', [PrivacyController::class, 'acceptPrivacy'])->name('privacy');
     Route::delete('/', [PrivacyController::class, 'destroy'])->name('destroy');
+    Route::get('/notifications', [NotificationSettingsController::class, 'show'])->name('notifications.show');
+    Route::put('/notifications', [NotificationSettingsController::class, 'update'])->name('notifications.update');
 });

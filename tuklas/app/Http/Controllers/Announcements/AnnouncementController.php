@@ -14,6 +14,7 @@ use App\Models\User;
 use App\Notifications\AnnouncementPosted;
 use App\Support\Cards;
 use App\Support\Groups;
+use App\Support\NotificationPrefs;
 use App\Support\Notifier;
 use App\Support\Uploads;
 use Illuminate\Http\JsonResponse;
@@ -160,10 +161,11 @@ class AnnouncementController extends Controller
             Groups::log($group, $me->id, 'announcement_posted', "{$me->name} posted “{$a->title}”.");
         }
 
-        // In-app notification (pushed to open tabs) and one email per person in the audience.
+        // In-app notification (pushed to open tabs), and one email per person who wants announcement emails.
         $ids = array_values(array_diff($a->audienceIds(), [$me->id]));
         Notifier::notify($ids, 'announcement', "{$me->name} posted an announcement: “{$a->title}”", "/announcements#a-{$a->id}", $me->id);
-        Notification::send(User::active()->whereIn('id', $ids)->get(), new AnnouncementPosted($a, $me->name, $a->audienceLabel()));
+        $emailTo = User::active()->whereIn('id', $ids)->get()->filter(fn (User $u) => NotificationPrefs::wantsEmail($u, 'announcement'));
+        Notification::send($emailTo, new AnnouncementPosted($a, $me->name, $a->audienceLabel()));
 
         return response()->json(['id' => $a->id], 201);
     }

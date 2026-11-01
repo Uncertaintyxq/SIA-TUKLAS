@@ -50,6 +50,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'privacy_accepted_at' => 'datetime',
             'two_factor_confirmed_at' => 'datetime',
             'account_deleted_at' => 'datetime',
+            'notification_settings' => 'array',
         ];
     }
 
