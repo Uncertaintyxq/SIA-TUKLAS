@@ -34,7 +34,8 @@ exists on GitHub, someone is working on that scope.
    the branch.
 
 Branches start from `main` (the Laravel conversion was merged into it on 2026-10-31; `Conversion`
-is no longer used). New to the project? Read [GETTING_STARTED.md](GETTING_STARTED.md) first. Prefixes: `feat/` (feature), `fix/`, `chore/` (tooling, setup), `docs/`, `test/`.
+is no longer used). New to the project? Read [GETTING_STARTED.md](GETTING_STARTED.md) first. With Claude Code, `/start-task <branch>` does steps 2–3
+and `/finish-task` step 5 (see [COLLABORATION.md](COLLABORATION.md)). Prefixes: `feat/` (feature), `fix/`, `chore/` (tooling, setup), `docs/`, `test/`.
 
 ## Planned branches
 
@@ -63,9 +64,9 @@ Paths are relative to `tuklas/` unless they start with `docs/` or `.github/`.
 | Branch | Scope | Depends on | Status |
 |---|---|---|---|
 | `docs/getting-started` | `docs/GETTING_STARTED.md` (what to install, run, test, build next); README link; separate `tuklas_laravel` database in `.env.example` and `database/docker-init/`. | | Done |
-| `chore/claude-code-kit` | The Laravel Claude Code kit (`Downloads/tuklas-claude-kit`) at the git root: `CLAUDE.md`, `docs/PROJECT.md`, `docs/ARCHITECTURE.md`, `docs/CONVENTIONS.md`, `docs/COLLABORATION.md`, `docs/decisions/`, `.claude/`, `.github/` (templates, CODEOWNERS). Root `.gitignore` stops ignoring `.claude/`. Paths in the kit get the `tuklas/` prefix. | | Not started |
-| `chore/ci` | GitHub Actions: Pint, tests on MySQL 8, `composer audit`, `npm audit`, client typecheck/lint/build. `.github/workflows/`. | `chore/claude-code-kit` | Not started |
-| `chore/larastan` | Add Larastan and fix what level 5 reports. `composer.json` (*shared*), `phpstan.neon`, small fixes in `app/`. | `chore/ci` | Not started |
+| `chore/claude-code-kit` | The Laravel Claude Code kit (`Downloads/tuklas-claude-kit`) at the git root: `CLAUDE.md`, `docs/PROJECT.md`, `docs/ARCHITECTURE.md`, `docs/CONVENTIONS.md`, `docs/COLLABORATION.md`, `docs/decisions/`, `.claude/`, `.github/` (templates, CODEOWNERS). Root `.gitignore` stops ignoring `.claude/`. Paths in the kit get the `tuklas/` prefix. Adapted to this repo: commands use TODO rows instead of GitHub issues (`/new-task` replaces `/new-issue`), rules describe the React client and the demo-seeded tests, the format hook runs Pint from `tuklas/` and skips client files; also `tuklas/pint.json`, `tuklas/routes/modules/README.md`, ADR 0001. The kit's `ci.yml` and `phpstan.neon` are left for the two rows below. | | Done |
+| `chore/ci` | GitHub Actions: Pint, tests on MySQL 8, `composer audit`, `npm audit`, client typecheck/lint/build. `.github/workflows/`. Start from the kit's `ci.yml` (`Downloads/tuklas-claude-kit/.github/workflows/`) with `working-directory: tuklas`. | `chore/claude-code-kit` | Not started |
+| `chore/larastan` | Add Larastan and fix what level 5 reports. `composer.json` (*shared*), `phpstan.neon` (start from the kit's), small fixes in `app/`. | `chore/ci` | Not started |
 
 ### Deployment (see [DEPLOYMENT.md](DEPLOYMENT.md))
 
@@ -85,4 +86,7 @@ Paths are relative to `tuklas/` unless they start with `docs/` or `.github/`.
   Officer, and NPC registration if required (see DEPLOYMENT.md). A draft notice is in
   `client/src/components/account/PrivacyNotice.tsx`; when the approved text replaces it, bump
   `PRIVACY_VERSION` there and `privacy_version` in `config/tuklas.php` together.
+- [ ] **GitHub setup for the kit** (repo owner): fill in `.github/CODEOWNERS`; each developer installs the GitHub CLI and runs
+  `gh auth login` (PR titles in the session snapshot); consider branch protection on `main` once `chore/ci` lands
+  (see `docs/COLLABORATION.md`).
 - [ ] **Later, optional:** passkeys sign-in (Fortify supports it; needs client screens).

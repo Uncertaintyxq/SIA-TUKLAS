@@ -1,0 +1,23 @@
+# Uncomment and fill in with GitHub usernames. Code owners are asked to review PRs that touch
+# their paths, and this documents who "owns" each lane when splitting work.
+# TODO(fill): replace @dev-a / @dev-b with real usernames (repo owner: @Uncertaintyxq?).
+# Later rules override earlier ones. Paths are from the repo root.
+
+# *                                          @dev-a @dev-b
+
+# Module lanes (example)
+# /tuklas/app/Http/Controllers/Groups/       @dev-a
+# /tuklas/routes/modules/groups.php          @dev-a
+# /tuklas/client/src/components/groups/      @dev-a
+# /tuklas/app/Http/Controllers/Admin/        @dev-b
+# /tuklas/client/src/pages/AdminPage.tsx     @dev-b
+
+# Shared / hot files: everyone should know about changes
+# /tuklas/composer.json                      @dev-a @dev-b
+# /tuklas/package.json                       @dev-a @dev-b
+# /tuklas/routes/api.php                     @dev-a @dev-b
+# /tuklas/config/                            @dev-a @dev-b
+# /tuklas/client/src/components/ui/          @dev-a @dev-b
+# /.claude/                                  @dev-a @dev-b
+# /CLAUDE.md                                 @dev-a @dev-b
+# /docs/TODO.md                              @dev-a @dev-b

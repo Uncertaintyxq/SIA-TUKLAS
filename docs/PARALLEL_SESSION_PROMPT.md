@@ -37,6 +37,9 @@ call, refresh PATH first:
 
 ## 2. Read before coding
 
+The repo's `CLAUDE.md` and `.claude/` load automatically when you open Claude Code at the repo
+root: they carry the stack, rules, hooks and the `/start-task` and `/finish-task` commands. Also read:
+
 1. `docs/TODO.md`: the planned branches, each with a fixed name and a fixed **Scope** (the
    files it may change), plus **the branch rule**. Follow it exactly.
 2. `docs/CONVERSION.md`: decisions D1–D13, the security spec, and "How the code is laid out".

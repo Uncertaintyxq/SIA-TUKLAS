@@ -109,6 +109,21 @@ Educators and admins are then asked to set up 2FA (any authenticator app works),
 accounts must confirm their email. Emails go to `storage/logs/laravel.log`: copy the link from
 there into the browser (`npm run dev` runs the queue worker that sends them).
 
+## Working with Claude Code
+
+The repo carries a Claude Code setup that every developer's session loads: `CLAUDE.md` (stack,
+commands, rules), `docs/PROJECT.md`, `docs/ARCHITECTURE.md`, `docs/CONVENTIONS.md`, and `.claude/`
+(team settings, hooks, path rules, commands). Open Claude Code at the repo root (`SIA-TUKLAS/`).
+
+- At the start of a session Claude lists the files other active branches are changing, and asks
+  before it edits one of them, a shared "hot" file, or anything on `main`.
+- After it edits a PHP file it checks the syntax and runs Pint on that file.
+- Commands: `/split-work`, `/new-task`, `/start-task <branch>`, `/scope-check`, `/sync`, `/finish-task`.
+  The full protocol is [COLLABORATION.md](COLLABORATION.md).
+- The hooks need PHP 8.3+ on the PATH where Claude Code runs (Herd's PHP first). Optional: the
+  GitHub CLI (`gh auth login`) adds PR titles to the snapshot.
+- Personal preferences go in `CLAUDE.local.md` or `.claude/settings.local.json` (both ignored by git).
+
 ## Let Claude see the site while it builds (recommended)
 
 Tests and API scripts prove the rules, not the screens. When you build with Claude Code, connect
@@ -160,6 +175,9 @@ someone is working on it. The full rule is at the top of [TODO.md](TODO.md).
 | File | What's in it |
 |---|---|
 | [TODO.md](TODO.md) | What's left, as planned branches, and the branch rule |
+| [COLLABORATION.md](COLLABORATION.md) | How several developers and Claude sessions work in parallel |
+| [ARCHITECTURE.md](ARCHITECTURE.md) / [CONVENTIONS.md](CONVENTIONS.md) | Modules, data model, code style |
+| [PROJECT.md](PROJECT.md) | What Tuklas is, roles, glossary, non-negotiables |
 | [CONVERSION.md](CONVERSION.md) | Decisions, the security spec, and how the Laravel code is laid out |
 | [DEPLOYMENT.md](DEPLOYMENT.md) | How Tuklas goes to production |
 | [`tuklas/PLAN.md`](../tuklas/PLAN.md) | The original product plan and rules |
