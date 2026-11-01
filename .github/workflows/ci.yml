@@ -1,0 +1,102 @@
+name: ci
+
+# Checks every push to main and every pull request. A red run means something to fix before merging:
+# formatting (Pint), the test suite on MySQL 8 (what the servers run), known vulnerabilities in the
+# packages Tuklas ships (composer audit, npm audit), and the React app's types, lint and build.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: tuklas
+
+jobs:
+  api:
+    name: Laravel (Pint, audit, tests on MySQL)
+    runs-on: ubuntu-24.04
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_DATABASE: tuklas_test
+          MYSQL_USER: tuklas
+          MYSQL_PASSWORD: tuklas
+          MYSQL_ROOT_PASSWORD: root
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=5s --health-timeout=5s --health-retries=20
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4' # the servers' version (deploy/setup-server.sh)
+          extensions: mbstring, intl, pdo_mysql, pdo_sqlite, sodium, zip, bcmath
+          coverage: none
+
+      - name: Composer cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.composer/cache
+          key: composer-${{ hashFiles('tuklas/composer.lock') }}
+
+      - run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Pint (formatting)
+        run: vendor/bin/pint --test
+
+      - name: Composer audit (known vulnerabilities)
+        run: composer audit --no-dev
+
+      - name: PHPStan / Larastan
+        if: hashFiles('tuklas/phpstan.neon') != ''
+        run: vendor/bin/phpstan analyse --memory-limit=1G --no-progress
+
+      - name: Tests on MySQL 8
+        # These override phpunit.xml's SQLite settings (its <env> entries don't replace variables set here)
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: '3306'
+          DB_DATABASE: tuklas_test
+          DB_USERNAME: tuklas
+          DB_PASSWORD: tuklas
+        run: php artisan test
+
+  client:
+    name: React app (audit, types, lint, build)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: tuklas/package-lock.json
+
+      - run: npm ci --no-fund
+
+      # Only what ships to browsers. Dev tools (ESLint, Vite) are checked locally with `npm audit`.
+      - name: npm audit (production packages)
+        run: npm audit --omit=dev --audit-level=moderate
+
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run build
