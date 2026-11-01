@@ -24,7 +24,7 @@ Each `.pdf` is the original record. The `.md` files hold the same text in search
 
 | Requirement | Status |
 |---|---|
-| Approval before publishing | Enforced on the server (`server/src/policies/works.ts`) |
+| Approval before publishing | Enforced on the server (`app/Policies/WorkPolicy.php`) |
 | Academic-only ads | Enforced by the `EventCategory` enum and admin approval |
 | Portfolio order | Built (`/u/<username>`) |
 | Appearance options | Modern and Classic (2000s LinkedIn), each light or dark |

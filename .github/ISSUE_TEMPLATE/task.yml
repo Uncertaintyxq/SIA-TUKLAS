@@ -1,0 +1,70 @@
+name: Task
+description: Propose a unit of work for one developer. It becomes a row in docs/TODO.md with a fixed branch name.
+title: "feat(module): "
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Planned work lives in `docs/TODO.md`: one row = one branch, ideally ≤ 1 day of work.
+        Use this form to propose a row (or `/new-task` in Claude Code). The **Scope** keeps
+        developers out of each other's files: be specific. Paths are relative to `tuklas/`.
+  - type: input
+    id: branch
+    attributes:
+      label: Branch name
+      placeholder: feat/group-deliverable-reminders
+    validations:
+      required: true
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: What should be true when this is done, and why it matters.
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope (files/folders this task may change)
+      description: Real paths. Mark shared/hot files explicitly.
+      placeholder: |
+        - app/Http/Controllers/Groups/
+        - routes/modules/groups.php (shared)
+        - database/migrations/ (new file)
+        - tests/Feature/Groups/
+        - client/src/components/groups/
+    validations:
+      required: true
+  - type: textarea
+    id: out-of-scope
+    attributes:
+      label: Out of scope
+      description: Things this task must NOT touch (often another developer's area).
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Testable checkboxes.
+      placeholder: |
+        - [ ] Students get a reminder a day before a deliverable is due
+        - [ ] Students who already handed in get none
+        - [ ] Feature tests cover allowed, refused and hidden
+    validations:
+      required: true
+  - type: textarea
+    id: contract
+    attributes:
+      label: Contract / interfaces
+      description: Route names, JSON shapes, columns or hooks other tasks rely on.
+  - type: input
+    id: depends
+    attributes:
+      label: Depends on
+      placeholder: "feat/group-deliverables"
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes

@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(php artisan test *)",
+      "Bash(php artisan test)",
+      "Bash(php artisan route:list *)",
+      "Bash(php artisan about)",
+      "Bash(php artisan make:*)",
+      "Bash(vendor/bin/pint *)",
+      "Bash(vendor/bin/pint)",
+      "Bash(php vendor/bin/pint *)",
+      "Bash(vendor/bin/phpstan *)",
+      "Bash(composer validate *)",
+      "Bash(composer dump-autoload *)",
+      "Bash(npm run build)",
+      "Bash(npm run typecheck)",
+      "Bash(npm run lint)",
+      "Bash(npm run lint *)",
+      "Bash(php .claude/hooks/scope_snapshot.php *)",
+      "Bash(php .claude/hooks/scope_snapshot.php)",
+      "Bash(git status *)",
+      "Bash(git status)",
+      "Bash(git diff *)",
+      "Bash(git diff)",
+      "Bash(git log *)",
+      "Bash(git show *)",
+      "Bash(git branch *)",
+      "Bash(git fetch *)",
+      "Bash(git ls-remote *)",
+      "Bash(git switch *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git rebase origin/main)",
+      "Bash(gh pr list *)",
+      "Bash(gh pr view *)",
+      "Bash(gh pr diff *)",
+      "Bash(gh pr checks *)",
+      "Bash(gh issue list *)",
+      "Bash(gh issue view *)"
+    ],
+    "ask": [
+      "Bash(git push *)",
+      "Bash(git merge *)",
+      "Bash(gh pr create *)",
+      "Bash(gh pr edit *)",
+      "Bash(gh pr ready *)",
+      "Bash(gh pr merge *)",
+      "Bash(gh issue create *)",
+      "Bash(composer require *)",
+      "Bash(composer remove *)",
+      "Bash(composer update *)",
+      "Bash(npm install *)",
+      "Bash(php artisan migrate *)",
+      "Bash(php artisan migrate)",
+      "Bash(php artisan migrate:fresh *)",
+      "Bash(php artisan db:seed *)"
+    ],
+    "deny": [
+      "Read(./tuklas/.env)",
+      "Read(./tuklas/.env.local)",
+      "Read(./tuklas/.env.production)",
+      "Read(./tuklas/.env.staging)",
+      "Read(./tuklas/storage/*.key)",
+      "Bash(git push --force *)",
+      "Bash(git push -f *)",
+      "Bash(git reset --hard *)",
+      "Bash(git clean *)",
+      "Bash(php artisan migrate:reset *)",
+      "Bash(php artisan migrate:reset)",
+      "Bash(php artisan db:wipe *)",
+      "Bash(php artisan db:wipe)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "php \"$CLAUDE_PROJECT_DIR/.claude/hooks/scope_snapshot.php\"",
+            "timeout": 45
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "php \"$CLAUDE_PROJECT_DIR/.claude/hooks/scope_guard.php\"",
+            "timeout": 45
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "php \"$CLAUDE_PROJECT_DIR/.claude/hooks/format_file.php\"",
+            "timeout": 60
+          }
+        ]
+      }
+    ]
+  }
+}
