@@ -40,9 +40,20 @@ export type TwoFactorChallengeInput = { code: string } | { recovery_code: string
 /** Which updates also arrive by email (GET/PUT /api/account/notifications). In-app updates always arrive. */
 export interface NotificationSettings {
   email: Record<string, boolean>;
+  /** Push notifications, on the devices that turned them on */
+  push: Record<string, boolean>;
   /** The Monday email: unread updates, this week's deadlines and events, new research in your department */
   digest: boolean;
   /** Email only goes to a confirmed address */
   emailVerified: boolean;
   categories: { key: string; label: string; description: string }[];
+}
+
+/** Push notifications on this device (GET /api/account/push) */
+export interface PushStatus {
+  /** The server has its push keys (on a server, deploy.sh adds them) */
+  available: boolean;
+  publicKey: string;
+  thisDevice: boolean;
+  devices: { device: string; since: string }[];
 }

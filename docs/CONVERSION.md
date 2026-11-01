@@ -349,6 +349,14 @@ branch rule; the deployment plan is in [DEPLOYMENT.md](DEPLOYMENT.md).
   over SSH with a key the server limits to `deploy/ci-deploy.sh`. Both wait for one-time setup on
   the server and in GitHub (`docs/STAGING_SERVER.md`, one-time steps).
 
+- 2026-11-02: `feat/pwa`. Tuklas installs as an app (manifest, icons from the logo, `client/public/sw.js`
+  served at `/sw.js`). The service worker shows an offline page when a page can't load and keeps the
+  hashed build files; it never stores API responses, so personal data stays out of the device's
+  storage. Push notifications: per category next to email (Account and security → Notifications),
+  per device (`push_subscriptions`), sent by a queued job through minishlink/web-push with the
+  server's VAPID keys (`php artisan tuklas:vapid-keys`; `deploy.sh` adds them once). Expired devices
+  are forgotten; devices are in the data export and go with a deleted account.
+
 ## How the code is laid out (for the next modules)
 
 - **Routes:** `routes/modules/<module>.php`, required from `routes/api.php`. Signed-in groups use

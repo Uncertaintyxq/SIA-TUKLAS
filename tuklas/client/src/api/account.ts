@@ -4,7 +4,7 @@
  */
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import type { PublicUser } from '../types/auth';
-import type { AccountSession, ChangePasswordInput, NotificationSettings, ResetPasswordInput, TwoFactorChallengeInput, TwoFactorKey } from '../types/account';
+import type { AccountSession, ChangePasswordInput, NotificationSettings, PushStatus, ResetPasswordInput, TwoFactorChallengeInput, TwoFactorKey } from '../types/account';
 import { api } from './client';
 
 const ME = ['me'] as const;
@@ -156,7 +156,24 @@ export function useNotificationSettings() {
 export function useSaveNotificationSettings() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (s: Pick<NotificationSettings, 'email' | 'digest'>) => api<NotificationSettings>('/account/notifications', { method: 'PUT', body: s }),
+    mutationFn: (s: Pick<NotificationSettings, 'email' | 'push' | 'digest'>) => api<NotificationSettings>('/account/notifications', { method: 'PUT', body: s }),
     onSuccess: (saved) => qc.setQueryData(NOTIFICATION_SETTINGS, saved),
+  });
+}
+
+/** Push on this device: whether the server can send, and whether this browser is subscribed. */
+export function usePushStatus(endpoint: string | null) {
+  return useQuery({ queryKey: ['account', 'push', endpoint], queryFn: () => api<PushStatus>(`/account/push${endpoint ? `?endpoint=${encodeURIComponent(endpoint)}` : ''}`) });
+}
+
+/** Saves this browser's push subscription (from pushManager.subscribe), or removes it. */
+export function useSetPush() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ subscription, on }: { subscription: PushSubscription; on: boolean }) =>
+      on
+        ? api('/account/push', { body: subscription.toJSON() })
+        : api('/account/push', { method: 'DELETE', body: { endpoint: subscription.endpoint } }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['account', 'push'] }),
   });
 }
