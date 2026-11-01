@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Account;
 
+use App\Actions\Account\DeleteAccount;
 use App\Http\Controllers\Controller;
 use App\Models\Comment;
 use App\Models\Message;
@@ -11,9 +12,11 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /**
  * The data subject's rights under the Data Privacy Act (RA 10173): see and download what Tuklas
@@ -76,6 +79,30 @@ class PrivacyController extends Controller
         }
         DB::table('sessions')->where('user_id', $me->id)->where('id', '!=', $request->session()->getId())->delete();
         Audit::log('logged_out_other_sessions', $me, $me);
+
+        return response()->noContent();
+    }
+
+    /**
+     * DELETE /api/account {password} — deletes my account (D13, see DeleteAccount) and signs me out.
+     * Admin accounts are closed by the Office of Research, so the hub is never left without one.
+     */
+    public function destroy(Request $request, DeleteAccount $delete): Response
+    {
+        $password = $request->validate(['password' => ['required', 'string']], ['password.required' => 'Enter your password to delete your account.'])['password'];
+        /** @var User $me */
+        $me = $request->user();
+        if ($me->isAdmin()) {
+            throw new HttpException(403, 'Admin accounts are closed by the Office of Research, not from here.');
+        }
+        if (! Hash::check($password, $me->password)) {
+            throw ValidationException::withMessages(['password' => 'That isn’t your current password.']);
+        }
+
+        $delete($me);
+        Auth::guard('web')->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
         return response()->noContent();
     }

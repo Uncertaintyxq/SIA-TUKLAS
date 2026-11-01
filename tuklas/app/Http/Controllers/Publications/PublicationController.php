@@ -197,7 +197,7 @@ class PublicationController extends Controller
         if (in_array($me->id, $ids, true)) {
             throw new HttpException(400, 'You’re already the main author; don’t add yourself as a co-author.');
         }
-        if (User::whereIn('id', $ids)->whereIn('role', [Role::Student, Role::Educator])->count() !== count($ids)) {
+        if (User::active()->whereIn('id', $ids)->whereIn('role', [Role::Student, Role::Educator])->count() !== count($ids)) {
             throw new HttpException(400, 'One of the co-authors couldn’t be found.');
         }
     }

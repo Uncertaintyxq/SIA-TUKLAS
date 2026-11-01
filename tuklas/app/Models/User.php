@@ -7,6 +7,7 @@ use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -32,6 +33,7 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $attributes = [
         'headline' => '', 'verified' => true, 'can_publish' => true, 'can_moderate_groups' => true, 'can_broadcast' => true,
         'last_seen_at' => null, 'two_factor_secret' => null, 'two_factor_recovery_codes' => null, 'two_factor_confirmed_at' => null,
+        'account_deleted_at' => null,
     ];
 
     protected function casts(): array
@@ -47,7 +49,19 @@ class User extends Authenticatable implements MustVerifyEmail
             'last_seen_at' => 'datetime',
             'privacy_accepted_at' => 'datetime',
             'two_factor_confirmed_at' => 'datetime',
+            'account_deleted_at' => 'datetime',
         ];
+    }
+
+    /** Accounts that weren't deleted. Deleted ones stay as "Former member" rows (DeleteAccount) and are left out of every people list. */
+    public function scopeActive(Builder $query): void
+    {
+        $query->whereNull('account_deleted_at');
+    }
+
+    public function isDeleted(): bool
+    {
+        return $this->account_deleted_at !== null;
     }
 
     public function isAdmin(): bool

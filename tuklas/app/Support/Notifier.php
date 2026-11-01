@@ -14,7 +14,7 @@ use Illuminate\Support\Str;
  * work_revision, work_approved, work_rejected, work_comment, work_removed, educator_signup,
  * educator_verified, educator_rights, event_proposed, event_approved, event_rejected,
  * event_cancelled, ad_requested, ad_approved, ad_rejected, honor_claimed, honor_verified,
- * honor_declined, group_added, group_role, group_deadline, group_deliverable, opportunity_application, announcement.
+ * honor_declined, group_added, group_role, group_deadline, group_deliverable, group_orphaned, adviser_left, opportunity_application, announcement.
  */
 class Notifier
 {
@@ -22,6 +22,11 @@ class Notifier
     public static function notify(int|array $userIds, string $type, string $message, string $link, ?int $actorId = null): void
     {
         $ids = array_values(array_unique(array_filter((array) $userIds, fn (int $id) => $id !== $actorId)));
+        if ($ids === []) {
+            return;
+        }
+        // Deleted accounts ("Former member") get nothing
+        $ids = User::active()->whereIn('id', $ids)->pluck('id')->map(fn ($id) => (int) $id)->all();
         if ($ids === []) {
             return;
         }
@@ -43,6 +48,6 @@ class Notifier
     /** Notifies every admin account, skipping the actor. */
     public static function notifyAdmins(string $type, string $message, string $link, ?int $actorId = null): void
     {
-        self::notify(User::where('role', Role::Admin)->pluck('id')->all(), $type, $message, $link, $actorId);
+        self::notify(User::active()->where('role', Role::Admin)->pluck('id')->all(), $type, $message, $link, $actorId);
     }
 }
