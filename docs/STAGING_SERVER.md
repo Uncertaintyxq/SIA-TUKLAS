@@ -9,9 +9,9 @@ and [`tuklas/deploy/azure/README.md`](../tuklas/deploy/azure/README.md).
 | | |
 |---|---|
 | Purpose | Public testing and client reviews, with **demo data only** (never real students' data) |
-| Where | Azure for Students, region **Japan East**, resource group `tuklas-staging`, VM `tuklas-vm` |
+| Where | Azure for Students, region **Japan East**, resource group `tuklas-staging`, VM `tuklas-vm` (`Standard_B2ats_v2`: 2 vCPU, 1 GB, free student hours) |
 | Login user on the server | `tuklas` |
-| Site address | `https://<address>` (see [Find the address](#find-the-address)) |
+| Site address | <https://tuklas-sia-jm.japaneast.cloudapp.azure.com> |
 | Demo accounts | One-click logins on the login page; the password for all of them is `tuklas123` |
 | Turns itself off | Every day at **11:00 PM Philippine time**, with an email 30 minutes before |
 | Updates | **Not automatic.** Someone runs `deploy.sh` after changes reach `main` ([below](#put-a-new-version-live)) |
@@ -35,8 +35,8 @@ In Cloud Shell:
 ```bash
 az network public-ip show -g tuklas-staging -n tuklas-ip --query "{address:dnsSettings.fqdn, ip:ipAddress}" -o table
 ```
-Use the **address** (`something.japaneast.cloudapp.azure.com`) everywhere this page says
-`<address>`. Replace the whole `<address>`, including the `<` and `>`. Write it down here once you know it.
+The address is **`tuklas-sia-jm.japaneast.cloudapp.azure.com`**; the commands below already use it.
+If the server is ever rebuilt with a different name, update this page.
 
 ## Start, stop, check
 
@@ -58,7 +58,7 @@ bash ~/SIA-TUKLAS/tuklas/deploy/azure/vm.sh status   # running or stopped, addre
 
 In PowerShell on your PC:
 ```powershell
-ssh -i $HOME\.ssh\id_ed25519 tuklas@<address>
+ssh -i $HOME\.ssh\id_ed25519 tuklas@tuklas-sia-jm.japaneast.cloudapp.azure.com
 ```
 The prompt changes to `tuklas@tuklas-vm:~$`. Type `exit` to leave.
 
