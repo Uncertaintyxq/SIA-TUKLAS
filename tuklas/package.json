@@ -4,20 +4,15 @@
   "type": "module",
   "description": "Tuklas — From Defense to Discovery. Research and academic engagement hub.",
   "workspaces": [
-    "server",
     "client"
   ],
   "scripts": {
-    "dev": "concurrently -n server,client -c magenta,yellow \"npm run dev -w server\" \"npm run dev -w client\"",
+    "dev": "concurrently -k -n api,live,queue,web -c magenta,cyan,gray,yellow \"php artisan serve\" \"php artisan reverb:start\" \"php artisan queue:work --tries=3\" \"npm run dev -w client\"",
     "db:up": "docker compose up -d --wait",
     "db:down": "docker compose down",
-    "db:local": "npm run db:local -w server",
-    "db:local:stop": "npm run db:local -w server -- stop",
-    "db:reset": "npm run db:reset -w server",
-    "db:sql": "npm run db:sql -w server",
-    "typecheck": "npm run typecheck --workspaces",
+    "typecheck": "npm run typecheck -w client",
     "lint": "eslint .",
-    "build": "npm run build --workspaces"
+    "build": "npm run build -w client"
   },
   "devDependencies": {
     "@eslint/js": "^9.0.0",

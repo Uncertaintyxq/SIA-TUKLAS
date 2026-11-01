@@ -90,8 +90,7 @@ git ls-remote --heads origin <branch>   # prints a line = taken, skip it
 - **Docs:** in `docs/TODO.md`, change only your own row's Status, and only when you finish. In
   `docs/CONVERSION.md`, add one dated entry at the end of the Log and tick only your own Module
   status row. If those files conflict on rebase, keep both sides' lines.
-- Don't rename, move or delete files outside your scope, and don't touch `server/` (the old Node
-  server; `chore/remove-node-server` deletes it last).
+- Don't rename, move or delete files outside your scope.
 
 ## 5. How to write the code
 

@@ -3,9 +3,10 @@
 A research and academic engagement hub for students, educators and administrators.
 See `PLAN.md` for the full build plan and [`reference/`](reference/README.md) for the client meeting notes, design notes and original prototype.
 
-> **Moving to Laravel.** The Express server in `server/` is being replaced by a Laravel API in this folder.
-> Decisions and the security spec are in [`docs/CONVERSION.md`](../docs/CONVERSION.md). What's left, and which
-> branch name to use for it, is in [`docs/TODO.md`](../docs/TODO.md); deployment in [`docs/DEPLOYMENT.md`](../docs/DEPLOYMENT.md).
+> **Stack:** a Laravel 13 JSON API (this folder) and a React app (`client/`). The move from the original
+> Express server is recorded in [`docs/CONVERSION.md`](../docs/CONVERSION.md) (decisions, security spec, code
+> layout). What's left, and which branch name to use for it, is in [`docs/TODO.md`](../docs/TODO.md); deployment
+> in [`docs/DEPLOYMENT.md`](../docs/DEPLOYMENT.md).
 
 ## Run it locally
 
@@ -16,8 +17,7 @@ Composer, Node 22+, MySQL 8), how to run and test, and what's left to build. In 
 composer install && npm install
 cp .env.example .env && php artisan key:generate && php artisan reverb:install
 php artisan migrate:fresh --seed     # tables + demo data
-php artisan serve                    # API on :8000 (also run reverb:start and queue:work)
-npm run dev -w client                # the site on http://localhost:5173
+npm run dev                          # API :8000, Reverb :8080, queue worker, site on http://localhost:5173
 ```
 
 Demo accounts (password `tuklas123`): `andrea@tuklas.edu`, `paolo@tuklas.edu`, `kim@tuklas.edu` (students),
@@ -43,7 +43,7 @@ privacy check as the thing it belongs to.
 
 | Script | Does |
 |---|---|
-| `npm run db:sql` | Regenerate `database/schema.sql` and `database/seed.sql` from Prisma and the seeded DB |
-| `npm run typecheck` / `npm run lint` | Type and lint checks for both workspaces |
+| `npm run dev` | Everything for local development: `php artisan serve`, `reverb:start`, `queue:work` and the React app |
+| `npm run typecheck` / `npm run lint` | Type and lint checks for the React app |
+| `php artisan test` / `vendor/bin/pint` | Laravel tests and PHP formatting |
 | `npm run db:down` | Stop MySQL (data is kept in the `tuklas-mysql` volume) |
-| `npm run db:local` / `npm run db:local:stop` | Start / stop MySQL from a local install instead of Docker (data in `database/.local-mysql/`) |
