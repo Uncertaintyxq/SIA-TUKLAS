@@ -43,7 +43,8 @@ class PrivacyController extends Controller
                 + ['versions' => $w->versions->map->only(['version', 'title', 'note', 'submitted_at'])]),
             'publications' => $me->publications()->get()->map->only(['id', 'title', 'abstract', 'keywords', 'visibility', 'published_at']),
             'comments' => Comment::where('author_id', $me->id)->get()->map->only(['work_id', 'scope', 'text', 'created_at']),
-            'messages' => Message::where('sender_id', $me->id)->whereNull('deleted_at')->get()->map->only(['conversation_id', 'text', 'file_name', 'created_at']),
+            'messages' => Message::where('sender_id', $me->id)->whereNull('deleted_at')->get()->map->only(['conversation_id', 'text', 'file_name', 'created_at', 'edited_at']),
+            'messageReactions' => DB::table('message_reactions')->where('user_id', $me->id)->get(['message_id', 'emoji', 'created_at']),
             // What they reported and why (not the copy of the reported content, which is someone else's)
             'reports' => Report::where('reporter_id', $me->id)->get()->map(fn (Report $r) => [
                 'type' => $r->target_type->value, 'reason' => $r->reason->value, 'details' => $r->details, 'status' => $r->status->value, 'createdAt' => $r->created_at->toISOString(),

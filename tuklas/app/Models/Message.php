@@ -9,7 +9,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * A chat message. The text is encrypted at rest, so it can't be searched in SQL (docs/CONVERSION.md D7).
- * A removed message keeps its row with deleted_at set, so threads still make sense.
+ * A removed message keeps its row with deleted_at set, so threads still make sense. An edited one has
+ * edited_at set; its earlier text isn't kept.
  */
 #[Fillable(['sender_id', 'parent_id', 'text', 'file', 'file_name', 'file_type', 'file_size', 'group_file_id'])]
 class Message extends Model
@@ -21,7 +22,13 @@ class Message extends Model
         return [
             'text' => 'encrypted',
             'deleted_at' => 'datetime',
+            'edited_at' => 'datetime',
         ];
+    }
+
+    public function reactions(): HasMany
+    {
+        return $this->hasMany(MessageReaction::class);
     }
 
     public function conversation(): BelongsTo

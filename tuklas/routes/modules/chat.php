@@ -16,5 +16,7 @@ Route::middleware(['auth:sanctum', 'account.ready'])->prefix('chat')->name('chat
 
     Route::get('/messages/{id}/replies', [ChatController::class, 'thread'])->whereNumber('id')->name('thread');
     Route::get('/messages/{id}/file', [ChatController::class, 'file'])->whereNumber('id')->name('messages.file');
+    Route::patch('/messages/{id}', [ChatController::class, 'update'])->whereNumber('id')->middleware('throttle:messages')->name('messages.update');
     Route::delete('/messages/{id}', [ChatController::class, 'destroy'])->whereNumber('id')->name('messages.destroy');
+    Route::post('/messages/{id}/reactions', [ChatController::class, 'react'])->whereNumber('id')->middleware('throttle:messages')->name('messages.react');
 });

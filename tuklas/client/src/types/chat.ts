@@ -43,7 +43,20 @@ export interface MessageView {
   removedFile: string | null;
   replyCount: number;
   createdAt: string;
+  /** Set when the sender changed the text */
+  editedAt: string | null;
+  /** One entry per emoji someone used, with who used it */
+  reactions: MessageReaction[];
   canDelete: boolean;
+  /** Only the sender edits */
+  canEdit: boolean;
+}
+
+export interface MessageReaction {
+  emoji: string;
+  count: number;
+  mine: boolean;
+  people: string[];
 }
 
 export interface ConversationPage {
@@ -51,6 +64,8 @@ export interface ConversationPage {
   messages: MessageView[];
   /** Older messages exist before the first one */
   hasMore: boolean;
+  /** How far everyone else has read, for "Seen by" under my latest message */
+  readers: { id: number; name: string; readAt: string }[];
 }
 
 export interface ThreadView {

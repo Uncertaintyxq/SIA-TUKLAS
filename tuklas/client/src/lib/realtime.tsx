@@ -74,6 +74,13 @@ export function RealtimeProvider({ userId, children }: { userId: number | null; 
           qc.invalidateQueries({ queryKey: ['chat'] });
           qc.invalidateQueries({ queryKey: ['group'] });
           break;
+        case 'message_changed':
+          qc.invalidateQueries({ queryKey: ['chat', 'conversation', e.conversationId] });
+          qc.invalidateQueries({ queryKey: ['chat', 'thread'] });
+          break;
+        case 'conversation_read':
+          qc.invalidateQueries({ queryKey: ['chat', 'conversation', e.conversationId] });
+          break;
         case 'notification':
           qc.invalidateQueries({ queryKey: ['notifications'] });
           if (e.kind === 'announcement') qc.invalidateQueries({ queryKey: ['announcements'] });

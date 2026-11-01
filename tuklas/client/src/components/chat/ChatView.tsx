@@ -8,7 +8,17 @@ import { Link, useSearchParams } from 'react-router-dom';
 import clsx from 'clsx';
 import { ArrowLeft, Hash, X } from 'lucide-react';
 import { useMe } from '../../api/auth';
-import { useConversation, useDeleteMessage, useMarkConversationRead, useThread, type ConversationSummary, type MessageView } from '../../api/chat';
+import {
+  useConversation,
+  useDeleteMessage,
+  useEditMessage,
+  useMarkConversationRead,
+  useReactToMessage,
+  useThread,
+  type ConversationPage,
+  type ConversationSummary,
+  type MessageView,
+} from '../../api/chat';
 import { fmtDate, isoDate } from '../../lib/format';
 import { useReport } from '../reports/ReportDialog';
 import { Avatar } from '../ui/Avatar';
@@ -52,6 +62,7 @@ export function ChatView({ conversationId, embedded = false, backTo }: { convers
     window.confirm('Remove this message for everyone?') && remove.mutate(m.id, { onError: (e) => toast(e.message, 'error') });
   const { report, dialog: reportDialog } = useReport();
   const reportOf = (m: MessageView) => (m.sender.id === me?.id ? undefined : () => report({ type: 'message', id: m.id, label: 'this message' }));
+  const { onReact, onEdit } = useMessageActions();
 
   if (q.isPending) return <Skeleton className={styles.loading} />;
   if (q.error || !conversation)
@@ -84,10 +95,20 @@ export function ChatView({ conversationId, embedded = false, backTo }: { convers
                   const continued = !newDay && prev?.sender.id === m.sender.id && !prev.deleted && new Date(m.createdAt).getTime() - new Date(prev.createdAt).getTime() < FIVE_MINUTES;
                   return (
                     <DayAndMessage key={m.id} showDay={newDay} iso={m.createdAt}>
-                      <MessageItem message={m} continued={continued} highlighted={m.id === highlight} onReply={() => setThreadOf(m.id)} onDelete={() => del(m)} onReport={reportOf(m)} />
+                      <MessageItem
+                        message={m}
+                        continued={continued}
+                        highlighted={m.id === highlight}
+                        onReply={() => setThreadOf(m.id)}
+                        onDelete={() => del(m)}
+                        onReport={reportOf(m)}
+                        onReact={onReact(m)}
+                        onEdit={onEdit(m)}
+                      />
                     </DayAndMessage>
                   );
                 })}
+                <SeenLine message={messages[messages.length - 1]} meId={me?.id} readers={pages![0]!.readers} direct={conversation.kind === 'direct'} />
               </ol>
             )}
           </div>
@@ -200,6 +221,7 @@ function ThreadPanel({ conversationId, messageId, onClose, meId }: { conversatio
     window.confirm('Remove this message for everyone?') && remove.mutate(m.id, { onError: (e) => toast(e.message, 'error') });
   const { report, dialog: reportDialog } = useReport();
   const reportOf = (m: MessageView) => (m.sender.id === meId ? undefined : () => report({ type: 'message', id: m.id, label: 'this message' }));
+  const { onReact, onEdit } = useMessageActions();
 
   return (
     <aside className={styles.threadPanel} aria-label="Thread">
@@ -217,7 +239,7 @@ function ThreadPanel({ conversationId, messageId, onClose, meId }: { conversatio
           <p className={styles.start}>This message was removed.</p>
         ) : (
           <ol className={styles.list}>
-            <MessageItem message={data.parent} continued={false} onDelete={() => del(data.parent)} onReport={reportOf(data.parent)} />
+            <MessageItem message={data.parent} continued={false} onDelete={() => del(data.parent)} onReport={reportOf(data.parent)} onReact={onReact(data.parent)} onEdit={onEdit(data.parent)} />
             <li className={styles.day} role="presentation">
               <span>
                 {count} {count === 1 ? 'reply' : 'replies'}
@@ -230,6 +252,8 @@ function ThreadPanel({ conversationId, messageId, onClose, meId }: { conversatio
                 continued={i > 0 && data.replies[i - 1]!.sender.id === m.sender.id}
                 onDelete={() => del(m)}
                 onReport={reportOf(m)}
+                onReact={onReact(m)}
+                onEdit={onEdit(m)}
               />
             ))}
           </ol>
@@ -239,5 +263,34 @@ function ThreadPanel({ conversationId, messageId, onClose, meId }: { conversatio
       {data && !data.parent.deleted && <MessageComposer conversationId={conversationId} parentId={messageId} placeholder={meId === data.parent.sender.id ? 'Add to your thread' : 'Reply in thread'} />}
       {reportDialog}
     </aside>
+  );
+}
+
+/** Reacting and editing, with errors shown as a toast. Shared by the conversation and its threads. */
+function useMessageActions() {
+  const edit = useEditMessage();
+  const react = useReactToMessage();
+  const toast = useToast();
+  return {
+    onReact: (m: MessageView) => (emoji: string) => react.mutate({ id: m.id, emoji }, { onError: (e) => toast(e.message, 'error') }),
+    onEdit: (m: MessageView) => (text: string, done: () => void) => edit.mutate({ id: m.id, text }, { onSuccess: done, onError: (e) => toast(e.message, 'error') }),
+  };
+}
+
+/** "Seen" (direct chat) or "Seen by …" (channel) under my latest message, from the others' read markers. */
+function SeenLine({ message, meId, readers, direct }: { message: MessageView | undefined; meId?: number; readers: ConversationPage['readers']; direct: boolean }) {
+  if (!message || message.deleted || message.sender.id !== meId) return null;
+  const seen = readers.filter((r) => new Date(r.readAt).getTime() >= new Date(message.createdAt).getTime());
+  if (seen.length === 0) return null;
+  const who = seen.map((r) => r.name.split(' ')[0]);
+  const label = direct
+    ? 'Seen'
+    : seen.length === readers.length && readers.length > 1
+      ? 'Seen by everyone'
+      : `Seen by ${who.length <= 3 ? who.join(', ') : `${who.slice(0, 3).join(', ')} and ${who.length - 3} more`}`;
+  return (
+    <li className={styles.seen} title={seen.map((r) => r.name).join(', ')}>
+      {label}
+    </li>
   );
 }
