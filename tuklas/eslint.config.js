@@ -5,12 +5,12 @@ import reactHooks from 'eslint-plugin-react-hooks';
 import globals from 'globals';
 
 export default tseslint.config(
-  { ignores: ['**/dist/**', '**/node_modules/**', 'reference/**', 'database/**'] },
+  { ignores: ['**/dist/**', '**/node_modules/**', 'reference/**', 'database/**', 'vendor/**', 'storage/**', 'public/**'] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
     rules: {
-      // Leading underscore marks a parameter that must exist but isn't used (e.g. Express's error handler `_next`).
+      // Leading underscore marks a parameter that must exist but isn't used.
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
     },
   },
@@ -18,10 +18,6 @@ export default tseslint.config(
     // Playwright capture script: Node, with a page callback that runs in the browser
     files: ['client/scripts/**/*.mjs'],
     languageOptions: { globals: { ...globals.node, ...globals.browser } },
-  },
-  {
-    files: ['server/**/*.ts'],
-    languageOptions: { globals: globals.node },
   },
   {
     files: ['client/**/*.{ts,tsx}'],
