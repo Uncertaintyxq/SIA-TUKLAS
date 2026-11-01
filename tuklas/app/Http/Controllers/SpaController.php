@@ -2,13 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\PageMeta;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
- * Serves the built React app's index.html for any page URL (/groups/4, /login, …). SecurityHeaders
- * adds the app page's Content-Security-Policy. The scripts and styles it loads are files under
+ * Serves the built React app's index.html for any page URL (/groups/4, /login, …), with the page's
+ * own title and search details for public works, publications and portfolios (PageMeta).
+ * SecurityHeaders adds the app page's Content-Security-Policy. The scripts and styles it loads are files under
  * public/build/, served straight from disk.
  */
 class SpaController
@@ -29,8 +31,11 @@ class SpaController
             );
         }
 
+        $path = $request->path();
+        $html = PageMeta::apply((string) file_get_contents($index), PageMeta::for($path), $path);
+
         // Never cached: it names the current build's files, so a new release must be picked up at once
-        return response(file_get_contents($index), 200, [
+        return response($html, 200, [
             'Content-Type' => 'text/html; charset=UTF-8',
             'Cache-Control' => 'no-cache, must-revalidate',
         ]);

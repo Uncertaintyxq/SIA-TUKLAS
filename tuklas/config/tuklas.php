@@ -6,6 +6,9 @@ return [
     // AppServiceProvider refuses to boot with this on in production.
     'demo_mode' => (bool) env('DEMO_MODE', false),
 
+    // The university, for Google Scholar's citation_dissertation_institution on student research (PageMeta)
+    'institution' => env('TUKLAS_INSTITUTION', ''),
+
     // Version of the privacy notice people accept at signup (Data Privacy Act consent).
     // Bump it when the notice changes; people who accepted an older version are asked again.
     'privacy_version' => '2026-10-30',
