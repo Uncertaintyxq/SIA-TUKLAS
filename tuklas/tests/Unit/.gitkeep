@@ -1,0 +1,2 @@
+# Unit tests (no database, no HTTP) go here. Git doesn't keep empty folders, and PHPUnit stops
+# when a test suite's folder is missing (phpunit.xml), so this file keeps the folder in the repo.
