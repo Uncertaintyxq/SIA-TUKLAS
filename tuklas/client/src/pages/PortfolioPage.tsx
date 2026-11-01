@@ -34,6 +34,7 @@ import { Sheet, SheetEmpty } from '../components/ui/Sheet';
 import { Skeleton } from '../components/ui/Skeleton';
 import { useToast } from '../components/ui/Toast';
 import { honorLabel, linkLabel, roleBadge } from '../lib/labels';
+import { usePageTitle } from '../lib/usePageTitle';
 import styles from './PortfolioPage.module.css';
 
 // ---------- Pages ----------
@@ -59,6 +60,7 @@ export function PublicPortfolioPage() {
 function PortfolioView({ username, editMode }: { username: string | undefined; editMode: boolean }) {
   const { data: p, isPending, error } = usePortfolio(username);
   const { data: me } = useMe();
+  usePageTitle(p?.user.name);
   const [dialog, setDialog] = useState<Dialog>(null);
   const [dialogKey, setDialogKey] = useState(0);
   const open = (d: NonNullable<Dialog>) => {

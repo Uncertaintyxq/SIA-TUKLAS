@@ -103,3 +103,12 @@ textarea {
     scroll-behavior: auto !important;
   }
 }
+
+/* The plain copy of a public page that Laravel puts inside #root for search engines (PageMeta).
+   Visitors see it only for the moment before the app loads and replaces it. */
+.prerender {
+  max-width: var(--measure);
+  margin: var(--s-6) auto;
+  padding: 0 var(--s-3);
+  color: var(--text);
+}

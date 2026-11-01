@@ -2,10 +2,14 @@
 
 namespace Tests\Feature\Security;
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class SpaPageTest extends TestCase
 {
+    // The page looks up public works and portfolios for their search details (PageMeta)
+    use RefreshDatabase;
+
     private string $index;
 
     protected function setUp(): void
