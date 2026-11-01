@@ -1,0 +1,106 @@
+name: deploy
+
+# Puts Tuklas live on the servers with tuklas/deploy/deploy.sh, over SSH:
+# - staging: after the `ci` checks pass on main, or by hand (Actions → deploy → Run workflow)
+# - production: on a release tag (v1.0.0), once someone approves it in the `production` environment
+# Each needs its GitHub environment set up first (tuklas/deploy/README.md, "Automatic deploys");
+# until then the job is skipped, not failed. The SSH key can only run deploy/ci-deploy.sh.
+
+on:
+  workflow_run:
+    workflows: [ci]
+    types: [completed]
+    branches: [main]
+  push:
+    tags: ['v*.*.*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  staging:
+    name: Deploy main to staging
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-24.04
+    environment:
+      name: staging
+      url: ${{ vars.SITE_URL }}
+    # One deploy at a time; a newer one waits instead of interrupting a running one
+    concurrency:
+      group: deploy-staging
+      cancel-in-progress: false
+    steps:
+      - name: Check the staging environment is set up
+        id: setup
+        env:
+          HOST: ${{ vars.DEPLOY_HOST }}
+        run: |
+          if [ -z "$HOST" ]; then
+            echo "::notice title=Staging deploy skipped::Set up the staging environment first (tuklas/deploy/README.md, Automatic deploys)."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Deploy over SSH
+        if: steps.setup.outputs.ready == 'true'
+        env:
+          HOST: ${{ vars.DEPLOY_HOST }}
+          USER_NAME: ${{ vars.DEPLOY_USER }}
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key && chmod 600 ~/.ssh/deploy_key
+          # Only the server whose fingerprint was saved is trusted
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          REF="${GITHUB_REF_TYPE:-branch}"; [ "$REF" = tag ] && REF="$GITHUB_REF_NAME" || REF=main
+          if ! ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes -o ConnectTimeout=20 -o BatchMode=yes "$USER_NAME@$HOST" "$REF"; then
+            echo "::error title=Deploy failed::Couldn't deploy $REF to $HOST. If the server is off (it shuts down at 11 PM Philippine time), start it and re-run this job; otherwise read the log above."
+            exit 1
+          fi
+
+  production:
+    name: Deploy the release to production
+    if: github.event_name == 'push' && github.ref_type == 'tag'
+    runs-on: ubuntu-24.04
+    # Required reviewers on this environment make someone approve each release
+    environment:
+      name: production
+      url: ${{ vars.SITE_URL }}
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+    steps:
+      - name: Check the production environment is set up
+        id: setup
+        env:
+          HOST: ${{ vars.DEPLOY_HOST }}
+        run: |
+          if [ -z "$HOST" ]; then
+            echo "::notice title=Production deploy skipped::There is no production server set up yet (docs/DEPLOYMENT.md)."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Deploy over SSH
+        if: steps.setup.outputs.ready == 'true'
+        env:
+          HOST: ${{ vars.DEPLOY_HOST }}
+          USER_NAME: ${{ vars.DEPLOY_USER }}
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key && chmod 600 ~/.ssh/deploy_key
+          # Only the server whose fingerprint was saved is trusted
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          REF="${GITHUB_REF_TYPE:-branch}"; [ "$REF" = tag ] && REF="$GITHUB_REF_NAME" || REF=main
+          if ! ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes -o ConnectTimeout=20 -o BatchMode=yes "$USER_NAME@$HOST" "$REF"; then
+            echo "::error title=Deploy failed::Couldn't deploy $REF to $HOST. If the server is off (it shuts down at 11 PM Philippine time), start it and re-run this job; otherwise read the log above."
+            exit 1
+          fi
