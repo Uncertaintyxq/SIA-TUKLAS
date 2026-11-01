@@ -344,7 +344,7 @@ function DeleteSection({ me }: { me: PublicUser }) {
               </ul>
             </div>
           </div>
-          <TextField label="Your password" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+          <TextField label="Your password, to confirm" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} required />
           <label className={styles.consent}>
             <input type="checkbox" checked={understood} onChange={(e) => setUnderstood(e.target.checked)} />I understand that my account and personal data will be deleted for good.
           </label>
