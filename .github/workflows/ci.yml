@@ -82,7 +82,7 @@ jobs:
         run: |
           set -o pipefail
           if ! php artisan test 2>&1 | tee "$RUNNER_TEMP/tests.txt"; then
-            tail -n 80 "$RUNNER_TEMP/tests.txt" | sed 's/\x1b\[[0-9;]*m//g' | head -c 3500 > "$RUNNER_TEMP/tail.txt"
+            { grep -E 'FAILED|Tests:' "$RUNNER_TEMP/tests.txt"; echo; tail -n 60 "$RUNNER_TEMP/tests.txt"; } | sed 's/\x1b\[[0-9;]*m//g' | head -c 3500 > "$RUNNER_TEMP/tail.txt"
             echo "::error title=Tests failed::$(sed 's/%/%25/g' "$RUNNER_TEMP/tail.txt" | sed ':a;N;$!ba;s/\n/%0A/g')"
             exit 1
           fi
