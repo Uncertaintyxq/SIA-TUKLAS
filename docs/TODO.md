@@ -72,6 +72,7 @@ Paths are relative to `tuklas/` unless they start with `docs/` or `.github/`.
 
 | Branch | Scope | Depends on | Status |
 |---|---|---|---|
+| `chore/deploy-azure-vm` | A free staging server on Azure for Students: one Cloud Shell script that creates only cheap resources (B1s Ubuntu 24.04 VM in Southeast Asia, one disk, a static IP with a free `cloudapp.azure.com` name, a firewall for SSH/HTTP/HTTPS), a swap file on first boot, daily auto-shutdown at 11 PM Philippine time with an email warning, budget alerts where the subscription allows, and start/stop/status helpers. `deploy/azure/` (new). Installing Tuklas on it is the two rows below. | | Not started |
 | `chore/deploy-serve-spa` | Laravel serves the built React app: Vite builds into `public/app/`, a fallback route in `routes/web.php` returns its `index.html` with the CSP from `config/tuklas.php`. | `feat/client-realtime` | Not started |
 | `chore/deploy-server-config` | Server config kept in the repo: `deploy/nginx.conf`, `deploy/supervisor.conf` (queue worker, Reverb), `deploy/php.ini`, `deploy/deploy.sh`, `.env.production.example`. | `chore/deploy-serve-spa` | Not started |
 | `chore/deploy-pipeline` | GitHub Actions workflow that deploys `main` to staging automatically and to production on a tagged release. `.github/workflows/deploy.yml`. | `chore/ci`, `chore/deploy-server-config` | Not started |
