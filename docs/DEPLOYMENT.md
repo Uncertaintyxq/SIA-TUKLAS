@@ -43,7 +43,7 @@ and app keys). Real data never goes to staging.
 
 **Staging host (decided 2026-11-01):** a free Azure for Students VM (B1s, Southeast Asia), created by
 `tuklas/deploy/azure/create-vm.sh` with auto-shutdown at 11 PM Philippine time. Steps:
-[`tuklas/deploy/azure/README.md`](../tuklas/deploy/azure/README.md).
+[`tuklas/deploy/azure/README.md`](../tuklas/deploy/azure/README.md). Running it day to day: [STAGING_SERVER.md](STAGING_SERVER.md).
 
 ## Production settings
 
