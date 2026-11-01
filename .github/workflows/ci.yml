@@ -41,16 +41,24 @@ jobs:
       - uses: actions/checkout@v5
 
       - uses: shivammathur/setup-php@v2
+        # The run's own token lets Composer download from GitHub without hitting the anonymous rate limit (429)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           php-version: '8.4' # the servers' version (deploy/setup-server.sh)
           extensions: mbstring, intl, pdo_mysql, pdo_sqlite, sodium, zip, bcmath
           coverage: none
 
+      - name: Composer cache folder
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
       - name: Composer cache
         uses: actions/cache@v4
         with:
-          path: ~/.composer/cache
+          path: ${{ steps.composer-cache.outputs.dir }}
           key: composer-${{ hashFiles('tuklas/composer.lock') }}
+          restore-keys: composer-
 
       - run: composer install --no-interaction --prefer-dist --no-progress
 
@@ -138,10 +146,23 @@ jobs:
           echo "BACKUP_DIR=$RUNNER_TEMP/backups" >> "$GITHUB_ENV"
 
       - uses: shivammathur/setup-php@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           php-version: '8.4'
           extensions: mbstring, intl, pdo_mysql, sodium, zip, bcmath
           coverage: none
+
+      - name: Composer cache folder
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      - name: Composer cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: composer-${{ hashFiles('tuklas/composer.lock') }}
+          restore-keys: composer-
 
       - run: composer install --no-interaction --prefer-dist --no-progress
       - run: sudo apt-get install -y -q age
