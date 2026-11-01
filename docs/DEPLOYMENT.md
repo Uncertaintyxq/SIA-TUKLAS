@@ -41,6 +41,10 @@ Everything is on one domain, so the session cookie, CSRF and WebSocket all stay 
 Staging and production are separate servers (or at least separate databases, `.env` files
 and app keys). Real data never goes to staging.
 
+**Staging host (decided 2026-11-01):** a free Azure for Students VM (B1s, Southeast Asia), created by
+`tuklas/deploy/azure/create-vm.sh` with auto-shutdown at 11 PM Philippine time. Steps:
+[`tuklas/deploy/azure/README.md`](../tuklas/deploy/azure/README.md).
+
 ## Production settings
 
 `.env` on the server (kept out of git; see `.env.production.example` from `chore/deploy-server-config`):
@@ -133,7 +137,7 @@ Before real students' data goes in:
 
 | Decision | Options | Suggestion |
 |---|---|---|
-| Host | A VPS you manage (DigitalOcean, Linode, Vultr, …) with Laravel Forge or by hand; or a managed platform (Laravel Cloud) | A Singapore-region VPS managed through Forge: closest region to the Philippines, and Forge handles Nginx, PHP, SSL, Supervisor and deploys |
+| Host (production) | A VPS you manage (DigitalOcean, Linode, Vultr, Azure, …) with Laravel Forge or by hand; or a managed platform (Laravel Cloud). Staging is decided: Azure for Students (above) | A Singapore-region VPS managed through Forge: closest region to the Philippines, and Forge handles Nginx, PHP, SSL, Supervisor and deploys |
 | Domain | A university subdomain, or a new domain | A university subdomain, if the university can point DNS at the server |
 | Email | Postmark, Mailgun, Amazon SES, or the university's SMTP | A transactional provider (better delivery and logs), unless the university requires its own |
 | Who holds production access | Both developers, or one plus a university contact | At least two people, so access isn't lost if one leaves |
