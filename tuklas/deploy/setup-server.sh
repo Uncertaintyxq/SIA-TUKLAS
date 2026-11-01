@@ -136,6 +136,11 @@ install -m 644 "$HERE/supervisor.conf" /etc/supervisor/conf.d/tuklas.conf
 supervisorctl reread >/dev/null
 supervisorctl update >/dev/null || true
 
+echo "==> Scheduler (Laravel's scheduled jobs, such as the weekly digest email)"
+# umask 002 like PHP-FPM and Supervisor, so logs it starts stay writable by the deploy user
+echo '* * * * * www-data umask 002 && cd /var/www/tuklas/current && php artisan schedule:run >> /dev/null 2>&1' > /etc/cron.d/tuklas
+chmod 644 /etc/cron.d/tuklas
+
 # deploy.sh needs these without a password prompt (Azure's login user already has full sudo)
 # Checked before it's installed: a broken file in sudoers.d would lock everyone out of sudo
 sudoers_tmp="$(mktemp)"

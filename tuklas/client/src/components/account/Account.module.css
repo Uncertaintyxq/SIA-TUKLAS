@@ -203,6 +203,13 @@ a.link {
 }
 
 /* Account page */
+.switches {
+  display: grid;
+  gap: var(--s-3);
+  padding-bottom: var(--s-3);
+  border-bottom: 1px solid var(--rule);
+}
+
 .sections {
   display: grid;
   gap: var(--s-4);

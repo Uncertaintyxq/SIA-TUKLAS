@@ -9,6 +9,7 @@ use App\Models\Message;
 use App\Models\Report;
 use App\Models\User;
 use App\Support\Audit;
+use App\Support\NotificationPrefs;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -33,7 +34,7 @@ class PrivacyController extends Controller
         $data = [
             'exportedAt' => now()->toISOString(),
             'account' => $me->only(['id', 'name', 'username', 'email', 'program', 'headline', 'verified', 'created_at', 'email_verified_at', 'privacy_accepted_at', 'privacy_version'])
-                + ['role' => $me->role->value, 'twoFactorEnabled' => $me->hasTwoFactorEnabled()],
+                + ['role' => $me->role->value, 'twoFactorEnabled' => $me->hasTwoFactorEnabled(), 'notificationSettings' => NotificationPrefs::for($me)],
             'profile' => $me->profile?->only(['titles', 'department', 'bio_long', 'cv_name']),
             'links' => $me->links->map->only(['type', 'url', 'label']),
             'background' => $me->backgrounds->map->only(['degree', 'school', 'year']),
