@@ -78,19 +78,29 @@ jobs:
           DB_DATABASE: tuklas_test
           DB_USERNAME: tuklas
           DB_PASSWORD: tuklas
-        run: php artisan test --log-junit storage/junit.xml
+        run: |
+          set -o pipefail
+          php artisan test --log-junit storage/junit.xml 2>&1 | tee storage/test-output.txt
 
-      # Each failing test as an annotation, so the run's summary page says what broke
+      # What broke, as annotations on the run's summary page (readable without opening the log)
       - name: List failing tests
         if: failure()
         run: |
           python3 - <<'PY'
+          import os
           import xml.etree.ElementTree as ET
-          for case in ET.parse('storage/junit.xml').iter('testcase'):
-              for bad in list(case.findall('failure')) + list(case.findall('error')):
-                  text = (bad.text or bad.get('message') or '').strip()[:900]
-                  name = f"{case.get('class', '')}::{case.get('name')}"
-                  print(f"::error title={name}::" + text.replace('%', '%25').replace('\r', '').replace('\n', '%0A'))
+          def note(title, text):
+              text = text.strip()[:1800].replace('%', '%25').replace('\r', '').replace('\n', '%0A')
+              print(f"::error title={title}::{text}")
+          shown = 0
+          if os.path.exists('storage/junit.xml'):
+              for case in ET.parse('storage/junit.xml').iter('testcase'):
+                  for bad in list(case.findall('failure')) + list(case.findall('error')):
+                      if shown < 15:
+                          note(f"{case.get('class', '')}::{case.get('name')}", bad.text or bad.get('message') or '')
+                      shown += 1
+          if shown == 0 and os.path.exists('storage/test-output.txt'):
+              note('Test output (end)', ''.join(open('storage/test-output.txt').readlines()[-40:]))
           PY
 
   client:
