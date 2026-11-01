@@ -1,19 +1,29 @@
 /**
  * AccountPage — "/account": sign-in security and privacy. Change the password, turn two-factor
- * sign-in on or off, see where the account is signed in, and download your data.
+ * sign-in on or off, see where the account is signed in, download your data or delete the account.
  */
 import { useState, type FormEvent } from 'react';
-import { Link } from 'react-router-dom';
-import { Download, Monitor, ShieldCheck, ShieldOff } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Download, Monitor, ShieldCheck, ShieldOff, Trash2 } from 'lucide-react';
 import type { PublicUser } from '../types/auth';
 import { useMe } from '../api/auth';
-import { EXPORT_URL, useChangePassword, useDisableTwoFactor, useLogoutOthers, useRecoveryCodes, useRegenerateRecoveryCodes, useSessions } from '../api/account';
+import {
+  EXPORT_URL,
+  useChangePassword,
+  useDeleteAccount,
+  useDisableTwoFactor,
+  useLogoutOthers,
+  useRecoveryCodes,
+  useRegenerateRecoveryCodes,
+  useSessions,
+} from '../api/account';
 import { PasswordConfirm } from '../components/account/PasswordConfirm';
 import { PRIVACY_VERSION } from '../components/account/PrivacyNotice';
 import { RecoveryCodes } from '../components/account/RecoveryCodes';
 import { TwoFactorSetup } from '../components/account/TwoFactorSetup';
 import { PageHeader } from '../components/layout/PageHeader';
 import { Badge } from '../components/ui/Badge';
+import { Notice } from '../components/ui/Notice';
 import { Button } from '../components/ui/Button';
 import { TextField } from '../components/ui/Field';
 import { Sheet, SheetEmpty } from '../components/ui/Sheet';
@@ -33,6 +43,7 @@ export function AccountPage() {
         <PasswordSection />
         <SessionsSection />
         <DataSection />
+        <DeleteSection me={me} />
       </div>
     </>
   );
@@ -266,8 +277,98 @@ function DataSection() {
             <Download size={16} aria-hidden="true" /> Download my data
           </a>
         </div>
-        <p className={styles.muted}>Deleting your account is coming soon. Until then, ask the Office of Research.</p>
       </div>
+    </Sheet>
+  );
+}
+
+function DeleteSection({ me }: { me: PublicUser }) {
+  const del = useDeleteAccount();
+  const toast = useToast();
+  const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
+  const [password, setPassword] = useState('');
+  const [understood, setUnderstood] = useState(false);
+
+  const submit = (e: FormEvent) => {
+    e.preventDefault();
+    del.mutate(password, {
+      onSuccess: () => {
+        toast('Your account was deleted. Thank you for being part of Tuklas.', 'info');
+        navigate('/login', { replace: true });
+      },
+    });
+  };
+
+  if (me.role === 'admin')
+    return (
+      <Sheet title="Delete account">
+        <p className={styles.muted}>Admin accounts are closed by the Office of Research, so the hub always has an admin.</p>
+      </Sheet>
+    );
+
+  return (
+    <Sheet title="Delete account">
+      {!open ? (
+        <div className={styles.form}>
+          <p>Deleting your account erases your personal data from Tuklas. It can’t be undone, so download your data first if you want a copy.</p>
+          <div className={styles.actions}>
+            <Button variant="danger" icon={<Trash2 size={16} aria-hidden="true" />} onClick={() => setOpen(true)}>
+              Delete my account…
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <form className={styles.form} onSubmit={submit}>
+          <Notice tone="bad">
+            <strong>This can’t be undone.</strong>
+          </Notice>
+          <div className={styles.deleteLists}>
+            <div>
+              <h3 className={styles.listHeading}>Erased</h3>
+              <ul>
+                <li>Your portfolio: photo, CV, bio, background, honors and links</li>
+                <li>Drafts and works that weren’t approved, with their files</li>
+                <li>Your comments, reactions, saved works, registrations and applications</li>
+                <li>Your messages (shown as removed), the files you shared, and your own deliverables</li>
+                <li>Your notifications, sessions and group memberships</li>
+              </ul>
+            </div>
+            <div>
+              <h3 className={styles.listHeading}>Kept, as “Former member”</h3>
+              <ul>
+                <li>Approved works in the library, so citations still work</li>
+                {me.role === 'educator' && <li>Your reviews, published research and the groups you advise (admins take over)</li>}
+                <li>Group deliverables handed in for the whole group</li>
+                <li>Approved events and announcements you posted</li>
+              </ul>
+            </div>
+          </div>
+          <TextField label="Your password" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+          <label className={styles.consent}>
+            <input type="checkbox" checked={understood} onChange={(e) => setUnderstood(e.target.checked)} />I understand that my account and personal data will be deleted for good.
+          </label>
+          {del.error && (
+            <p className={styles.error} role="alert">
+              {del.error.message}
+            </p>
+          )}
+          <div className={styles.actions}>
+            <Button type="submit" variant="danger" icon={<Trash2 size={16} aria-hidden="true" />} loading={del.isPending} disabled={!understood || !password}>
+              Delete my account
+            </Button>
+            <Button
+              onClick={() => {
+                setOpen(false);
+                setPassword('');
+                setUnderstood(false);
+              }}
+            >
+              Cancel
+            </Button>
+          </div>
+        </form>
+      )}
     </Sheet>
   );
 }

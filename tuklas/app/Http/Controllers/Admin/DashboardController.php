@@ -39,7 +39,7 @@ class DashboardController extends Controller
 
         return response()->json([
             'users' => collect(Role::cases())->mapWithKeys(fn (Role $r) => [$r->value => (int) ($roles[$r->value] ?? 0)]),
-            'unverifiedEducators' => User::where('role', Role::Educator)->where('verified', false)->count(),
+            'unverifiedEducators' => User::active()->where('role', Role::Educator)->where('verified', false)->count(),
             'works' => [
                 'published' => $works(WorkStatus::Approved),
                 'inReview' => $works(WorkStatus::Submitted, WorkStatus::UnderReview, WorkStatus::Revision),
@@ -73,7 +73,7 @@ class DashboardController extends Controller
 
         return response()->json([
             'works' => MyWorkResource::collection(Cards::myWorks(Work::whereIn('status', [WorkStatus::Submitted, WorkStatus::UnderReview, WorkStatus::Revision])->whereNull('removed_at'), $me->id)->orderBy('submitted_at')->get()),
-            'educators' => User::with('profile')->where('role', Role::Educator)->where('verified', false)->orderBy('created_at')->get()
+            'educators' => User::with('profile')->active()->where('role', Role::Educator)->where('verified', false)->orderBy('created_at')->get()
                 ->map(fn (User $u) => [...(new UserCardResource($u))->resolve($request), 'email' => $u->email, 'createdAt' => $u->created_at->toISOString()]),
             'events' => EventCardResource::collection(Cards::events(Event::where('status', ApprovalStatus::Pending), $me->id)->orderBy('date')->get()),
             'ads' => AdCardResource::collection(Cards::ads(Ad::where('status', ApprovalStatus::Pending))->orderBy('created_at')->get()),

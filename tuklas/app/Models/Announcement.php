@@ -45,7 +45,7 @@ class Announcement extends Model
     public function audienceIds(): array
     {
         return match ($this->scope) {
-            AnnouncementScope::System => User::pluck('id')->all(),
+            AnnouncementScope::System => User::active()->pluck('id')->all(),
             AnnouncementScope::Department => Profile::where('department', $this->department ?? '')->pluck('user_id')->all(),
             AnnouncementScope::Group => ResearchGroup::with('members')->find($this->research_group_id)?->participantIds() ?? [],
         };

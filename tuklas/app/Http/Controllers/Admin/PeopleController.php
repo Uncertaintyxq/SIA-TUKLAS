@@ -32,7 +32,7 @@ class PeopleController extends Controller
     {
         $q = mb_substr(trim((string) $request->query('q', '')), 0, 80);
         $like = '%'.addcslashes($q, '%_\\').'%';
-        $users = User::with('profile')->withCount('works')
+        $users = User::with('profile')->active()->withCount('works')
             ->when(Role::tryFrom((string) $request->query('role')), fn ($query, $role) => $query->where('role', $role))
             ->when($q !== '', fn ($query) => $query->where(fn ($w) => $w->where('name', 'like', $like)->orWhere('email', 'like', $like)->orWhere('username', 'like', $like)))
             ->orderBy('role')->orderBy('name')
@@ -101,7 +101,7 @@ class PeopleController extends Controller
     /** GET /api/admin/educators — every educator with their rights and output, plus what educators did lately */
     public function educators(Request $request): JsonResponse
     {
-        $educators = User::with('profile')->where('role', Role::Educator)
+        $educators = User::with('profile')->active()->where('role', Role::Educator)
             ->withCount(['advisedGroups', 'announcements', 'reviews'])
             ->orderBy('name')
             ->get();
