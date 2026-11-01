@@ -4,8 +4,8 @@ What to install, how to run and test Tuklas on your machine, and what's left to 
 
 **Where things stand (2026-10-31):** Tuklas has moved from a Node/Express server to a Laravel
 API. The API is finished and tested, and the React app now talks to it, including the 2FA,
-email-verification, password-reset and account screens. Still missing on the client: live
-updates and the new chat search (see [TODO.md](TODO.md)). The old Node server in `server/` is no longer used and will be deleted.
+email-verification, password-reset and account screens and live updates. Still missing on the
+client: the new chat search (see [TODO.md](TODO.md)). The old Node server in `server/` is no longer used and will be deleted.
 
 To run the site you start the Laravel API (section 3) and then the React app (section 4).
 
@@ -113,7 +113,10 @@ browser sees one site and the sign-in cookies work. Use `npm run dev -w client`,
 `npm run dev`: the root script still starts the old Node server too, until
 `chore/remove-node-server`.
 
-Not there yet: live updates (new messages appear after a refresh; `feat/client-realtime`).
+Live updates (new messages, notifications, who's online) need `php artisan reverb:start` from 3c.
+Vite forwards `/app/` to it, and reads `VITE_REVERB_APP_KEY` and `VITE_DEMO_LOGIN` from `tuklas/.env`
+(restart `npm run dev -w client` after changing them). Without Reverb the site still works; lists
+just update when you reload.
 
 **Testing sign-in security:** set `DEMO_MODE=false` in `.env` and restart `php artisan serve`.
 Educators and admins are then asked to set up 2FA (any authenticator app works), and new
@@ -159,8 +162,8 @@ the 2FA requirement, so these accounts sign in straight away. Turn it off to tes
 The full list, with the branch name to use for each item and the files it may touch, is
 [TODO.md](TODO.md). In short:
 
-1. **React client** (`feat/client-*` branches): live updates through Reverb and the new chat
-   search. (Shared types, the API connection and the account screens are done.)
+1. **React client**: the new chat search (`feat/client-chat-search`). (Types, the API connection,
+   account screens and live updates are done.)
 2. (Account deletion and group deliverables are done.)
 3. **Tooling**: Claude Code kit, CI on GitHub Actions, Larastan.
 4. **Remove the old Node server** (`chore/remove-node-server`), last.
@@ -190,6 +193,7 @@ someone is working on it. The full rule is at the top of [TODO.md](TODO.md).
 | Port 3306 already in use | Another MySQL is running; stop it, or change the port in `docker-compose.yml` and `.env` |
 | `MissingAttributeException` in a test | Strict mode caught a missing default; add it to the model's `$attributes` |
 | "Your session expired" (419) on every form | `APP_URL` in `.env` must be `http://localhost:5173` and `SANCTUM_STATEFUL_DOMAINS` must list `localhost:5173` (both in `.env.example`); then `php artisan config:clear` |
+| Messages and notifications only appear after a reload | Start Reverb (`php artisan reverb:start`), check `VITE_REVERB_APP_KEY` is in `tuklas/.env` (`php artisan reverb:install` adds it), and restart Vite |
 | Edits don't show until you reload; the browser console keeps saying `[vite] connecting...` | Chrome can't open WebSockets to localhost (curl can). Usually an antivirus "web shield" or a browser extension. Allow `localhost` in it, or try another browser. Live updates (Reverb) need WebSockets too |
 | An emailed link opens `localhost:8000` | Restart Vite after pulling: `client/vite.config.ts` must keep `changeOrigin: false` |
 | 403 with `"code": "two_factor_required"` | Expected for educators/admins when `DEMO_MODE=false`; set up 2FA or turn demo mode on |
