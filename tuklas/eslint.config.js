@@ -20,6 +20,11 @@ export default tseslint.config(
     languageOptions: { globals: { ...globals.node, ...globals.browser } },
   },
   {
+    // Plain scripts copied into the build as they are (index.html loads them before the app)
+    files: ['client/public/**/*.js'],
+    languageOptions: { sourceType: 'script', globals: globals.browser },
+  },
+  {
     files: ['client/**/*.{ts,tsx}'],
     languageOptions: { globals: globals.browser },
     plugins: { react, 'react-hooks': reactHooks },
