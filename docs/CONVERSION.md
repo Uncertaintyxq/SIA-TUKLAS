@@ -129,7 +129,8 @@ branch rule; the deployment plan is in [DEPLOYMENT.md](DEPLOYMENT.md).
 | Client: own types (no `server/` imports) | `client/` | ☑ | typecheck | |
 | Client: proxy, CSRF, `/auth/register`, privacy consent at signup | `client/` | ☑ | smoke test | |
 | Client: 2FA setup and login code, email verification, password reset, sessions, privacy, data export | `client/` | ☑ | smoke test | |
-| Client: Echo on Reverb, chat search | `client/` | ☐ | ☐ | |
+| Client: Echo on Reverb (live updates, presence) | `client/` | ☑ | smoke test | |
+| Client: chat search | `client/` | ☐ | ☐ | |
 | Remove Node server and Prisma | | ☐ | | |
 
 ## Client changes this causes
@@ -240,6 +241,16 @@ branch rule; the deployment plan is in [DEPLOYMENT.md](DEPLOYMENT.md).
   deliverables. Students whose work waited on that adviser are told. `User::active()` keeps former
   members out of people search, adviser and co-author pickers, portfolios, admin lists, announcement
   emails and every notification. Admins can't delete their own account. 131 tests pass.
+
+- 2026-11-01: `feat/client-realtime`. `client/src/lib/realtime.tsx` uses Laravel Echo (pusher-js) on
+  Reverb instead of the Node server's `/api/ws`: the private `users.{id}` channel (event `tuklas`)
+  triggers the same refetches, and the `online` presence channel decides the chat dots once it has
+  answered. Channel auth goes through `api()` (session cookie + XSRF) to `/api/broadcasting/auth`.
+  Reverb is reached on the site's own origin at `/app/` (Vite proxies it to :8080; Nginx will in
+  production), so no extra CSP entry is needed. Vite reads `tuklas/.env` (`envDir: '..'`; only
+  `VITE_*` reach the browser), and `VITE_DEMO_LOGIN` now follows `DEMO_MODE`. Removing the dead
+  `/api/ws` socket also removes what was crashing the Vite dev server (an unhandled ECONNRESET when
+  a browser closed while that request hung).
 
 ## How the code is laid out (for the next modules)
 
