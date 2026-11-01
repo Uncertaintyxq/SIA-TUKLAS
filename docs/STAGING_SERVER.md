@@ -14,7 +14,7 @@ and [`tuklas/deploy/azure/README.md`](../tuklas/deploy/azure/README.md).
 | Site address | <https://tuklas-sia-jm.japaneast.cloudapp.azure.com> |
 | Demo accounts | One-click logins on the login page; the password for all of them is `tuklas123` |
 | Turns itself off | Every day at **11:00 PM Philippine time**, with an email 30 minutes before |
-| Updates | **Not automatic.** Someone runs `deploy.sh` after changes reach `main` ([below](#put-a-new-version-live)) |
+| Updates | Automatic after `main` passes CI, once [automatic deploys](../tuklas/deploy/README.md#automatic-deploys) are set up; until then someone runs `deploy.sh` ([below](#put-a-new-version-live)) |
 
 ## Three different terminals
 
@@ -106,7 +106,10 @@ Some features need a small change on the server itself, once. Do these **before*
    `sudo bash ~/SIA-TUKLAS/tuklas/deploy/setup-server.sh --domain tuklas-sia-jm.japaneast.cloudapp.azure.com`
    (it keeps the `.env`; it installs `age`, the backup folder and the cron line), deploy, then
    "Turn them on" in [`tuklas/deploy/README.md`](../tuklas/deploy/README.md#backups).
-4. Optional: put the university's name in `/var/www/tuklas/shared/.env` as `TUKLAS_INSTITUTION=…`
+4. *(`chore/deploy-pipeline`)* Automatic deploys from GitHub: "Automatic deploys" in
+   [`tuklas/deploy/README.md`](../tuklas/deploy/README.md#automatic-deploys) (a key for GitHub, one
+   line on the server, a `staging` environment in the repo settings).
+5. Optional: put the university's name in `/var/www/tuklas/shared/.env` as `TUKLAS_INSTITUTION=…`
    (Google Scholar shows it on student research).
 
 Staging writes emails to the log instead of sending them (`MAIL_MAILER=log`), so email settings
