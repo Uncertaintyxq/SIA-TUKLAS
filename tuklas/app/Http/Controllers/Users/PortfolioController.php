@@ -29,6 +29,7 @@ class PortfolioController extends Controller
         $viewer = $request->user();
         $user = User::with(['profile', 'links' => fn ($q) => $q->orderBy('id'), 'backgrounds' => fn ($q) => $q->orderByDesc('year')->orderBy('id'), 'honors' => fn ($q) => $q->orderByDesc('year')->orderByDesc('id')])
             ->where('username', $username)
+            ->active()
             ->first() ?? throw new HttpException(404, 'There’s no portfolio at that address.');
 
         $isOwner = $viewer?->id === $user->id;

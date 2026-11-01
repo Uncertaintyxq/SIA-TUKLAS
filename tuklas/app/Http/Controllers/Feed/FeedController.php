@@ -93,7 +93,7 @@ class FeedController extends Controller
         $discussion = fn (array $i) => $i['kind'] === 'work' ? $i['work']['commentCount'] * 2 + $i['work']['reactionCount'] : -1;
         $items = $items->sort(fn ($a, $b) => ($sort === 'discussed' ? $discussion($b) <=> $discussion($a) : 0) ?: strcmp($b['at'], $a['at']))->values();
 
-        $people = $q === '' ? collect() : User::with('profile')
+        $people = $q === '' ? collect() : User::with('profile')->active()
             ->where(fn ($u) => $u->where('name', 'like', $like)->orWhere('username', 'like', $like)->orWhere('program', 'like', $like)
                 ->orWhere('headline', 'like', $like)->orWhereHas('profile', fn ($p) => $p->where('department', 'like', $like)))
             ->orderBy('name')

@@ -125,7 +125,7 @@ branch rule; the deployment plan is in [DEPLOYMENT.md](DEPLOYMENT.md).
 | Notifications | `routes/notifications.ts`, `lib/notify.ts` | ☑ | ☑ | |
 | Demo reset | `routes/demo.ts` | ☑ | ☑ | |
 | Privacy: data export, sessions, consent, audit log | new | ☑ | ☑ | |
-| Privacy: account deletion (D13) | new | ☐ | ☐ | |
+| Privacy: account deletion (D13) | new | ☑ | ☑ | |
 | Client: own types (no `server/` imports) | `client/` | ☑ | typecheck | |
 | Client: proxy, CSRF, `/auth/register`, privacy consent at signup | `client/` | ☑ | smoke test | |
 | Client: 2FA setup and login code, email verification, password reset, sessions, privacy, data export | `client/` | ☑ | smoke test | |
@@ -227,6 +227,19 @@ branch rule; the deployment plan is in [DEPLOYMENT.md](DEPLOYMENT.md).
   notification answered 500 after saving; live updates are now best effort and a failure is
   logged. `Chat::post` now saves every chat message (the chat controller uses it too). 123 tests
   pass; checked end to end through the proxy.
+
+- 2026-11-01: `feat/account-deletion` (D13). `DELETE /api/account {password}` (`App\Actions\Account\DeleteAccount`)
+  keeps the user row, renamed "Former member" (`former-member-{id}`, an unusable email and password,
+  `account_deleted_at` set), because works, reviews and groups point at it and most of those foreign
+  keys cascade. Erased: portfolio and its files, unapproved works and drafts, comments, reactions,
+  saves, registrations, applications, opportunities, pending events and ads, draft publications,
+  group memberships, files they shared in groups, their per-student deliverables, notifications,
+  sessions; messages are removed like a deleted message; their name is replaced in group logs and
+  other people's notifications. Kept as Former member: approved works, reviews, approved events,
+  internal and public research, announcements, groups they advise (admins are told), group
+  deliverables. Students whose work waited on that adviser are told. `User::active()` keeps former
+  members out of people search, adviser and co-author pickers, portfolios, admin lists, announcement
+  emails and every notification. Admins can't delete their own account. 131 tests pass.
 
 ## How the code is laid out (for the next modules)
 

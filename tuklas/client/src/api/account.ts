@@ -126,6 +126,18 @@ export function useLogoutOthers() {
   });
 }
 
+/** Deletes the signed-in account (needs the password) and forgets everything cached about it. */
+export function useDeleteAccount() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (password: string) => api<void>('/account', { method: 'DELETE', body: { password } }),
+    onSuccess: () => {
+      qc.setQueryData(ME, null);
+      qc.removeQueries({ predicate: (q) => q.queryKey[0] !== 'me' });
+    },
+  });
+}
+
 export function useAcceptPrivacy() {
   const qc = useQueryClient();
   return useMutation({

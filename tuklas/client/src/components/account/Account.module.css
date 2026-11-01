@@ -249,3 +249,26 @@ a.link {
     justify-items: start;
   }
 }
+
+/* Account deletion: what goes and what stays */
+.deleteLists {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: var(--s-4);
+  font-size: var(--fs-small);
+}
+
+.deleteLists ul {
+  display: grid;
+  gap: var(--s-1);
+  margin: var(--s-2) 0 0;
+  padding-left: var(--s-4);
+}
+
+.listHeading {
+  font-size: var(--fs-small);
+  font-weight: 700;
+  color: var(--text-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
