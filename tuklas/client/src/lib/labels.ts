@@ -7,6 +7,7 @@ import type { ApprovalStatus, EventCategory } from '../types/events';
 import type { BadgeTone } from '../components/ui/Badge';
 import type { OpportunityKind } from '../types/feed';
 import type { HonorKind, LinkType } from '../types/profile';
+import type { ReportReason, ReportTarget } from '../types/reports';
 import type { DefenseStageKind, ReactionKind, ReviewDecision, Verdict, WorkStatus, WorkType } from '../types/works';
 
 export const typeLabel: Record<WorkType, string> = { research: 'Research paper', literary: 'Literary work', innovation: 'Innovation' };
@@ -73,3 +74,15 @@ export function roleBadge(u: Pick<UserCard, 'role' | 'verified'>) {
   if (u.role === 'educator') return u.verified ? 'Verified Educator' : 'Educator · unverified';
   return u.role === 'admin' ? 'Admin' : 'Student';
 }
+
+export const reportReasonLabel: Record<ReportReason, string> = {
+  spam: 'Spam or advertising',
+  harassment: 'Harassment or bullying',
+  inappropriate: 'Not appropriate for an academic site',
+  plagiarism: 'Plagiarism: someone else’s work',
+  privacy: 'Shares someone’s private information',
+  other: 'Something else',
+};
+
+/** What a report is about, as admins read it in the queue */
+export const reportTargetLabel: Record<ReportTarget, string> = { work: 'Work', comment: 'Comment', message: 'Chat message', event: 'Event', user: 'Person' };

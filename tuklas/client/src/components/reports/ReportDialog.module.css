@@ -1,0 +1,57 @@
+.form {
+  display: grid;
+  gap: var(--s-3);
+}
+
+.reasons {
+  display: grid;
+  gap: var(--s-2);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.legend {
+  margin-bottom: var(--s-2);
+  font-family: var(--font-display);
+  font-stretch: var(--label-stretch);
+  font-size: var(--fs-small);
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  color: var(--text-soft);
+}
+
+.reason {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: var(--tap);
+  padding: var(--s-2) var(--s-3);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-control);
+  cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease-out);
+}
+
+.reason:hover {
+  border-color: var(--rule-strong);
+}
+
+.reason:has(input:checked) {
+  border-color: var(--action);
+  background: color-mix(in srgb, var(--lavender) 45%, var(--sheet));
+}
+
+.reason:focus-within {
+  box-shadow: var(--focus);
+}
+
+.reason input {
+  accent-color: var(--action);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--s-2);
+}

@@ -291,6 +291,14 @@ branch rule; the deployment plan is in [DEPLOYMENT.md](DEPLOYMENT.md).
   PHP. Reverb listens on 127.0.0.1:8080 behind Nginx's `/app/`, and `REVERB_ALLOWED_ORIGINS`
   limits WebSocket origins to the site.
 
+- 2026-11-02: `feat/report-content`. People can report a work, a public discussion comment, a chat
+  message, an event or a person (Flag buttons; `components/reports/ReportDialog.tsx`). `reports`
+  keeps an encrypted snapshot of what was reported, so the evidence survives a deletion. Admins get a
+  Reports tab grouped by reported thing: dismiss, warn the person, or remove the content (works are
+  taken off the feed, comments deleted, messages removed like a deleted message, events rejected).
+  Every reporter is told the outcome; nobody is told who reported them. Admins can't resolve reports
+  about themselves. Reports are in the data export, and go with a deleted account.
+
 ## How the code is laid out (for the next modules)
 
 - **Routes:** `routes/modules/<module>.php`, required from `routes/api.php`. Signed-in groups use
