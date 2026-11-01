@@ -6,6 +6,7 @@ use App\Enums\Role;
 use App\Models\User;
 use Database\Seeders\DemoSeeder;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Fortify\Contracts\TwoFactorAuthenticationProvider;
 
@@ -19,6 +20,10 @@ abstract class TestCase extends BaseTestCase
         $this->withHeaders(['Referer' => config('app.url').'/']);
         // Uploads and seeded files go to a throwaway disk, never storage/app/private
         Storage::fake('local');
+        // Emails aren't rendered unless a test asks: almost every action notifies someone, and rendering
+        // each email triples the suite's time. Tests about email fake again and assert (and the email
+        // templates have their own rendering test in NotificationSettingsTest).
+        Notification::fake();
     }
 
     /**

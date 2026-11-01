@@ -36,3 +36,13 @@ export interface ChangePasswordInput {
 
 /** A 2FA login is finished with a 6-digit code from the app, or one of the recovery codes. */
 export type TwoFactorChallengeInput = { code: string } | { recovery_code: string };
+
+/** Which updates also arrive by email (GET/PUT /api/account/notifications). In-app updates always arrive. */
+export interface NotificationSettings {
+  email: Record<string, boolean>;
+  /** The Monday email: unread updates, this week's deadlines and events, new research in your department */
+  digest: boolean;
+  /** Email only goes to a confirmed address */
+  emailVerified: boolean;
+  categories: { key: string; label: string; description: string }[];
+}

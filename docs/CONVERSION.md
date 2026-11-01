@@ -309,6 +309,15 @@ branch rule; the deployment plan is in [DEPLOYMENT.md](DEPLOYMENT.md).
   **Existing servers:** remove the old `location = /robots.txt` line from the installed Nginx site
   (`deploy/nginx.conf` no longer has it), or robots.txt answers 404.
 
+- 2026-11-02: `feat/notification-settings`. In-app notifications still always arrive; on the
+  Account page people choose which of six categories also arrive by email (defaults: research,
+  groups, announcements and account on; events and the admins' queue off), and turn on a weekly
+  digest (Mondays 8 AM Philippine time, `tuklas:weekly-digest`; nothing new means no email).
+  `Notifier` queues an `ActivityEmail` for confirmed addresses that want it; announcement emails
+  follow the same setting. Tests fake notifications by default (`tests/TestCase.php`), which keeps the
+  suite at about 20 seconds. **Servers** need the scheduler's cron line (`docs/STAGING_SERVER.md`,
+  one-time steps). Locally, `php artisan schedule:work` runs scheduled jobs.
+
 ## How the code is laid out (for the next modules)
 
 - **Routes:** `routes/modules/<module>.php`, required from `routes/api.php`. Signed-in groups use
