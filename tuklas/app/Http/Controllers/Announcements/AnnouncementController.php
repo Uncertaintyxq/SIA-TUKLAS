@@ -163,7 +163,7 @@ class AnnouncementController extends Controller
         // In-app notification (pushed to open tabs) and one email per person in the audience.
         $ids = array_values(array_diff($a->audienceIds(), [$me->id]));
         Notifier::notify($ids, 'announcement', "{$me->name} posted an announcement: “{$a->title}”", "/announcements#a-{$a->id}", $me->id);
-        Notification::send(User::whereIn('id', $ids)->get(), new AnnouncementPosted($a, $me->name, $a->audienceLabel()));
+        Notification::send(User::active()->whereIn('id', $ids)->get(), new AnnouncementPosted($a, $me->name, $a->audienceLabel()));
 
         return response()->json(['id' => $a->id], 201);
     }

@@ -44,7 +44,7 @@ Paths are relative to `tuklas/` unless they start with `docs/` or `.github/`.
 
 | Branch | Scope | Depends on | Status |
 |---|---|---|---|
-| `feat/account-deletion` | Delete my account (D13): erase personal data; keep published works as "Former member"; keep reviews, unnamed. `app/Http/Controllers/Account/`, `app/Actions/Account/` (new), `routes/modules/account.php`, `tests/Feature/Account/`. Needs a nullable `author_id` migration for works and publications (new file in `database/migrations/`). | | Not started |
+| `feat/account-deletion` | Delete my account (D13): erase personal data; keep published works as "Former member"; keep reviews, unnamed. `app/Http/Controllers/Account/`, `app/Actions/Account/` (new), `routes/modules/account.php`, `tests/Feature/Account/`. Built by keeping the user row, anonymised, so no nullable `author_id` was needed: a `users.account_deleted_at` migration instead, `User::active()` in every people list, picker, portfolio and notification, and the "Delete account" section on `client/src/pages/AccountPage.tsx`. | | Done |
 | `feat/group-deliverables` | Students submit deliverables against a group deadline; the adviser sees who submitted, who's late, and leaves feedback. New migration, model, controller and tests; `routes/modules/groups.php` (*shared*); group page in `client/src/pages/GroupPage.tsx` and `client/src/components/groups/` (new). Also touched: `DemoSeeder` (two demo deliverables), `tests/TestCase.php` (fake disk), `app/Support/Realtime.php` (a Reverb outage no longer fails the request). | `feat/client-types` | Done |
 
 ### Conversion: React client

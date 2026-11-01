@@ -22,7 +22,7 @@ class PeopleController extends Controller
         }
 
         $like = '%'.addcslashes($q, '%_\\').'%';
-        $users = User::with('profile')
+        $users = User::with('profile')->active()
             ->when($role, fn ($query) => $query->where('role', $role))
             ->where(fn ($query) => $query
                 ->where('name', 'like', $like)
@@ -39,6 +39,6 @@ class PeopleController extends Controller
     /** GET /api/people/advisers — advisers a student can pick: verified educators only. */
     public function advisers(): AnonymousResourceCollection
     {
-        return UserCardResource::collection(User::with('profile')->where('role', Role::Educator)->where('verified', true)->orderBy('name')->get());
+        return UserCardResource::collection(User::with('profile')->active()->where('role', Role::Educator)->where('verified', true)->orderBy('name')->get());
     }
 }
