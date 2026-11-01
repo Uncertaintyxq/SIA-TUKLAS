@@ -17,19 +17,18 @@ class GroupDeadline extends Model
     /** Column defaults, so a new model has them before it's reloaded. */
     protected $attributes = ['submission_mode' => 'none', 'instructions' => ''];
 
-    protected function casts(): array
-    {
-        return [
-            'due_at' => 'datetime',
-            'submission_mode' => SubmissionMode::class,
-        ];
-    }
+    protected $casts = [
+        'due_at' => 'datetime',
+        'submission_mode' => SubmissionMode::class,
+    ];
 
+    /** @return BelongsTo<ResearchGroup, $this> */
     public function group(): BelongsTo
     {
         return $this->belongsTo(ResearchGroup::class, 'research_group_id');
     }
 
+    /** @return HasMany<DeliverableSubmission, $this> */
     public function deliverables(): HasMany
     {
         return $this->hasMany(DeliverableSubmission::class);

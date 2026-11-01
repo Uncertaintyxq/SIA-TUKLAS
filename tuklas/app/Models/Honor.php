@@ -19,20 +19,19 @@ class Honor extends Model
     /** Column defaults, so a new model has them before it's reloaded. */
     protected $attributes = ['verified' => false];
 
-    protected function casts(): array
-    {
-        return [
-            'kind' => HonorKind::class,
-            'verified' => 'boolean',
-            'verified_at' => 'datetime',
-        ];
-    }
+    protected $casts = [
+        'kind' => HonorKind::class,
+        'verified' => 'boolean',
+        'verified_at' => 'datetime',
+    ];
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function verifiedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'verified_by_id');

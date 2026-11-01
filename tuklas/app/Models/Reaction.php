@@ -20,16 +20,15 @@ class Reaction extends Model
 
     public $incrementing = false;
 
-    protected function casts(): array
-    {
-        return ['kind' => ReactionKind::class];
-    }
+    protected $casts = ['kind' => ReactionKind::class];
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** @return BelongsTo<Work, $this> */
     public function work(): BelongsTo
     {
         return $this->belongsTo(Work::class);

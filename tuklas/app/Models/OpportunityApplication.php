@@ -16,11 +16,13 @@ class OpportunityApplication extends Model
 
     public $incrementing = false;
 
+    /** @return BelongsTo<Opportunity, $this> */
     public function opportunity(): BelongsTo
     {
         return $this->belongsTo(Opportunity::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

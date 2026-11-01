@@ -13,27 +13,27 @@ class DeliverableVersion extends Model
 {
     public $timestamps = false;
 
-    protected function casts(): array
-    {
-        return [
-            'note' => 'encrypted',
-            'feedback' => 'encrypted',
-            'status' => SubmissionStatus::class,
-            'reviewed_at' => 'datetime',
-            'submitted_at' => 'datetime',
-        ];
-    }
+    protected $casts = [
+        'note' => 'encrypted',
+        'feedback' => 'encrypted',
+        'status' => SubmissionStatus::class,
+        'reviewed_at' => 'datetime',
+        'submitted_at' => 'datetime',
+    ];
 
+    /** @return BelongsTo<DeliverableSubmission, $this> */
     public function submission(): BelongsTo
     {
         return $this->belongsTo(DeliverableSubmission::class, 'deliverable_submission_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function student(): BelongsTo
     {
         return $this->belongsTo(User::class, 'student_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function reviewedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'reviewed_by_id');

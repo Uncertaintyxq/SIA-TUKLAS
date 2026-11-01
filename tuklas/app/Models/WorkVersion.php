@@ -15,14 +15,12 @@ class WorkVersion extends Model
     /** Column defaults, so a new model has them before it's reloaded. */
     protected $attributes = ['note' => ''];
 
-    protected function casts(): array
-    {
-        return [
-            'tags' => 'array',
-            'submitted_at' => 'datetime',
-        ];
-    }
+    protected $casts = [
+        'tags' => 'array',
+        'submitted_at' => 'datetime',
+    ];
 
+    /** @return BelongsTo<Work, $this> */
     public function work(): BelongsTo
     {
         return $this->belongsTo(Work::class);

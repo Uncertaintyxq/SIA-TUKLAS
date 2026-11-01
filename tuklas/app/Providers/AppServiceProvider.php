@@ -89,14 +89,21 @@ class AppServiceProvider extends ServiceProvider
     /** Security events in audit_logs. Admin actions are logged where they happen. */
     private function auditTrail(): void
     {
-        Event::listen(Login::class, fn (Login $e) => Audit::log('login', $e->user));
-        Event::listen(Logout::class, fn (Logout $e) => $e->user && Audit::log('logout', $e->user));
+        // The events carry an Authenticatable; in Tuklas that's always a User. Listeners must not return
+        // false (that stops the other listeners, such as the one that sends the verification email).
+        $user = fn (object $e): ?User => $e->user instanceof User ? $e->user : null;
+        Event::listen(Login::class, function (Login $e) use ($user) {
+            Audit::log('login', $user($e));
+        });
+        Event::listen(Logout::class, function (Logout $e) use ($user) {
+            Audit::log('logout', $user($e));
+        });
         // The attempted email is personal data and isn't stored; the account is linked when it exists.
-        Event::listen(Failed::class, fn (Failed $e) => Audit::log('login_failed', null, $e->user instanceof User ? $e->user : null));
+        Event::listen(Failed::class, fn (Failed $e) => Audit::log('login_failed', null, $user($e)));
         Event::listen(Lockout::class, fn () => Audit::log('login_locked'));
-        Event::listen(Registered::class, fn (Registered $e) => Audit::log('signup', $e->user, $e->user));
-        Event::listen(Verified::class, fn (Verified $e) => Audit::log('email_verified', $e->user, $e->user));
-        Event::listen(PasswordReset::class, fn (PasswordReset $e) => Audit::log('password_reset', $e->user, $e->user));
+        Event::listen(Registered::class, fn (Registered $e) => Audit::log('signup', $user($e), $user($e)));
+        Event::listen(Verified::class, fn (Verified $e) => Audit::log('email_verified', $user($e), $user($e)));
+        Event::listen(PasswordReset::class, fn (PasswordReset $e) => Audit::log('password_reset', $user($e), $user($e)));
         Event::listen(TwoFactorAuthenticationConfirmed::class, fn ($e) => Audit::log('two_factor_enabled', $e->user, $e->user));
         Event::listen(TwoFactorAuthenticationDisabled::class, fn ($e) => Audit::log('two_factor_disabled', $e->user, $e->user));
         Event::listen(TwoFactorAuthenticationFailed::class, fn ($e) => Audit::log('two_factor_failed', null, $e->user));

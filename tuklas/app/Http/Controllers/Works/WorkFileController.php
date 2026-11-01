@@ -60,7 +60,7 @@ class WorkFileController extends Controller
         }
         $v = $work->versions()->where('version', $version)->first();
 
-        return Uploads::serve($v?->pdf_file, 'application/pdf', $v?->pdf_name ?? "version-{$version}.pdf");
+        return Uploads::serve($v?->pdf_file, 'application/pdf', $v->pdf_name ?? "version-{$version}.pdf");
     }
 
     /** Deletes a replaced PDF unless a submitted version still points at it. */

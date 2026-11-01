@@ -22,7 +22,7 @@ class PublicationCardResource extends JsonResource
             'keywords' => array_values(array_filter($this->keywords ?? [], 'is_string')),
             'visibility' => $this->visibility->value,
             'authors' => UserCardResource::collection(collect([$this->author])->concat($this->coAuthors)),
-            'department' => $this->author->profile?->department ?? '',
+            'department' => $this->author->profile->department ?? '',
             'hasPdf' => $this->pdf_file !== null,
             'publishedAt' => $this->published_at?->toISOString(),
             'createdAt' => $this->created_at->toISOString(),

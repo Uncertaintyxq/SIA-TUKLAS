@@ -15,6 +15,6 @@ trait PasswordValidationRules
      */
     protected function passwordRules(bool $confirmed = true): array
     {
-        return array_values(array_filter(['required', 'string', Password::defaults(), $confirmed ? 'confirmed' : null]));
+        return ['required', 'string', Password::defaults(), ...($confirmed ? ['confirmed'] : [])];
     }
 }

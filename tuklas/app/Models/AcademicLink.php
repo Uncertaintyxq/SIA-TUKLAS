@@ -15,11 +15,9 @@ class AcademicLink extends Model
     /** Column defaults, so a new model has them before it's reloaded. */
     protected $attributes = ['label' => ''];
 
-    protected function casts(): array
-    {
-        return ['type' => LinkType::class];
-    }
+    protected $casts = ['type' => LinkType::class];
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
