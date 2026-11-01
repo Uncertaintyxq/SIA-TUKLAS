@@ -16,16 +16,15 @@ class ConversationMember extends Model
 
     public $incrementing = false;
 
-    protected function casts(): array
-    {
-        return ['last_read_at' => 'datetime'];
-    }
+    protected $casts = ['last_read_at' => 'datetime'];
 
+    /** @return BelongsTo<Conversation, $this> */
     public function conversation(): BelongsTo
     {
         return $this->belongsTo(Conversation::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

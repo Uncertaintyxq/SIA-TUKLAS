@@ -18,6 +18,8 @@ use App\Support\Uploads;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
@@ -30,6 +32,17 @@ class EventController extends Controller
     public static function canManage(Event $event, User $user): bool
     {
         return $user->isAdmin() || $event->posted_by_id === $user->id;
+    }
+
+    /** Who registered, earliest first, for the organizer's attendee list. */
+    private function attendees(Event $event): array
+    {
+        $registrations = DB::table('event_registrations')->where('event_id', $event->id)->orderBy('created_at')->get(['user_id', 'created_at']);
+        $people = User::with('profile')->findMany($registrations->pluck('user_id'))->keyBy('id');
+
+        return $registrations->filter(fn ($r) => $people->has($r->user_id))
+            ->map(fn ($r) => ['user' => new UserCardResource($people[$r->user_id]), 'registeredAt' => Carbon::parse($r->created_at)->toISOString()])
+            ->values()->all();
     }
 
     /** GET /api/events */
@@ -67,10 +80,7 @@ class EventController extends Controller
             'isOrganizer' => $event->posted_by_id === $me->id,
             'canRegister' => $event->status === ApprovalStatus::Approved && $upcoming && ! $full,
             'canPromote' => $manage && $event->status === ApprovalStatus::Approved && $upcoming,
-            'attendees' => $manage
-                ? $event->attendees()->with('profile')->orderBy('event_registrations.created_at')->get()
-                    ->map(fn (User $u) => ['user' => new UserCardResource($u), 'registeredAt' => $u->pivot->created_at->toISOString()])
-                : null,
+            'attendees' => $manage ? $this->attendees($event) : null,
             'ads' => $manage ? AdCardResource::collection(Cards::ads($event->ads()->getQuery())->latest('created_at')->get()) : [],
         ]);
     }

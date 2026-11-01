@@ -14,6 +14,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 /**
  * A student's research, literary or innovation work. Private until approved; see WorkPolicy.
  * Status, approval and removal fields are never mass-assignable: only review actions change them.
+ *
+ * @property-read int|null $public_comments_count Public discussion comments (Cards::works)
+ * @property-read int|null $reactions_total All reactions (Cards::works)
  */
 #[Fillable(['type', 'title', 'abstract', 'tags', 'adviser_id'])]
 class Work extends Model
@@ -21,17 +24,14 @@ class Work extends Model
     /** Column defaults, so a new model has them before it's reloaded. */
     protected $attributes = ['status' => 'draft'];
 
-    protected function casts(): array
-    {
-        return [
-            'type' => WorkType::class,
-            'status' => WorkStatus::class,
-            'tags' => 'array',
-            'submitted_at' => 'datetime',
-            'approved_at' => 'datetime',
-            'removed_at' => 'datetime',
-        ];
-    }
+    protected $casts = [
+        'type' => WorkType::class,
+        'status' => WorkStatus::class,
+        'tags' => 'array',
+        'submitted_at' => 'datetime',
+        'approved_at' => 'datetime',
+        'removed_at' => 'datetime',
+    ];
 
     /** Approved and not removed by an admin: the only works anyone may see. */
     public function isPublic(): bool
@@ -67,52 +67,65 @@ class Work extends Model
         return $this->author_id === $user->id || $this->coAuthors->contains('id', $user->id);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function author(): BelongsTo
     {
         return $this->belongsTo(User::class, 'author_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function adviser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'adviser_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function approvedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_by_id');
     }
 
-    /** Co-authors beyond the submitting author, in byline order. */
+    /**
+     * Co-authors beyond the submitting author, in byline order.
+     *
+     * @return BelongsToMany<User, $this>
+     */
     public function coAuthors(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'work_authors')->withPivot('order')->orderByPivot('order');
     }
 
+    /** @return HasMany<WorkVersion, $this> */
     public function versions(): HasMany
     {
         return $this->hasMany(WorkVersion::class)->orderBy('version');
     }
 
+    /** @return HasMany<Review, $this> */
     public function reviews(): HasMany
     {
         return $this->hasMany(Review::class)->orderBy('created_at');
     }
 
+    /** @return HasMany<Comment, $this> */
     public function comments(): HasMany
     {
         return $this->hasMany(Comment::class);
     }
 
+    /** @return HasMany<Reaction, $this> */
     public function reactions(): HasMany
     {
         return $this->hasMany(Reaction::class);
     }
 
+    /** @return BelongsToMany<User, $this> */
     public function savedBy(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'saved_works')->withPivot('created_at');
     }
 
+    /** @return HasMany<DefenseStage, $this> */
     public function defenseStages(): HasMany
     {
         return $this->hasMany(DefenseStage::class)->orderBy('date');

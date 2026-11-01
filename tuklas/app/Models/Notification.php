@@ -15,11 +15,9 @@ class Notification extends Model
     /** Column defaults, so a new model has them before it's reloaded. */
     protected $attributes = ['read' => false];
 
-    protected function casts(): array
-    {
-        return ['read' => 'boolean'];
-    }
+    protected $casts = ['read' => 'boolean'];
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

@@ -36,23 +36,20 @@ class User extends Authenticatable implements MustVerifyEmail
         'account_deleted_at' => null,
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-            'role' => Role::class,
-            'verified' => 'boolean',
-            'can_publish' => 'boolean',
-            'can_moderate_groups' => 'boolean',
-            'can_broadcast' => 'boolean',
-            'last_seen_at' => 'datetime',
-            'privacy_accepted_at' => 'datetime',
-            'two_factor_confirmed_at' => 'datetime',
-            'account_deleted_at' => 'datetime',
-            'notification_settings' => 'array',
-        ];
-    }
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+        'role' => Role::class,
+        'verified' => 'boolean',
+        'can_publish' => 'boolean',
+        'can_moderate_groups' => 'boolean',
+        'can_broadcast' => 'boolean',
+        'last_seen_at' => 'datetime',
+        'privacy_accepted_at' => 'datetime',
+        'two_factor_confirmed_at' => 'datetime',
+        'account_deleted_at' => 'datetime',
+        'notification_settings' => 'array',
+    ];
 
     /** Accounts that weren't deleted. Deleted ones stay as "Former member" rows (DeleteAccount) and are left out of every people list. */
     public function scopeActive(Builder $query): void
@@ -119,85 +116,113 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->two_factor_secret !== null && $this->two_factor_confirmed_at !== null;
     }
 
+    /** @return HasOne<Profile, $this> */
     public function profile(): HasOne
     {
         return $this->hasOne(Profile::class);
     }
 
+    /** @return HasMany<AcademicLink, $this> */
     public function links(): HasMany
     {
         return $this->hasMany(AcademicLink::class);
     }
 
+    /** @return HasMany<Background, $this> */
     public function backgrounds(): HasMany
     {
         return $this->hasMany(Background::class);
     }
 
+    /** @return HasMany<Honor, $this> */
     public function honors(): HasMany
     {
         return $this->hasMany(Honor::class);
     }
 
-    /** Works this person submitted. */
+    /**
+     * Works this person submitted.
+     *
+     * @return HasMany<Work, $this>
+     */
     public function works(): HasMany
     {
         return $this->hasMany(Work::class, 'author_id');
     }
 
-    /** Works where this person is a co-author. */
+    /**
+     * Works where this person is a co-author.
+     *
+     * @return BelongsToMany<Work, $this>
+     */
     public function coAuthoredWorks(): BelongsToMany
     {
         return $this->belongsToMany(Work::class, 'work_authors')->withPivot('order');
     }
 
+    /** @return HasMany<Work, $this> */
     public function advisedWorks(): HasMany
     {
         return $this->hasMany(Work::class, 'adviser_id');
     }
 
+    /** @return BelongsToMany<Work, $this> */
     public function savedWorks(): BelongsToMany
     {
         return $this->belongsToMany(Work::class, 'saved_works')->withPivot('created_at');
     }
 
+    /** @return HasMany<Opportunity, $this> */
     public function opportunities(): HasMany
     {
         return $this->hasMany(Opportunity::class, 'adviser_id');
     }
 
+    /** @return HasMany<Event, $this> */
     public function events(): HasMany
     {
         return $this->hasMany(Event::class, 'posted_by_id');
     }
 
+    /** @return HasMany<ResearchGroup, $this> */
     public function advisedGroups(): HasMany
     {
         return $this->hasMany(ResearchGroup::class, 'adviser_id');
     }
 
+    /** @return HasMany<GroupMember, $this> */
     public function groupMemberships(): HasMany
     {
         return $this->hasMany(GroupMember::class);
     }
 
-    /** Tuklas's in-app notifications (the bell). Laravel's notifications() is the unrelated mail/database channel. */
+    /**
+     * Tuklas's in-app notifications (the bell). Laravel's notifications() is the unrelated mail/database channel.
+     *
+     * @return HasMany<Notification, $this>
+     */
     public function appNotifications(): HasMany
     {
         return $this->hasMany(Notification::class);
     }
 
+    /** @return HasMany<Publication, $this> */
     public function publications(): HasMany
     {
         return $this->hasMany(Publication::class, 'author_id');
     }
 
+    /** @return HasMany<Announcement, $this> */
     public function announcements(): HasMany
     {
         return $this->hasMany(Announcement::class, 'author_id');
     }
 
-    /** Review decisions this person made on works. */
+    /**
+     * Review decisions this person made on works.
+     *
+     * @return HasMany<Review, $this>
+     */
     public function reviews(): HasMany
     {
         return $this->hasMany(Review::class, 'reviewer_id');

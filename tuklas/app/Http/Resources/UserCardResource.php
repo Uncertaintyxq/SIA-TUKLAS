@@ -26,7 +26,7 @@ class UserCardResource extends JsonResource
             // Educators only count as advisers once an admin verifies them
             'verified' => $this->verified,
             'program' => $this->program,
-            'department' => $profile?->department ?? '',
+            'department' => $profile->department ?? '',
             // The version query busts the browser cache when the photo changes
             'photoUrl' => $profile?->photo_file
                 ? "/api/users/{$this->username}/photo?v=".($profile->updated_at?->getTimestampMs() ?? 0)
