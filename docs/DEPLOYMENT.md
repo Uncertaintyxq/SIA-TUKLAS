@@ -10,7 +10,7 @@ How Tuklas goes from the repo to a public, secure site. The work is split into t
  browser ──► Nginx ──┬── /api/*, /up ............► PHP-FPM 8.4 ── Laravel
                      ├── /app/* (Reverb WebSocket) ► Reverb (Supervisor)
                      └── everything else ........► Laravel serves the built React app
-                                                    (public/app/, with the CSP header)
+                                                    (public/build/, with the CSP header)
  Laravel ──► MySQL 8          (database)
          ──► storage/app/private   (uploads, never web-served)
          ──► queue (database) ──► queue worker (Supervisor) ──► SMTP (emails)
@@ -73,7 +73,7 @@ its own folder and a symlink switches to it, so a failed build never takes the s
 
 1. Check out the tag into `releases/<timestamp>/`.
 2. `composer install --no-dev --optimize-autoloader`
-3. `npm ci && npm run build` (the React app into `public/app/`)
+3. `npm ci && npm run build` (the React app into `public/build/`)
 4. Link the shared `.env` and `storage/` into the release.
 5. `php artisan migrate --force` (migrations only ever add; never edit one that's deployed)
 6. `php artisan config:cache && php artisan route:cache && php artisan event:cache`

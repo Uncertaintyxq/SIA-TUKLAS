@@ -1,8 +1,12 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   plugins: [react()],
+  // The build goes to tuklas/public/build/, where Laravel serves it (routes/web.php hands out its
+  // index.html for every page URL). Not /app/: that path belongs to the Reverb WebSocket.
+  base: command === 'build' ? '/build/' : '/',
+  build: { outDir: '../public/build', emptyOutDir: true },
   // Read the app's own .env (tuklas/.env). Vite exposes only VITE_* variables to the browser, so
   // the Reverb app key and the demo-mode switch come through and no secret does.
   envDir: '..',
@@ -18,4 +22,4 @@ export default defineConfig({
       '^/app/': { target: 'http://localhost:8080', ws: true, changeOrigin: false },
     },
   },
-});
+}));
