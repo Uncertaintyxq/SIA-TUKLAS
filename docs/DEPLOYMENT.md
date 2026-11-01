@@ -68,7 +68,9 @@ PHP (`deploy/php.ini`): `expose_php=Off`, `display_errors=Off`, `post_max_size=2
 
 ## Deploying a release
 
-`deploy/deploy.sh` (from `chore/deploy-server-config`), run by the pipeline. Each release goes in
+`tuklas/deploy/deploy.sh`, run by the pipeline (`.github/workflows/deploy.yml`: staging after `ci`
+passes on `main`, production on a release tag once someone approves it; setup in
+[`tuklas/deploy/README.md`](../tuklas/deploy/README.md#automatic-deploys)). Each release goes in
 its own folder and a symlink switches to it, so a failed build never takes the site down.
 
 1. Check out the tag into `releases/<timestamp>/`.

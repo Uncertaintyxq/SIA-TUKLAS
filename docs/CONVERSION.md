@@ -341,6 +341,14 @@ branch rule; the deployment plan is in [DEPLOYMENT.md](DEPLOYMENT.md).
   listeners are now block closures. `database/seeders/` is left out (demo data; PHPStan misreads its
   tuple lists).
 
+- 2026-11-02: `chore/deploy-backups` and `chore/deploy-pipeline`. Nightly encrypted backups
+  (`deploy/backup.sh`: database and uploads, age with only the public key on the server, optional
+  rclone copy, 30 days; a backup before every deploy that migrates) and `deploy/restore.sh`, tested
+  by a CI job that backs up, damages, restores and checks. `.github/workflows/deploy.yml` deploys
+  staging after `ci` passes on `main` and production on a release tag behind required reviewers,
+  over SSH with a key the server limits to `deploy/ci-deploy.sh`. Both wait for one-time setup on
+  the server and in GitHub (`docs/STAGING_SERVER.md`, one-time steps).
+
 ## How the code is laid out (for the next modules)
 
 - **Routes:** `routes/modules/<module>.php`, required from `routes/api.php`. Signed-in groups use
