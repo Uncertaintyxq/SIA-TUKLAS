@@ -6,4 +6,8 @@
 export type RealtimeEvent =
   | { type: 'message'; conversationId: number; messageId: number; parentId: number | null }
   | { type: 'message_deleted'; conversationId: number; messageId: number }
+  /** Edited or reacted to: refetch, but it isn't new */
+  | { type: 'message_changed'; conversationId: number; messageId: number }
+  /** Someone else read the conversation ("Seen by") */
+  | { type: 'conversation_read'; conversationId: number }
   | { type: 'notification'; kind: string };

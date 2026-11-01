@@ -48,7 +48,7 @@ class DeleteAccount
             array_push($files, ...DB::table('works')->whereIn('id', $unfinished)->pluck('pdf_file'), ...DB::table('work_versions')->whereIn('work_id', $unfinished)->pluck('pdf_file'));
             DB::table('works')->whereIn('id', $unfinished)->delete();
             DB::table('work_authors')->where('user_id', $id)->whereIn('work_id', DB::table('works')->where('status', '!=', 'approved')->select('id'))->delete();
-            foreach (['comments' => 'author_id', 'reactions' => 'user_id', 'saved_works' => 'user_id', 'event_registrations' => 'user_id',
+            foreach (['comments' => 'author_id', 'reactions' => 'user_id', 'message_reactions' => 'user_id', 'saved_works' => 'user_id', 'event_registrations' => 'user_id',
                 'opportunity_applications' => 'user_id', 'announcement_reads' => 'user_id', 'notifications' => 'user_id'] as $table => $column) {
                 DB::table($table)->where($column, $id)->delete();
             }

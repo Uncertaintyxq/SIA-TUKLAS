@@ -64,4 +64,22 @@ class Chat
             ? ['type' => 'message_deleted', 'conversationId' => $conversationId, 'messageId' => $messageId]
             : ['type' => 'message', 'conversationId' => $conversationId, 'messageId' => $messageId, 'parentId' => $parentId]);
     }
+
+    /** A message was edited or reacted to: open tabs refetch it, without counting it as new. */
+    public static function announceChange(int $conversationId, int $messageId): void
+    {
+        Realtime::pushTo(self::memberIds($conversationId), ['type' => 'message_changed', 'conversationId' => $conversationId, 'messageId' => $messageId]);
+    }
+
+    /** Someone read a conversation: the others' "Seen by" refreshes. The reader isn't told. */
+    public static function announceRead(int $conversationId, int $readerId): void
+    {
+        Realtime::pushTo(array_values(array_diff(self::memberIds($conversationId), [$readerId])), ['type' => 'conversation_read', 'conversationId' => $conversationId]);
+    }
+
+    /** @return list<int> */
+    private static function memberIds(int $conversationId): array
+    {
+        return DB::table('conversation_members')->where('conversation_id', $conversationId)->pluck('user_id')->map(fn ($id) => (int) $id)->all();
+    }
 }
