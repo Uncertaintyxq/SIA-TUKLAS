@@ -47,8 +47,8 @@ tuklas/
 ├─ routes/api.php + routes/modules/<module>.php
 ├─ database/migrations, seeders, factories
 ├─ tests/Feature/<Module>, tests/Unit
-├─ client/                        React SPA (Vite proxies /api to Laravel)
-└─ server/                        Node API: deleted once every module is ported
+└─ client/                        React SPA (Vite proxies /api to Laravel, /app/ to Reverb)
+                                  (server/, the Node API, was deleted in chore/remove-node-server)
 ```
 
 ## Security
@@ -131,7 +131,7 @@ branch rule; the deployment plan is in [DEPLOYMENT.md](DEPLOYMENT.md).
 | Client: 2FA setup and login code, email verification, password reset, sessions, privacy, data export | `client/` | ☑ | smoke test | |
 | Client: Echo on Reverb (live updates, presence) | `client/` | ☑ | smoke test | |
 | Client: chat search (D7) | `client/` | ☑ | typecheck | |
-| Remove Node server and Prisma | | ☐ | | |
+| Remove Node server and Prisma | | ☑ | | |
 
 ## Client changes this causes
 
@@ -258,6 +258,12 @@ branch rule; the deployment plan is in [DEPLOYMENT.md](DEPLOYMENT.md).
   every conversation), so new chats with no messages are found too. The old message-text results
   ("No messages mention …") are gone; an empty search says why messages aren't searched.
   `/api/chat/search` stays on the server but the client no longer calls it.
+
+- 2026-11-01: `chore/remove-node-server`. The conversion is complete: `server/` (Express, Prisma,
+  58 files), `database/schema.sql` and the Node-only npm scripts (`db:reset`, `db:sql`, `db:local`)
+  are gone; the root workspace is just `client`. `DB_DATABASE` is `tuklas` again (the separate
+  `tuklas_laravel` database is no longer needed). `npm run dev` now starts `php artisan serve`,
+  `reverb:start`, `queue:work` and Vite together.
 
 ## How the code is laid out (for the next modules)
 
