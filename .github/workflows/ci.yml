@@ -1,13 +1,14 @@
 name: ci
 
-# Checks every push to main and every pull request. A red run means something to fix before merging:
-# formatting (Pint), the test suite on MySQL 8 (what the servers run), known vulnerabilities in the
-# packages Tuklas ships (composer audit, npm audit), and the React app's types, lint and build.
+# Checks every pushed branch, so a task branch is checked before it's merged (the team merges locally,
+# not always through pull requests). A red run means something to fix before merging: formatting
+# (Pint), the test suite on MySQL 8 (what the servers run), known vulnerabilities in the packages
+# Tuklas ships (composer audit, npm audit), and the React app's types, lint and build.
 
 on:
-  pull_request:
   push:
-    branches: [main]
+  pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
