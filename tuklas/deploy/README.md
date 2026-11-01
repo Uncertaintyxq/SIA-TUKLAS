@@ -9,6 +9,7 @@ other) to the live site. Two scripts do the work:
 | `deploy.sh` | every release, as your login user | Puts the latest `main` live in a new release folder and switches to it (with a backup first when there are migrations) |
 | `backup.sh` | nightly by cron, or by hand | An encrypted backup of the database and the uploads |
 | `restore.sh` | when you need it | Puts a backup back: the database and the uploads |
+| `ci-deploy.sh` | by GitHub Actions | The only thing GitHub's deploy key may run: brings the scripts up to date and runs `deploy.sh` |
 
 The other files are the settings those scripts install: `nginx.conf`, `supervisor.conf` (queue
 worker and Reverb), `php.ini`, `mysql.cnf`, and `../.env.production.example`.
@@ -48,7 +49,52 @@ bash ~/SIA-TUKLAS/tuklas/deploy/deploy.sh
 ```
 It clones `main` fresh, so the `~/SIA-TUKLAS` copy only matters for the scripts themselves (run
 `git -C ~/SIA-TUKLAS pull` when they change). `--ref <tag or branch>` deploys something other
-than `main`. `chore/deploy-pipeline` will run this automatically from GitHub.
+than `main`. Once [automatic deploys](#automatic-deploys) are set up, GitHub does this for you.
+
+## Automatic deploys
+
+`.github/workflows/deploy.yml` deploys staging by itself whenever the `ci` checks pass on `main`
+(and can be run by hand: **Actions → deploy → Run workflow**). It logs in with its own SSH key, which
+the server only lets run `deploy/ci-deploy.sh`: that key can deploy `main` or a release tag, and
+can't open a shell. Until the steps below are done, the workflow skips staging with a notice.
+
+**Set it up (once):**
+1. **A key just for GitHub**, made on your PC (PowerShell). Press Enter when asked for a passphrase
+   (GitHub can't type one):
+   ```powershell
+   ssh-keygen -t ed25519 -C "github-deploy" -f $HOME\.ssh\tuklas-github-deploy
+   Get-Content $HOME\.ssh\tuklas-github-deploy.pub      # the public key, one line
+   ```
+2. **On the server**, allow that key to run the deploy only. Put your public key line where it says:
+   ```bash
+   echo 'command="bash /home/tuklas/SIA-TUKLAS/tuklas/deploy/ci-deploy.sh",no-port-forwarding,no-agent-forwarding,no-X11-forwarding,no-pty <public key line>' >> ~/.ssh/authorized_keys
+   ```
+3. **The server's fingerprint**, so GitHub trusts only this server. On your PC:
+   ```powershell
+   ssh-keyscan -t ed25519 tuklas-sia-jm.japaneast.cloudapp.azure.com
+   ```
+   Copy the line that starts with the address (not the `#` comment).
+4. **On GitHub**: the repo → **Settings → Environments → New environment** → name it `staging`.
+   - Under **Deployment branches and tags**, choose **Selected branches and tags** and add `main`.
+   - **Environment secrets:**
+     - `DEPLOY_SSH_KEY`: the whole private key, i.e. the output of
+       `Get-Content $HOME\.ssh\tuklas-github-deploy` (the file without `.pub`), including the
+       `-----BEGIN` and `-----END` lines.
+     - `DEPLOY_KNOWN_HOSTS`: the line from step 3.
+   - **Environment variables:** `DEPLOY_HOST` = `tuklas-sia-jm.japaneast.cloudapp.azure.com`,
+     `DEPLOY_USER` = `tuklas`, `SITE_URL` = `https://tuklas-sia-jm.japaneast.cloudapp.azure.com`.
+5. Try it: **Actions → deploy → Run workflow** (the server must be on).
+
+The private key now lives only in GitHub's secrets: delete it from your PC if you like
+(`Remove-Item $HOME\.ssh\tuklas-github-deploy`), and make a new one the same way if it's ever needed.
+
+**When the server is off** (after 11 PM), a deploy fails with "Couldn't deploy": start the server
+(`vm.sh start`) and click **Re-run jobs** on that run.
+
+**Production** works the same way with an environment named `production` (its own secrets and
+variables), deploying a release tag: `git tag v1.0.0 && git push origin v1.0.0`. Give that
+environment **Required reviewers**, so each release waits for someone's approval. Until it has a
+`DEPLOY_HOST`, tagged releases skip production with a notice.
 
 ## Backups
 
