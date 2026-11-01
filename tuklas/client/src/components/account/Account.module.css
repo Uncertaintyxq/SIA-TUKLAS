@@ -139,7 +139,7 @@ a.link {
 
 .codes {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 210px), 1fr));
   gap: var(--s-2);
   margin: 0;
   padding: var(--s-3);
@@ -148,6 +148,10 @@ a.link {
   list-style: none;
   font-family: var(--font-mono);
   font-size: var(--fs-small);
+}
+
+.codes li {
+  white-space: nowrap;
 }
 
 /* Privacy notice */

@@ -122,6 +122,10 @@ Follow `docs/CONVERSION.md` → "How the code is laid out". In short:
    - `php artisan test` (all pass)
    - `vendor/bin/pint --dirty`
    - if the client changed: `npx tsc --noEmit -p client`, `npx eslint client/src`, `npm run build -w client`
+   - if the screens changed and the Claude in Chrome tools are available: check them in the browser
+     (log in as the demo accounts, click through, read the console). Ask the user first which ports
+     are free, since the other session may be running its dev servers. See
+     `docs/GETTING_STARTED.md` → "Let Claude see the site while it builds".
 2. Catch up with `main`: `git fetch && git rebase origin/main`, fix any conflicts as in
    section 4, then re-run the checks and `git push --force-with-lease` (your branch only).
 3. Mark your row **Done** in `docs/TODO.md`, add the Log entry, commit, push.

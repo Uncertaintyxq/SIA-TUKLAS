@@ -82,11 +82,13 @@ export function useTwoFactorKey(enabled: boolean) {
   });
 }
 
+/**
+ * Confirms the new 2FA key with a code from the app. Doesn't refresh the account: the setup screen
+ * shows the recovery codes first and refreshes it once they're saved (TwoFactorSetup).
+ */
 export function useConfirmTwoFactor() {
-  const qc = useQueryClient();
   return useMutation({
     mutationFn: (code: string) => api<unknown>('/auth/user/confirmed-two-factor-authentication', { body: { code } }),
-    onSuccess: () => refreshMe(qc),
   });
 }
 
