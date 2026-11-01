@@ -10,6 +10,7 @@ import { ArrowLeft, Hash, X } from 'lucide-react';
 import { useMe } from '../../api/auth';
 import { useConversation, useDeleteMessage, useMarkConversationRead, useThread, type ConversationSummary, type MessageView } from '../../api/chat';
 import { fmtDate, isoDate } from '../../lib/format';
+import { useReport } from '../reports/ReportDialog';
 import { Avatar } from '../ui/Avatar';
 import { EmptyState } from '../ui/EmptyState';
 import { Skeleton } from '../ui/Skeleton';
@@ -49,6 +50,8 @@ export function ChatView({ conversationId, embedded = false, backTo }: { convers
 
   const del = (m: MessageView) =>
     window.confirm('Remove this message for everyone?') && remove.mutate(m.id, { onError: (e) => toast(e.message, 'error') });
+  const { report, dialog: reportDialog } = useReport();
+  const reportOf = (m: MessageView) => (m.sender.id === me?.id ? undefined : () => report({ type: 'message', id: m.id, label: 'this message' }));
 
   if (q.isPending) return <Skeleton className={styles.loading} />;
   if (q.error || !conversation)
@@ -81,7 +84,7 @@ export function ChatView({ conversationId, embedded = false, backTo }: { convers
                   const continued = !newDay && prev?.sender.id === m.sender.id && !prev.deleted && new Date(m.createdAt).getTime() - new Date(prev.createdAt).getTime() < FIVE_MINUTES;
                   return (
                     <DayAndMessage key={m.id} showDay={newDay} iso={m.createdAt}>
-                      <MessageItem message={m} continued={continued} highlighted={m.id === highlight} onReply={() => setThreadOf(m.id)} onDelete={() => del(m)} />
+                      <MessageItem message={m} continued={continued} highlighted={m.id === highlight} onReply={() => setThreadOf(m.id)} onDelete={() => del(m)} onReport={reportOf(m)} />
                     </DayAndMessage>
                   );
                 })}
@@ -95,6 +98,7 @@ export function ChatView({ conversationId, embedded = false, backTo }: { convers
         </div>
         {threadOf !== null && <ThreadPanel conversationId={conversationId} messageId={threadOf} onClose={() => setThreadOf(null)} meId={me?.id} />}
       </div>
+      {reportDialog}
     </section>
   );
 }
@@ -194,6 +198,8 @@ function ThreadPanel({ conversationId, messageId, onClose, meId }: { conversatio
 
   const del = (m: MessageView) =>
     window.confirm('Remove this message for everyone?') && remove.mutate(m.id, { onError: (e) => toast(e.message, 'error') });
+  const { report, dialog: reportDialog } = useReport();
+  const reportOf = (m: MessageView) => (m.sender.id === meId ? undefined : () => report({ type: 'message', id: m.id, label: 'this message' }));
 
   return (
     <aside className={styles.threadPanel} aria-label="Thread">
@@ -211,7 +217,7 @@ function ThreadPanel({ conversationId, messageId, onClose, meId }: { conversatio
           <p className={styles.start}>This message was removed.</p>
         ) : (
           <ol className={styles.list}>
-            <MessageItem message={data.parent} continued={false} onDelete={() => del(data.parent)} />
+            <MessageItem message={data.parent} continued={false} onDelete={() => del(data.parent)} onReport={reportOf(data.parent)} />
             <li className={styles.day} role="presentation">
               <span>
                 {count} {count === 1 ? 'reply' : 'replies'}
@@ -223,6 +229,7 @@ function ThreadPanel({ conversationId, messageId, onClose, meId }: { conversatio
                 message={m}
                 continued={i > 0 && data.replies[i - 1]!.sender.id === m.sender.id}
                 onDelete={() => del(m)}
+                onReport={reportOf(m)}
               />
             ))}
           </ol>
@@ -230,6 +237,7 @@ function ThreadPanel({ conversationId, messageId, onClose, meId }: { conversatio
         <div ref={end} />
       </div>
       {data && !data.parent.deleted && <MessageComposer conversationId={conversationId} parentId={messageId} placeholder={meId === data.parent.sender.id ? 'Add to your thread' : 'Reply in thread'} />}
+      {reportDialog}
     </aside>
   );
 }

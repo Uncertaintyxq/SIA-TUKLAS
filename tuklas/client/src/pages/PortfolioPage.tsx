@@ -23,6 +23,7 @@ import { useMe } from '../api/auth';
 import { useDeleteBackground, useDeleteHonor, usePortfolio, useRemoveCv, useUploadCv, type Portfolio } from '../api/portfolio';
 import { BackgroundForm, HonorForm, LinksForm, ProfileForm } from '../components/portfolio/PortfolioForms';
 import { PublicationEntry } from '../components/publications/PublicationEntry';
+import { ReportButton } from '../components/reports/ReportDialog';
 import { WorkEntry, useShare } from '../components/works/WorkEntry';
 import { Avatar } from '../components/ui/Avatar';
 import { Badge } from '../components/ui/Badge';
@@ -57,6 +58,7 @@ export function PublicPortfolioPage() {
 
 function PortfolioView({ username, editMode }: { username: string | undefined; editMode: boolean }) {
   const { data: p, isPending, error } = usePortfolio(username);
+  const { data: me } = useMe();
   const [dialog, setDialog] = useState<Dialog>(null);
   const [dialogKey, setDialogKey] = useState(0);
   const open = (d: NonNullable<Dialog>) => {
@@ -152,6 +154,7 @@ function PortfolioView({ username, editMode }: { username: string | undefined; e
           <BackgroundSheet p={p} edit={edit} onAdd={(row) => open({ kind: 'background', row })} />
           <HonorsSheet p={p} edit={edit} onAdd={(row) => open({ kind: 'honor', row })} />
           <CvSheet p={p} edit={edit} />
+          {!edit && me && !p.isOwner && <ReportButton type="user" id={p.user.id} label={p.user.name} className={styles.report} />}
         </aside>
       </div>
 

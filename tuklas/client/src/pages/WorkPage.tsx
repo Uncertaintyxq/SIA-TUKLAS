@@ -4,11 +4,12 @@
  */
 import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { Bookmark, BookmarkCheck, Download, ExternalLink, EyeOff, Link2, PenLine, Send, Trash2 } from 'lucide-react';
+import { Bookmark, BookmarkCheck, Download, ExternalLink, EyeOff, Flag, Link2, PenLine, Send, Trash2 } from 'lucide-react';
 import { useMe } from '../api/auth';
 import { useDeleteDiscussion, useDeleteWork, useDiscuss, useSave, useSubmitWork, useWork, type WorkDetail } from '../api/works';
 import { Tuko } from '../components/brand/Tuko';
 import { Person } from '../components/people/Person';
+import { ReportButton, useReport } from '../components/reports/ReportDialog';
 import { CitationBox, QrBox, Reactions } from '../components/works/CiteAndShare';
 import { DefenseTracker } from '../components/works/DefenseTracker';
 import { EntryForm } from '../components/works/EntryForm';
@@ -253,6 +254,7 @@ function ReadingTools({ work }: { work: WorkDetail }) {
           <Button icon={<Link2 size={17} aria-hidden="true" />} onClick={() => share(`/works/${work.id}`)}>
             Share link
           </Button>
+          {me && !work.authors.some((a) => a.id === me.id) && <ReportButton type="work" id={work.id} label={`“${work.title}”`} />}
         </div>
       </div>
     </Sheet>
@@ -261,6 +263,8 @@ function ReadingTools({ work }: { work: WorkDetail }) {
 
 /** Public discussion on a published work. */
 function Discussion({ work }: { work: WorkDetail }) {
+  const { data: me } = useMe();
+  const { report, dialog: reportDialog } = useReport();
   const [text, setText] = useState('');
   const discuss = useDiscuss();
   const remove = useDeleteDiscussion();
@@ -272,6 +276,7 @@ function Discussion({ work }: { work: WorkDetail }) {
 
   return (
     <Sheet title="Discussion" aside={String(work.discussion.length)} id="discussion">
+      {reportDialog}
       <div className={styles.discussion}>
         {work.discussion.length === 0 && <SheetEmpty>No comments yet. Start an academic conversation about this work.</SheetEmpty>}
         {work.discussion.map((c) => (
@@ -286,6 +291,12 @@ function Discussion({ work }: { work: WorkDetail }) {
                 >
                   <Trash2 size={15} aria-hidden="true" />
                   <span className="sr-only">Delete comment</span>
+                </button>
+              )}
+              {me && c.author.id !== me.id && (
+                <button type="button" className={styles.deleteComment} title="Report comment" onClick={() => report({ type: 'comment', id: c.id, label: `${c.author.name}’s comment` })}>
+                  <Flag size={15} aria-hidden="true" />
+                  <span className="sr-only">Report comment</span>
                 </button>
               )}
             </div>
