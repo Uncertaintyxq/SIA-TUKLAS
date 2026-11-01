@@ -203,11 +203,50 @@ a.link {
 }
 
 /* Account page */
-.switches {
+/* Notifications: this device, then one row per category with Email and Push switches */
+.device {
   display: grid;
-  gap: var(--s-3);
+  gap: var(--s-2);
   padding-bottom: var(--s-3);
   border-bottom: 1px solid var(--rule);
+}
+
+.channels {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-bottom: 1px solid var(--rule);
+}
+
+.channel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2) var(--s-4);
+  padding: var(--s-3) 0;
+  border-top: 1px solid var(--rule);
+}
+
+.channel:first-child {
+  border-top: 0;
+}
+
+.channelText {
+  display: grid;
+  flex: 1 1 260px;
+  gap: 2px;
+}
+
+.channelLabel {
+  margin: 0;
+  font-weight: 650;
+}
+
+.channelSwitches {
+  display: flex;
+  gap: var(--s-4);
 }
 
 .sections {

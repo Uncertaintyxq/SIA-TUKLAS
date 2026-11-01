@@ -1,6 +1,6 @@
 /**
  * AccountPage — "/account": sign-in security, email and privacy. Change the password, turn two-factor
- * sign-in on or off, see where the account is signed in, choose which updates arrive by email,
+ * sign-in on or off, see where the account is signed in, choose notifications (email, push, install),
  * download your data or delete the account.
  */
 import { useState, type FormEvent } from 'react';
@@ -14,12 +14,11 @@ import {
   useDeleteAccount,
   useDisableTwoFactor,
   useLogoutOthers,
-  useNotificationSettings,
   useRecoveryCodes,
   useRegenerateRecoveryCodes,
-  useSaveNotificationSettings,
   useSessions,
 } from '../api/account';
+import { NotificationsSection } from '../components/account/NotificationSettings';
 import { PasswordConfirm } from '../components/account/PasswordConfirm';
 import { PRIVACY_VERSION } from '../components/account/PrivacyNotice';
 import { RecoveryCodes } from '../components/account/RecoveryCodes';
@@ -31,7 +30,6 @@ import { Button } from '../components/ui/Button';
 import { TextField } from '../components/ui/Field';
 import { Sheet, SheetEmpty } from '../components/ui/Sheet';
 import { Skeleton } from '../components/ui/Skeleton';
-import { Switch } from '../components/ui/Switch';
 import { useToast } from '../components/ui/Toast';
 import { relTime } from '../lib/format';
 import styles from '../components/account/Account.module.css';
@@ -46,7 +44,7 @@ export function AccountPage() {
         <TwoFactorSection me={me} />
         <PasswordSection />
         <SessionsSection />
-        <EmailSection />
+        <NotificationsSection />
         <DataSection />
         <DeleteSection me={me} />
       </div>
@@ -265,41 +263,6 @@ function SessionsSection() {
           </div>
         </form>
       )}
-    </Sheet>
-  );
-}
-
-function EmailSection() {
-  const { data, isPending } = useNotificationSettings();
-  const save = useSaveNotificationSettings();
-  const toast = useToast();
-  if (isPending || !data)
-    return (
-      <Sheet title="Email">
-        <Skeleton />
-      </Sheet>
-    );
-
-  const change = (patch: Partial<Pick<typeof data, 'email' | 'digest'>>) =>
-    save.mutate({ email: { ...data.email, ...patch.email }, digest: patch.digest ?? data.digest }, { onError: (e) => toast(e.message, 'error') });
-
-  return (
-    <Sheet title="Email">
-      <div className={styles.form}>
-        <p className={styles.muted}>Every update shows in Tuklas. Choose which ones also arrive by email at {data.emailVerified ? 'your address' : 'your address once you confirm it'}.</p>
-        <div className={styles.switches}>
-          {data.categories.map((c) => (
-            <Switch key={c.key} label={c.label} hint={c.description} checked={data.email[c.key] ?? false} disabled={save.isPending} onChange={(on) => change({ email: { [c.key]: on } })} />
-          ))}
-        </div>
-        <Switch
-          label="Weekly digest"
-          hint="Monday morning: updates you haven’t read, this week’s deadlines and events, and new research from your department."
-          checked={data.digest}
-          disabled={save.isPending}
-          onChange={(on) => change({ digest: on })}
-        />
-      </div>
     </Sheet>
   );
 }

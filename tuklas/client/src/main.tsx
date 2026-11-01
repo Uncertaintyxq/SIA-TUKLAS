@@ -1,6 +1,6 @@
 /**
  * Client entry — mounts the app with its query cache, preferences, motion and toast providers.
- * Also loads the fonts and global styles once for every page.
+ * Also loads the fonts and global styles once for every page, and registers the service worker.
  */
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
@@ -12,8 +12,11 @@ import '@fontsource-variable/martian-mono';
 import './styles/tokens.css';
 import './styles/global.css';
 import { PrefsProvider } from './lib/prefs';
+import { registerServiceWorker } from './lib/pwa';
 import { ToastProvider } from './components/ui/Toast';
 import { App } from './App';
+
+registerServiceWorker();
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } },
