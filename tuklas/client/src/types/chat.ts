@@ -57,8 +57,3 @@ export interface ThreadView {
   parent: MessageView;
   replies: MessageView[];
 }
-
-export interface SearchHit {
-  message: MessageView;
-  conversation: Pick<ConversationSummary, 'id' | 'kind' | 'name' | 'group'>;
-}

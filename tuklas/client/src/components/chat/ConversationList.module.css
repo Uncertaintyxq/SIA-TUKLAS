@@ -46,6 +46,11 @@
   background: var(--sheet);
 }
 
+.filters {
+  padding: var(--s-2);
+  border-bottom: 1px solid var(--rule);
+}
+
 .newChat {
   display: grid;
   flex: none;
