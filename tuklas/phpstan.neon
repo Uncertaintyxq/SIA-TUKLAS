@@ -1,0 +1,14 @@
+# Static analysis (Larastan, PHPStan for Laravel): `vendor/bin/phpstan analyse`. CI runs it on every push.
+# Level 5 for now; raise it as the code gets stricter. Fix what it reports rather than adding ignores;
+# an ignore needs a comment saying why.
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    paths:
+        - app/
+        - routes/
+        - database/migrations/
+        # Not database/seeders/: demo data only, and PHPStan misreads the seeder's long tuple lists
+    level: 5
+    tmpDir: storage/framework/cache/phpstan

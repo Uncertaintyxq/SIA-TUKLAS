@@ -14,8 +14,9 @@ paths:
   Note that user rows are never deleted (account deletion anonymises them, D13).
 - Index columns used in `where`, `orderBy` or joins.
 - Status/kind columns are backed by a PHP enum in `app/Enums/`, cast on the model.
-- Models: `#[Fillable([...])]`, `casts()`, typed relationships, and `$attributes` defaults for
-  columns with database defaults (strict mode throws on missing attributes).
+- Models: `#[Fillable([...])]`, `protected $casts = [...]` (not `casts()`, which Larastan can't read),
+  relationships typed with generics (`@return HasMany<Comment, $this>`), and `$attributes` defaults
+  for columns with database defaults (strict mode throws on missing attributes).
 - New demo data goes in `DemoSeeder` (a hot file: keep additions small) with fixed ids; tests rely on it.
 - If another active branch alters the same table, tell the developer before writing the migration.
 - Never run `migrate:fresh`, `db:wipe` or the demo reset unless the developer asks in this session.

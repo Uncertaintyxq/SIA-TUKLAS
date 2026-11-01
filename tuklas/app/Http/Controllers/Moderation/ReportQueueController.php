@@ -22,6 +22,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
@@ -49,7 +50,8 @@ class ReportQueueController extends Controller
 
         return response()->json([
             'items' => $items,
-            'openCount' => Report::where('status', ReportStatus::Open)->select('target_type', 'target_id')->distinct()->get()->count(),
+            // Reported things, not reports: distinct (type, id) pairs, counted in SQL (works on SQLite and MySQL)
+            'openCount' => DB::query()->fromSub(Report::where('status', ReportStatus::Open)->select('target_type', 'target_id')->distinct(), 'open_targets')->count(),
         ]);
     }
 

@@ -8,25 +8,28 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-/** A mentorship, research grant or call for submissions an educator posts. */
+/**
+ * A mentorship, research grant or call for submissions an educator posts.
+ *
+ * @property-read bool|null $applied Whether the viewer applied (Cards::opportunities)
+ */
 #[Fillable(['kind', 'title', 'description', 'deadline', 'slots'])]
 class Opportunity extends Model
 {
     public const UPDATED_AT = null;
 
-    protected function casts(): array
-    {
-        return [
-            'kind' => OpportunityKind::class,
-            'deadline' => 'datetime',
-        ];
-    }
+    protected $casts = [
+        'kind' => OpportunityKind::class,
+        'deadline' => 'datetime',
+    ];
 
+    /** @return BelongsTo<User, $this> */
     public function adviser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'adviser_id');
     }
 
+    /** @return HasMany<OpportunityApplication, $this> */
     public function applications(): HasMany
     {
         return $this->hasMany(OpportunityApplication::class);

@@ -17,40 +17,43 @@ class Message extends Model
 {
     public const UPDATED_AT = null;
 
-    protected function casts(): array
-    {
-        return [
-            'text' => 'encrypted',
-            'deleted_at' => 'datetime',
-            'edited_at' => 'datetime',
-        ];
-    }
+    protected $casts = [
+        'text' => 'encrypted',
+        'deleted_at' => 'datetime',
+        'edited_at' => 'datetime',
+    ];
 
+    /** @return HasMany<MessageReaction, $this> */
     public function reactions(): HasMany
     {
         return $this->hasMany(MessageReaction::class);
     }
 
+    /** @return BelongsTo<Conversation, $this> */
     public function conversation(): BelongsTo
     {
         return $this->belongsTo(Conversation::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function sender(): BelongsTo
     {
         return $this->belongsTo(User::class, 'sender_id');
     }
 
+    /** @return BelongsTo<Message, $this> */
     public function parent(): BelongsTo
     {
         return $this->belongsTo(Message::class, 'parent_id');
     }
 
+    /** @return HasMany<Message, $this> */
     public function replies(): HasMany
     {
         return $this->hasMany(Message::class, 'parent_id');
     }
 
+    /** @return BelongsTo<GroupFile, $this> */
     public function groupFile(): BelongsTo
     {
         return $this->belongsTo(GroupFile::class);

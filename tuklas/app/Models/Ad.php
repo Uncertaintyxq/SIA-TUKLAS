@@ -19,20 +19,19 @@ class Ad extends Model
     /** Column defaults, so a new model has them before it's reloaded. */
     protected $attributes = ['status' => 'pending'];
 
-    protected function casts(): array
-    {
-        return [
-            'status' => ApprovalStatus::class,
-            'starts_at' => 'datetime',
-            'ends_at' => 'datetime',
-        ];
-    }
+    protected $casts = [
+        'status' => ApprovalStatus::class,
+        'starts_at' => 'datetime',
+        'ends_at' => 'datetime',
+    ];
 
+    /** @return BelongsTo<Event, $this> */
     public function event(): BelongsTo
     {
         return $this->belongsTo(Event::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function createdBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by_id');

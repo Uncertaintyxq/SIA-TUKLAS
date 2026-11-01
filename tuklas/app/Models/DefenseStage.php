@@ -17,15 +17,13 @@ class DefenseStage extends Model
     /** Column defaults, so a new model has them before it's reloaded. */
     protected $attributes = ['panel' => '', 'verdict' => 'pending', 'notes' => ''];
 
-    protected function casts(): array
-    {
-        return [
-            'stage' => DefenseStageKind::class,
-            'verdict' => Verdict::class,
-            'date' => 'datetime',
-        ];
-    }
+    protected $casts = [
+        'stage' => DefenseStageKind::class,
+        'verdict' => Verdict::class,
+        'date' => 'datetime',
+    ];
 
+    /** @return BelongsTo<Work, $this> */
     public function work(): BelongsTo
     {
         return $this->belongsTo(Work::class);

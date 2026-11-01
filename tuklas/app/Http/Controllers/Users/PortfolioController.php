@@ -51,8 +51,8 @@ class PortfolioController extends Controller
 
         return response()->json([
             'user' => [...(new UserCardResource($user))->resolve($request), 'headline' => $user->headline],
-            'titles' => $user->profile?->titles ?? '',
-            'bioLong' => $user->profile?->bio_long ?? '',
+            'titles' => $user->profile->titles ?? '',
+            'bioLong' => $user->profile->bio_long ?? '',
             'cv' => $user->profile?->cv_file ? ['url' => "/api/users/{$user->username}/cv", 'name' => $user->profile->cv_name ?? 'CV.pdf'] : null,
             'links' => $user->links->map->only(['id', 'type', 'url', 'label'])->values(),
             'background' => $user->backgrounds->map->only(['id', 'degree', 'school', 'year'])->values(),
@@ -76,7 +76,7 @@ class PortfolioController extends Controller
     {
         $profile = $this->profileOf($username);
 
-        return Uploads::serve($profile?->photo_file, $profile?->photo_type ?? 'image/jpeg');
+        return Uploads::serve($profile?->photo_file, $profile->photo_type ?? 'image/jpeg');
     }
 
     /** GET /api/users/{username}/cv */
@@ -84,7 +84,7 @@ class PortfolioController extends Controller
     {
         $profile = $this->profileOf($username);
 
-        return Uploads::serve($profile?->cv_file, 'application/pdf', $profile?->cv_name ?? 'CV.pdf', $request->query('download') === '1');
+        return Uploads::serve($profile?->cv_file, 'application/pdf', $profile->cv_name ?? 'CV.pdf', $request->query('download') === '1');
     }
 
     private function profileOf(string $username): ?Profile

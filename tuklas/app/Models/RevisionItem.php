@@ -18,15 +18,13 @@ class RevisionItem extends Model
     /** Column defaults, so a new model has them before it's reloaded. */
     protected $attributes = ['done_by_student' => false, 'confirmed_by_adviser' => false];
 
-    protected function casts(): array
-    {
-        return [
-            'text' => 'encrypted',
-            'done_by_student' => 'boolean',
-            'confirmed_by_adviser' => 'boolean',
-        ];
-    }
+    protected $casts = [
+        'text' => 'encrypted',
+        'done_by_student' => 'boolean',
+        'confirmed_by_adviser' => 'boolean',
+    ];
 
+    /** @return BelongsTo<Review, $this> */
     public function review(): BelongsTo
     {
         return $this->belongsTo(Review::class);

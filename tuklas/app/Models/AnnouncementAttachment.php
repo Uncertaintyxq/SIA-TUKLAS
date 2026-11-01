@@ -11,6 +11,7 @@ class AnnouncementAttachment extends Model
 {
     public const UPDATED_AT = null;
 
+    /** @return BelongsTo<Announcement, $this> */
     public function announcement(): BelongsTo
     {
         return $this->belongsTo(Announcement::class);

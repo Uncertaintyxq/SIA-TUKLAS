@@ -38,36 +38,43 @@ class ResearchGroup extends Model
         return [$this->adviser_id, ...$this->members->pluck('user_id')->all()];
     }
 
+    /** @return BelongsTo<User, $this> */
     public function adviser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'adviser_id');
     }
 
+    /** @return HasMany<GroupMember, $this> */
     public function members(): HasMany
     {
         return $this->hasMany(GroupMember::class);
     }
 
+    /** @return HasMany<GroupFile, $this> */
     public function files(): HasMany
     {
         return $this->hasMany(GroupFile::class);
     }
 
+    /** @return HasMany<GroupDeadline, $this> */
     public function deadlines(): HasMany
     {
         return $this->hasMany(GroupDeadline::class)->orderBy('due_at');
     }
 
+    /** @return HasMany<GroupActivity, $this> */
     public function activities(): HasMany
     {
         return $this->hasMany(GroupActivity::class)->latest('created_at');
     }
 
+    /** @return HasMany<Conversation, $this> */
     public function channels(): HasMany
     {
         return $this->hasMany(Conversation::class);
     }
 
+    /** @return HasMany<Announcement, $this> */
     public function announcements(): HasMany
     {
         return $this->hasMany(Announcement::class);

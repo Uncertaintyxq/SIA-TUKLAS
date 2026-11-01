@@ -19,19 +19,18 @@ class Comment extends Model
     /** Column defaults, so a new model has them before it's reloaded. */
     protected $attributes = ['scope' => 'review'];
 
-    protected function casts(): array
-    {
-        return [
-            'scope' => CommentScope::class,
-            'text' => 'encrypted',
-        ];
-    }
+    protected $casts = [
+        'scope' => CommentScope::class,
+        'text' => 'encrypted',
+    ];
 
+    /** @return BelongsTo<Work, $this> */
     public function work(): BelongsTo
     {
         return $this->belongsTo(Work::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function author(): BelongsTo
     {
         return $this->belongsTo(User::class, 'author_id');

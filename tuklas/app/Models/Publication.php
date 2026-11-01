@@ -15,14 +15,11 @@ class Publication extends Model
     /** Column defaults, so a new model has them before it's reloaded. */
     protected $attributes = ['visibility' => 'draft'];
 
-    protected function casts(): array
-    {
-        return [
-            'keywords' => 'array',
-            'visibility' => PublicationVisibility::class,
-            'published_at' => 'datetime',
-        ];
-    }
+    protected $casts = [
+        'keywords' => 'array',
+        'visibility' => PublicationVisibility::class,
+        'published_at' => 'datetime',
+    ];
 
     public function isAuthor(?User $user): bool
     {
@@ -33,12 +30,17 @@ class Publication extends Model
         return $this->author_id === $user->id || $this->coAuthors->contains('id', $user->id);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function author(): BelongsTo
     {
         return $this->belongsTo(User::class, 'author_id');
     }
 
-    /** Co-authors beyond the main author, in byline order. */
+    /**
+     * Co-authors beyond the main author, in byline order.
+     *
+     * @return BelongsToMany<User, $this>
+     */
     public function coAuthors(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'publication_authors')->withPivot('order')->orderByPivot('order');

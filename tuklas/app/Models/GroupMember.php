@@ -20,19 +20,18 @@ class GroupMember extends Model
     /** Column defaults, so a new model has them before it's reloaded. */
     protected $attributes = ['role' => 'member'];
 
-    protected function casts(): array
-    {
-        return [
-            'role' => GroupRole::class,
-            'added_at' => 'datetime',
-        ];
-    }
+    protected $casts = [
+        'role' => GroupRole::class,
+        'added_at' => 'datetime',
+    ];
 
+    /** @return BelongsTo<ResearchGroup, $this> */
     public function group(): BelongsTo
     {
         return $this->belongsTo(ResearchGroup::class, 'research_group_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

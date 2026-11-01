@@ -12,11 +12,13 @@ class GroupFile extends Model
 {
     public const UPDATED_AT = null;
 
+    /** @return BelongsTo<ResearchGroup, $this> */
     public function group(): BelongsTo
     {
         return $this->belongsTo(ResearchGroup::class, 'research_group_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function uploadedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'uploaded_by_id');

@@ -19,6 +19,7 @@ class Profile extends Model
     /** Column defaults, so a new model has them before it's reloaded. */
     protected $attributes = ['titles' => '', 'department' => ''];
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

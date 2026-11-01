@@ -197,10 +197,11 @@ class ChatController extends Controller
             throw new HttpException(403, 'Only the sender can edit a message.');
         }
         // A file's caption may be emptied; a text message needs text
-        $text = trim((string) $request->validate(
+        $request->validate(
             ['text' => [$m->file_name ? 'nullable' : 'required', 'string', 'max:4000']],
             ['text.max' => 'Keep a message under 4,000 characters', 'text.required' => 'Write a message first'],
-        )['text'] ?? '');
+        );
+        $text = trim((string) $request->input('text', ''));
         if ($text !== $m->text) {
             $m->forceFill(['text' => $text, 'edited_at' => now()])->save();
             Chat::announceChange($m->conversation_id, $m->id);
@@ -232,10 +233,10 @@ class ChatController extends Controller
             throw new HttpException(404, self::NOT_FOUND);
         }
         $this->open($m->conversation_id, $request->user());
-        $type = $m->groupFile?->type ?? $m->file_type ?? 'application/octet-stream';
+        $type = $m->groupFile->type ?? $m->file_type ?? 'application/octet-stream';
         $viewable = $type === 'application/pdf' || str_starts_with($type, 'image/');
 
-        return Uploads::serve($m->groupFile?->file ?? $m->file, $type, $m->file_name ?? 'file', $request->query('download') === '1' || ! $viewable);
+        return Uploads::serve($m->groupFile->file ?? $m->file, $type, $m->file_name ?? 'file', $request->query('download') === '1' || ! $viewable);
     }
 
     /** DELETE /api/chat/messages/{id} — removes it for everyone. A direct-chat file goes with it; a channel file stays in the group's files. */
@@ -372,7 +373,7 @@ class ChatController extends Controller
                     'emoji' => $pair[0],
                     'count' => $pair[1]->count(),
                     'mine' => $pair[1]->contains('user_id', $meId),
-                    'people' => $pair[1]->map(fn ($r) => $r->user?->name ?? 'Former member')->values(),
+                    'people' => $pair[1]->map(fn ($r) => $r->user->name ?? 'Former member')->values(),
                 ])->values(),
             'canDelete' => ! $deleted && $canDelete,
             'canEdit' => ! $deleted && $m->sender_id === $meId,
@@ -391,7 +392,7 @@ class ChatController extends Controller
         return [
             'id' => $c->id,
             'kind' => $c->kind->value,
-            'name' => $c->kind === ConversationKind::Direct ? ($other?->name ?? 'Former member') : $c->name,
+            'name' => $c->kind === ConversationKind::Direct ? ($other->name ?? 'Former member') : $c->name,
             'group' => $c->group?->only(['id', 'name']),
             'other' => $other ? [...(new UserCardResource($other))->resolve(), 'online' => $online, 'lastSeenAt' => $online ? null : $other->last_seen_at?->toISOString()] : null,
             'lastMessage' => $last ? ['text' => $last->text, 'senderName' => $last->sender->name, 'createdAt' => $last->created_at->toISOString(), 'hasFile' => $last->file_name !== null] : null,
@@ -403,7 +404,7 @@ class ChatController extends Controller
     private function nameOf(Conversation $c, User $me): string
     {
         return $c->kind === ConversationKind::Direct
-            ? ($c->members->firstWhere('user_id', '!=', $me->id)?->user?->name ?? 'Former member')
+            ? ($c->members->firstWhere('user_id', '!=', $me->id)?->user->name ?? 'Former member')
             : $c->name;
     }
 }

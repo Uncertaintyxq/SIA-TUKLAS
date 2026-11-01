@@ -15,29 +15,29 @@ class Report extends Model
 {
     protected $attributes = ['status' => 'open'];
 
-    protected function casts(): array
-    {
-        return [
-            'target_type' => ReportTarget::class,
-            'reason' => ReportReason::class,
-            'status' => ReportStatus::class,
-            // What was reported can be a private message: encrypted at rest, like the message itself
-            'details' => 'encrypted',
-            'snapshot' => 'encrypted',
-            'resolved_at' => 'datetime',
-        ];
-    }
+    protected $casts = [
+        'target_type' => ReportTarget::class,
+        'reason' => ReportReason::class,
+        'status' => ReportStatus::class,
+        // What was reported can be a private message: encrypted at rest, like the message itself
+        'details' => 'encrypted',
+        'snapshot' => 'encrypted',
+        'resolved_at' => 'datetime',
+    ];
 
+    /** @return BelongsTo<User, $this> */
     public function reporter(): BelongsTo
     {
         return $this->belongsTo(User::class, 'reporter_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function owner(): BelongsTo
     {
         return $this->belongsTo(User::class, 'target_owner_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function resolver(): BelongsTo
     {
         return $this->belongsTo(User::class, 'resolved_by_id');

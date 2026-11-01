@@ -10,8 +10,15 @@ what a formatter can't. When this file and the existing code disagree, follow th
 - Type every parameter, return and property; docblocks for generics (`@return list<int>`) and
   `@var User $me` hints.
 - Statuses and kinds are PHP enums in `app/Enums/`, cast on the model.
-- Models declare `#[Fillable([...])]`, `casts()`, typed relationships, and `$attributes` defaults
-  for columns with database defaults (strict mode is on outside production).
+- Models declare `#[Fillable([...])]`, a `protected $casts = [...]` property (not the `casts()` method:
+  Larastan doesn't read it, so every cast column looks like a string), relationships with their
+  generic type (`/** @return BelongsTo<User, $this> */`), and `$attributes` defaults for columns with
+  database defaults (strict mode is on outside production). Attributes added by `withCount` /
+  `withExists` get a `@property-read` line on the model.
+- Larastan (level 5, `phpstan.neon`) runs in CI: `vendor/bin/phpstan analyse`. Fix what it reports;
+  an ignore needs a comment saying why.
+- Event listeners never return `false`: it stops the remaining listeners (`fn ($e) => $x && Audit::log(...)`
+  returns false). Use a block closure.
 - Validation: `$request->validate([...], [messages])` for small endpoints, a Form Request in
   `app/Http/Requests/<Module>/` when it grows. Messages are written for the person reading them.
 - Authorization through Policies and gates (`Gate::allows`, `GroupController::load($id, 'manage')`).
