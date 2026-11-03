@@ -37,11 +37,21 @@ export type FeedItem =
   | { kind: 'opportunity'; at: string; opportunity: OpportunityCard }
   | { kind: 'event'; at: string; event: EventCard };
 
+/** A keyword and how many items use it */
+export interface KeywordCount {
+  name: string;
+  count: number;
+}
+
 export interface FeedResponse {
   items: FeedItem[];
   /** People whose name, program or department matches the search */
   people: UserCard[];
   departments: string[];
+  /** What the year, adviser and keyword filters can offer: values public works have */
+  years: number[];
+  advisers: UserCard[];
+  tags: KeywordCount[];
 }
 
 export interface SidebarResponse {

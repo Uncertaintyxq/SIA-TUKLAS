@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('publications')->name('publications.')->group(function () {
     // Public research opens without signing in (PublicationPolicy::view)
     Route::get('/', [PublicationController::class, 'index'])->name('index');
+    Route::get('/browse', [PublicationController::class, 'browse'])->name('browse');
     Route::get('/{id}', [PublicationController::class, 'show'])->whereNumber('id')->name('show');
     Route::get('/{id}/pdf', [PublicationController::class, 'pdf'])->whereNumber('id')->name('pdf.show');
 

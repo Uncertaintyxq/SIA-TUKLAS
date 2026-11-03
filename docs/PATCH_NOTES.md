@@ -34,6 +34,12 @@ Merged into `main` but not on <https://tuklas-sia-jm.japaneast.cloudapp.azure.co
 - **Account and security → Notifications** has a new **Mentions** row: push is on and email is off
   to start with.
 
+**Finding research**
+- The feed's works can be narrowed by **year**, **adviser** and **keyword**, next to the department.
+- The research library has **year**, **department** and **keyword** filters, and a **Browse by
+  department** list: each department with how many publications and student works it has.
+- Clicking a keyword on a work or a publication shows everything with that keyword.
+
 ## Staging update 1 (November 2026)
 
 Everything added since staging first went live at

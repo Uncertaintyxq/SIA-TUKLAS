@@ -34,6 +34,21 @@ export interface PublicationCard {
   updatedAt: string;
 }
 
+/** Library filters ('' = any) */
+export interface LibraryParams {
+  q: string;
+  year: string;
+  dept: string;
+  keyword: string;
+}
+
+/** What the library can be browsed by (GET /api/publications/browse) */
+export interface LibraryBrowse {
+  departments: { name: string; research: number; works: number }[];
+  years: number[];
+  keywords: { name: string; count: number }[];
+}
+
 export interface PublicationDetail extends PublicationCard {
   methodology: string;
   fullText: string;

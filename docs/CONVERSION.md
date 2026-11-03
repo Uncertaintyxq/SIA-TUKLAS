@@ -386,6 +386,14 @@ branch rule; the deployment plan is in [DEPLOYMENT.md](DEPLOYMENT.md).
   conversation). Nowhere else: in a direct chat or review thread everyone is told already, and a
   public discussion would reach everyone. "all" and "everyone" are never given out as usernames.
 
+- 2026-11-04: `feat/library-browse`. The feed's works filter by year approved, adviser and exact
+  keyword (`?year=&adviser=&tag=`, next to `dept`); like the department, these show works only. The
+  feed response lists the years, advisers and most used keywords that public works have, so the
+  filters never offer an empty choice. The Library filters research by year published, the author's
+  department and keyword, and `GET /api/publications/browse` returns every department with its
+  research and student-work counts (what the viewer may read), plus years and keywords, for the
+  "Browse by department" grid. Keywords are grouped ignoring case (`FeedController::topKeywords`).
+
 ## How the code is laid out (for the next modules)
 
 - **Routes:** `routes/modules/<module>.php`, required from `routes/api.php`. Signed-in groups use
