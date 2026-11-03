@@ -11,6 +11,7 @@ import { PageHeader } from '../components/layout/PageHeader';
 import { Updates } from '../components/notifications/Updates';
 import { Person } from '../components/people/Person';
 import { WorkEntry } from '../components/works/WorkEntry';
+import { Button } from '../components/ui/Button';
 import { Chips } from '../components/ui/Chips';
 import { EmptyState } from '../components/ui/EmptyState';
 import { SelectField } from '../components/ui/Field';
@@ -37,10 +38,25 @@ export function FeedPage() {
   const p: FeedParams = {
     type: (filters.find((f) => f.value === params.get('type'))?.value ?? 'all') as FeedFilter,
     dept: params.get('dept') ?? '',
+    year: params.get('year') ?? '',
+    adviser: params.get('adviser') ?? '',
+    tag: params.get('tag') ?? '',
     q: params.get('q') ?? '',
     sort: params.get('sort') === 'discussed' ? 'discussed' : 'newest',
   };
   const { data, isPending, isFetching, error } = useFeed(p);
+  const narrowed = Boolean(p.dept || p.year || p.adviser || p.tag);
+  // A keyword reached from a work's tag may be outside the most-used list: keep it selectable
+  const tags = data ? (p.tag && !data.tags.some((t) => t.name === p.tag) ? [{ name: p.tag, count: 0 }, ...data.tags] : data.tags) : [];
+  const clearFilters = () =>
+    setParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        ['dept', 'year', 'adviser', 'tag'].forEach((k) => next.delete(k));
+        return next;
+      },
+      { replace: true },
+    );
   const set = (key: keyof FeedParams, value: string) =>
     setParams(
       (prev) => {
@@ -68,6 +84,35 @@ export function FeedPage() {
                   </option>
                 ))}
               </SelectField>
+              <SelectField label="Year" value={p.year} onChange={(e) => set('year', e.target.value)} className={styles.filter}>
+                <option value="">Any year</option>
+                {data?.years.map((y) => (
+                  <option key={y} value={String(y)}>
+                    {y}
+                  </option>
+                ))}
+              </SelectField>
+              <SelectField label="Adviser" value={p.adviser} onChange={(e) => set('adviser', e.target.value)} className={styles.filter}>
+                <option value="">Any adviser</option>
+                {data?.advisers.map((a) => (
+                  <option key={a.id} value={String(a.id)}>
+                    {a.name}
+                  </option>
+                ))}
+              </SelectField>
+              <SelectField label="Keyword" value={p.tag} onChange={(e) => set('tag', e.target.value)} className={styles.filter}>
+                <option value="">Any keyword</option>
+                {tags.map((t) => (
+                  <option key={t.name} value={t.name}>
+                    {t.count ? `${t.name} (${t.count})` : t.name}
+                  </option>
+                ))}
+              </SelectField>
+              {narrowed && (
+                <Button variant="ghost" icon={<X size={16} aria-hidden="true" />} onClick={clearFilters}>
+                  Clear filters
+                </Button>
+              )}
               <div className={styles.sort}>
                 <span className={styles.sortLabel} aria-hidden="true">
                   Sort

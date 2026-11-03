@@ -20,6 +20,7 @@ use App\Support\Cards;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -30,16 +31,21 @@ class FeedController extends Controller
 {
     private const FILTERS = ['all', 'research', 'literary', 'innovation', 'opportunities', 'events', 'saved'];
 
-    /** GET /api/feed?type=&dept=&q=&sort=newest|discussed */
+    /** GET /api/feed?type=&dept=&year=&adviser=&tag=&q=&sort=newest|discussed */
     public function index(Request $request): JsonResponse
     {
         $me = $request->user();
         $type = in_array($request->query('type'), self::FILTERS, true) ? $request->query('type') : 'all';
         $dept = mb_substr(trim((string) $request->query('dept', '')), 0, 160);
+        $year = self::year($request->query('year'));
+        $adviser = max(0, (int) $request->query('adviser', 0));
+        $tag = mb_substr(trim((string) $request->query('tag', '')), 0, 40);
         $q = mb_substr(trim((string) $request->query('q', '')), 0, 100);
         $sort = $request->query('sort') === 'discussed' ? 'discussed' : 'newest';
         $like = '%'.addcslashes($q, '%_\\').'%';
         $workType = WorkType::tryFrom($type);
+        // Department, year, adviser and keyword describe works; opportunities and events have none of them
+        $worksOnly = $dept !== '' || $year !== null || $adviser > 0 || $tag !== '';
         $items = collect();
 
         if ($type === 'all' || $type === 'saved' || $workType) {
@@ -47,6 +53,9 @@ class FeedController extends Controller
                 ->when($workType, fn ($query) => $query->where('type', $workType))
                 ->when($type === 'saved', fn ($query) => $query->whereHas('savedBy', fn ($s) => $s->where('users.id', $me->id)))
                 ->when($dept !== '', fn ($query) => $query->whereHas('author.profile', fn ($p) => $p->where('department', $dept)))
+                ->when($year !== null, fn ($query) => $query->whereYear('approved_at', $year))
+                ->when($adviser > 0, fn ($query) => $query->where('adviser_id', $adviser))
+                ->when($tag !== '', fn ($query) => $query->whereJsonContains('tags', $tag))
                 ->when($q !== '', fn ($query) => $query->where(fn ($w) => $w
                     ->where('title', 'like', $like)
                     ->orWhere('abstract', 'like', $like)
@@ -61,8 +70,8 @@ class FeedController extends Controller
             }
         }
 
-        // Opportunities and events have no department; a department filter shows works only.
-        if (($type === 'all' && $dept === '') || $type === 'opportunities') {
+        // Opportunities and events have no department, year, adviser or keyword: those filters show works only.
+        if (($type === 'all' && ! $worksOnly) || $type === 'opportunities') {
             $opportunities = Cards::opportunities(Opportunity::query(), $me->id)
                 ->where('deadline', '>=', now()->subDay())
                 ->when($q !== '', fn ($query) => $query->where(fn ($o) => $o
@@ -76,7 +85,7 @@ class FeedController extends Controller
             }
         }
 
-        if (($type === 'all' && $dept === '') || $type === 'events') {
+        if (($type === 'all' && ! $worksOnly) || $type === 'events') {
             $events = Cards::events(Event::query(), $me->id)
                 ->where('status', ApprovalStatus::Approved)
                 ->where('date', '>=', now()->subDay())
@@ -106,11 +115,44 @@ class FeedController extends Controller
             ->orderBy('department')
             ->pluck('department');
 
+        // What the other filters can offer: only values that public works actually have
+        $public = Work::public()->get(['approved_at', 'adviser_id', 'tags']);
+        $advisers = User::with('profile')->whereIn('id', $public->pluck('adviser_id')->unique())->orderBy('name')->get();
+
         return response()->json([
             'items' => $items,
             'people' => UserCardResource::collection($people),
             'departments' => $departments,
+            'years' => $public->map(fn (Work $w) => (int) $w->approved_at->year)->unique()->sortDesc()->values(),
+            'advisers' => UserCardResource::collection($advisers),
+            'tags' => self::topKeywords($public->pluck('tags')),
         ]);
+    }
+
+    /** A year from the query string, or null when it isn't one. */
+    public static function year(mixed $value): ?int
+    {
+        $year = (int) $value;
+
+        return $year >= 1900 && $year <= 2200 ? $year : null;
+    }
+
+    /**
+     * The most used keywords across these lists, most used first: [{name, count}]. Keywords are
+     * grouped ignoring case, under the spelling used most.
+     *
+     * @param  Collection<int, mixed>  $lists
+     * @return list<array{name: string, count: int}>
+     */
+    public static function topKeywords(Collection $lists, int $limit = 40): array
+    {
+        return $lists->flatten()->filter(fn ($k) => is_string($k) && trim($k) !== '')
+            ->groupBy(fn (string $k) => mb_strtolower(trim($k)))
+            ->map(fn (Collection $same) => ['name' => (string) $same->countBy()->sortDesc()->keys()->first(), 'count' => $same->count()])
+            ->sortBy([['count', 'desc'], ['name', 'asc']])
+            ->take($limit)
+            ->values()
+            ->all();
     }
 
     /** GET /api/feed/sidebar — approved academic ad slots running now, plus the next approved events. */

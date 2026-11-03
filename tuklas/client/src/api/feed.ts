@@ -12,12 +12,16 @@ export type { FeedFilter, FeedItem, MyOpportunity, OpportunityCard };
 export interface FeedParams {
   type: FeedFilter;
   dept: string;
+  /** Year approved, adviser's user id and an exact keyword: works only ('' = any) */
+  year: string;
+  adviser: string;
+  tag: string;
   q: string;
   sort: 'newest' | 'discussed';
 }
 
 export function useFeed(p: FeedParams) {
-  const qs = new URLSearchParams({ type: p.type, dept: p.dept, q: p.q, sort: p.sort });
+  const qs = new URLSearchParams({ type: p.type, dept: p.dept, year: p.year, adviser: p.adviser, tag: p.tag, q: p.q, sort: p.sort });
   return useQuery({ queryKey: ['feed', p], queryFn: () => api<FeedResponse>(`/feed?${qs}`), placeholderData: keepPreviousData });
 }
 

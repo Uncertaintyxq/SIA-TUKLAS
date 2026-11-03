@@ -53,7 +53,7 @@ export function PublicationEntry({ item: p, showVisibility = false, actions }: {
         <ul className={styles.tags} aria-label="Keywords">
           {p.keywords.map((k) => (
             <li key={k}>
-              <Link to={`/library?q=${encodeURIComponent(k)}`} className={styles.tag}>
+              <Link to={`/library?keyword=${encodeURIComponent(k)}`} className={styles.tag}>
                 #{k}
               </Link>
             </li>
