@@ -17,7 +17,8 @@ How Tuklas goes from the repo to a public, secure site. The work is split into t
 ```
 
 One server is enough at Tuklas's scale: one university, hundreds to a few thousand users. (Several
-schools on one site is planned but waits on the client: `docs/TODO.md`, "Future" section.)
+schools on one site is planned, to be built before real student data: `docs/TODO.md`, "Before real
+student data".)
 Everything is on one domain, so the session cookie, CSRF and WebSocket all stay same-origin.
 
 | Piece | Choice | Why |
@@ -135,6 +136,9 @@ restore: [`tuklas/deploy/README.md`](../tuklas/deploy/README.md#backups)):
 ## Data Privacy Act (RA 10173)
 
 Before real students' data goes in:
+- [ ] If several schools share the site: the three institution features are built (`docs/TODO.md`),
+      so each school's people, announcements and admins are separate, and it's agreed who controls
+      each school's data.
 - [ ] Final privacy notice text, shown at signup. Changing it means bumping `privacy_version`
       in `config/tuklas.php`, which asks everyone to accept again.
 - [ ] A named Data Protection Officer, with contact details in the privacy notice.

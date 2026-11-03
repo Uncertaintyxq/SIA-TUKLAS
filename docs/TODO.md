@@ -90,12 +90,29 @@ Decided 2026-11-01. Rows 1–7 in the review's order, then the three extras. Pat
 | `feat/chat-polish` | Edit your own message (shows "edited"), react to messages with a few emoji, and "Seen by" on the latest message in a conversation (from `last_read_at`). Migration (`messages.edited_at`, `message_reactions`), `app/Http/Controllers/Chat/ChatController.php`, `routes/modules/chat.php`, the live-update events, client `components/chat/`, `api/chat.ts`. Also: `app/Support/Chat.php` (`message_changed` and `conversation_read` pushes), `app/Models/MessageReaction.php`, reactions in the data export and removed with a deleted account (`PrivacyController`, `DeleteAccount`). | | Done |
 | `feat/pwa` | Install Tuklas on a phone or desktop (web app manifest, icons, a service worker that caches the app shell and shows an offline page) and push notifications for the types a person chooses. `client/public/` (manifest, icons, `sw.js`), `client/index.html`, `push_subscriptions` table + model, a Web Push package (`composer.json` *shared*), VAPID keys in `.env.example` and `.env.production.example`, `Notifier` (push channel), `config/tuklas.php` CSP (`worker-src`, `manifest-src`), a push toggle on `AccountPage`. Also: push choices sit next to the email ones per category (`NotificationPrefs`, settings API), `app/Support/PushSender.php` and `app/Jobs/SendPushNotifications.php` (minishlink/web-push), `/sw.js` served from the root (`SpaController`, `routes/web.php`, the app CSP in `SecurityHeaders`), `tuklas:vapid-keys` (works on Windows too) run once by `deploy.sh`, icons rendered from the logo, `client/src/lib/pwa.ts`, the Notifications section (`components/account/NotificationSettings.tsx`), devices in the data export and deleted with the account. | `feat/notification-settings` | Done |
 
-### Future: several schools on one site (waiting on the client)
+### Before real student data (launch order)
 
-Tuklas is built for one university per site. If the client wants several schools to share one site,
-these three rows add that (decided 2026-11-02; see `reference/FEATURES.md`, section 4). Status stays
-**Future** until the client confirms; don't claim them before. If the answer is "one site per school",
-delete this section and set `TUKLAS_INSTITUTION` on each server instead.
+Staging holds demo data only. Before any real student's data goes on a server, these come first,
+in this order (decided 2026-11-04):
+
+1. **Several schools on one site**: the three institution rows below. First, because every account
+   then carries its school, and what people can see and what admins may do depend on it. Adding it
+   after real accounts exist means moving them and re-checking who sees what.
+2. **Data Privacy Act paperwork**: final privacy notice text, a named Data Protection Officer, NPC
+   registration if required, and who controls each school's data (checklist under "Not tied to a
+   branch", and [DEPLOYMENT.md](DEPLOYMENT.md#data-privacy-act-ra-10173)).
+3. **Production decisions**: host, domain and email provider (checklist below).
+4. **Backups off the server**: `rclone config` and `BACKUP_RCLONE_REMOTE`
+   (`tuklas/deploy/README.md`, "Backups"). A backup on the same server is lost with it.
+5. **The security checklist** in [DEPLOYMENT.md](DEPLOYMENT.md#security-checklist-before-the-first-public-launch).
+
+### Several schools on one site (build before real student data, if the client wants it)
+
+Tuklas is built for one university per site. These three rows make it hold several schools (decided
+2026-11-02; see `reference/FEATURES.md`, section 4), and since 2026-11-04 they come before real
+student data. Status stays **Future** until the user schedules them: ask before claiming one. First
+confirm the client's answer (one site per school, or several on one site). If it's one site per
+school, delete this section and set `TUKLAS_INSTITUTION` on each server instead.
 
 | Branch | Scope | Depends on | Status |
 |---|---|---|---|

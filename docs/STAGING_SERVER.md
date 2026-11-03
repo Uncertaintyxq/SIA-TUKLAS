@@ -102,7 +102,7 @@ Skipped or optional:
 - An off-server copy of the backups (`rclone config`, `BACKUP_RCLONE_REMOTE`): do it before real
   data goes on the server.
 - `TUKLAS_INSTITUTION=…` in `/var/www/tuklas/shared/.env`: leave it empty until the client says
-  whether Tuklas is one site per school or several schools on one site (`docs/TODO.md`, "Future").
+  whether Tuklas is one site per school or several schools on one site (`docs/TODO.md`, "Several schools on one site").
 
 Staging writes emails to the log instead of sending them (`MAIL_MAILER=log`), so email settings
 and the digest can be tried there without a mail provider: read them in
