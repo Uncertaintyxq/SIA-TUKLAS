@@ -17,6 +17,7 @@ use App\Models\Profile;
 use App\Models\User;
 use App\Models\Work;
 use App\Support\Cards;
+use App\Support\Followers;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -29,9 +30,9 @@ use Illuminate\Support\Facades\DB;
  */
 class FeedController extends Controller
 {
-    private const FILTERS = ['all', 'research', 'literary', 'innovation', 'opportunities', 'events', 'saved'];
+    private const FILTERS = ['all', 'research', 'literary', 'innovation', 'opportunities', 'events', 'saved', 'following'];
 
-    /** GET /api/feed?type=&dept=&year=&adviser=&tag=&q=&sort=newest|discussed */
+    /** GET /api/feed?type=(…|saved|following)&dept=&year=&adviser=&tag=&q=&sort=newest|discussed */
     public function index(Request $request): JsonResponse
     {
         $me = $request->user();
@@ -48,10 +49,11 @@ class FeedController extends Controller
         $worksOnly = $dept !== '' || $year !== null || $adviser > 0 || $tag !== '';
         $items = collect();
 
-        if ($type === 'all' || $type === 'saved' || $workType) {
+        if ($type === 'all' || $type === 'saved' || $type === 'following' || $workType) {
             $works = Cards::works(Work::public(), $me->id)
                 ->when($workType, fn ($query) => $query->where('type', $workType))
                 ->when($type === 'saved', fn ($query) => $query->whereHas('savedBy', fn ($s) => $s->where('users.id', $me->id)))
+                ->when($type === 'following', fn ($query) => $this->followedBy($query, $me))
                 ->when($dept !== '', fn ($query) => $query->whereHas('author.profile', fn ($p) => $p->where('department', $dept)))
                 ->when($year !== null, fn ($query) => $query->whereYear('approved_at', $year))
                 ->when($adviser > 0, fn ($query) => $query->where('adviser_id', $adviser))
@@ -175,6 +177,25 @@ class FeedController extends Controller
             ->get();
 
         return response()->json(['ads' => AdCardResource::collection($ads), 'upcoming' => EventCardResource::collection($upcoming)]);
+    }
+
+    /**
+     * Works from the people, departments and keywords this person follows (nothing when they follow
+     * nothing).
+     *
+     * @param  Builder<Work>  $query
+     */
+    private function followedBy(Builder $query, User $me): void
+    {
+        $f = Followers::of($me);
+        $query->where(function (Builder $w) use ($f) {
+            $w->whereRaw('1 = 0')
+                ->when($f['people'] !== [], fn ($q) => $q->orWhereIn('author_id', $f['people'])->orWhereHas('coAuthors', fn ($a) => $a->whereIn('users.id', $f['people'])))
+                ->when($f['departments'] !== [], fn ($q) => $q->orWhereHas('author.profile', fn ($p) => $p->whereIn('department', $f['departments'])));
+            foreach ($f['tags'] as $tag) {
+                $w->orWhereJsonContains('tags', $tag);
+            }
+        });
     }
 
     /** Keywords are a JSON array; search its text, case-insensitively, on MySQL and SQLite alike. */

@@ -5,10 +5,12 @@
 import { Link, useSearchParams } from 'react-router-dom';
 import { ShieldCheck, X } from 'lucide-react';
 import { useFeed, useSidebar, type FeedFilter, type FeedParams } from '../api/feed';
+import { useFollows, useUnfollow } from '../api/follows';
 import { AdSlot, CalendarLeaf, EventCard } from '../components/events/EventBits';
 import { OpportunityEntry } from '../components/feed/OpportunityEntry';
 import { PageHeader } from '../components/layout/PageHeader';
 import { Updates } from '../components/notifications/Updates';
+import { FollowButton } from '../components/people/FollowButton';
 import { Person } from '../components/people/Person';
 import { WorkEntry } from '../components/works/WorkEntry';
 import { Button } from '../components/ui/Button';
@@ -31,6 +33,7 @@ const filters: { value: FeedFilter; label: string }[] = [
   { value: 'opportunities', label: 'Opportunities' },
   { value: 'events', label: 'Events' },
   { value: 'saved', label: 'My library' },
+  { value: 'following', label: 'Following' },
 ];
 
 export function FeedPage() {
@@ -130,6 +133,16 @@ export function FeedPage() {
             </div>
           </div>
 
+          {(p.dept || p.tag) && (
+            <div className={styles.follows}>
+              {p.dept && <FollowButton kind="department" target={p.dept} label={p.dept} />}
+              {p.tag && <FollowButton kind="tag" target={p.tag} label={`the keyword “${p.tag}”`} />}
+              <span className={styles.followsHint}>See new works from {p.dept && p.tag ? 'these' : 'it'} under Following.</span>
+            </div>
+          )}
+
+          {p.type === 'following' && <YouFollow />}
+
           {p.q && (
             <div className={styles.searching}>
               <p>
@@ -163,10 +176,12 @@ export function FeedPage() {
             ) : error ? (
               <EmptyState title="The feed didn’t load">{error.message}</EmptyState>
             ) : data.items.length === 0 ? (
-              <EmptyState title={p.type === 'saved' ? 'Your library is empty' : 'Nothing matches yet'}>
+              <EmptyState title={p.type === 'saved' ? 'Your library is empty' : p.type === 'following' ? 'Nothing from what you follow yet' : 'Nothing matches yet'}>
                 {p.type === 'saved'
                   ? 'Save works from the feed and they’ll wait for you here.'
-                  : p.q
+                  : p.type === 'following'
+                    ? 'Follow people from their portfolios, or a department or keyword from the filters above.'
+                    : p.q
                     ? 'Try another word, or clear the search.'
                     : 'Approved works, opportunities and events will appear here.'}
               </EmptyState>
@@ -193,6 +208,41 @@ export function FeedPage() {
         </aside>
       </div>
     </>
+  );
+}
+
+/** The Following filter's header: everyone and everything I follow, each with an unfollow button. */
+function YouFollow() {
+  const { data } = useFollows();
+  const unfollow = useUnfollow();
+  if (!data) return null;
+  const items = [
+    ...data.people.map((u) => ({ key: `p${u.id}`, kind: 'person' as const, target: String(u.id), label: u.name, to: `/u/${u.username}` })),
+    ...data.departments.map((d) => ({ key: `d${d}`, kind: 'department' as const, target: d, label: d, to: `/feed?dept=${encodeURIComponent(d)}` })),
+    ...data.tags.map((t) => ({ key: `t${t}`, kind: 'tag' as const, target: t, label: t, to: `/feed?tag=${encodeURIComponent(t)}` })),
+  ];
+  if (items.length === 0) return null;
+  return (
+    <Sheet title="You follow" aside={String(items.length)}>
+      <ul className={styles.followed}>
+        {items.map((i) => (
+          <li key={i.key} className={styles.followedItem}>
+            <Link to={i.to} className={styles.followedLink}>
+              {i.kind === 'tag' ? `#${i.label}` : i.label}
+            </Link>
+            <button
+              type="button"
+              className={styles.unfollow}
+              aria-label={`Unfollow ${i.label}`}
+              disabled={unfollow.isPending}
+              onClick={() => unfollow.mutate({ kind: i.kind, target: i.target })}
+            >
+              <X size={14} aria-hidden="true" />
+            </button>
+          </li>
+        ))}
+      </ul>
+    </Sheet>
   );
 }
 
