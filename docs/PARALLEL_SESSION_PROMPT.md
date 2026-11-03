@@ -66,9 +66,11 @@ rules, hooks, and the `/start-task` and `/finish-task` commands). Also read:
   `PublicationController`, their Resources, and the client's `WorkPage`, `PublicationPage`,
   `MyResearchPage` and `components/portfolio/`.
 
-**Not for anyone yet (don't claim):** the three rows in "Future: several schools on one site"
-(`feat/institutions`, `feat/institution-scoping`, `feat/institution-admins`) wait on the client's
-answer.
+**Not yours unless the user says so (don't claim):** the three rows in "Several schools on one site"
+(`feat/institutions`, `feat/institution-scoping`, `feat/institution-admins`). They must be done
+before real student data goes on a server (`docs/TODO.md`, "Before real student data"), but the user
+decides when and who builds them, and they depend on the client's answer. If the user assigns them,
+build in that order: `feat/institutions` first, the other two depend on it.
 
 **Yours, in this order** (unless the user wants a different subset or order; ask which they want):
 1. `feat/library-browse`: filters and "Browse by department". Touches `FeedController` (index),
