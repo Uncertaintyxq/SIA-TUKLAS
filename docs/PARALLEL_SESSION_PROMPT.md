@@ -3,7 +3,7 @@
 Paste everything below the line into a new Claude Code session. It is written so several sessions
 (on one machine or several) can build Tuklas features at the same time without picking the same
 feature or editing the same files. Update the **Assignment** section before each use (last updated
-2026-11-04, after `feat/work-metrics` and `feat/research-story`).
+2026-11-04, after `feat/work-metrics`, `feat/research-story` and `feat/mentions`).
 
 ---
 
@@ -67,14 +67,13 @@ decides when and who builds them, and they depend on the client's answer. If the
 build in that order: `feat/institutions` first, the other two depend on it.
 
 **Yours, in this order** (unless the user wants a different subset or order; ask which they want):
-1. `feat/mentions`: `@username` in comments and chat (`WorkController`, `WorkPage`, `ChatController`).
-2. `feat/library-browse`: filters and "Browse by department". Touches `FeedController` (index),
+1. `feat/library-browse`: filters and "Browse by department". Touches `FeedController` (index),
    `PublicationController` (index), `FeedPage`, `LibraryPage`, `components/feed/`.
-3. `feat/follow`: follows, the "Following" filter, and notifications to followers (`FeedController`,
+2. `feat/follow`: follows, the "Following" filter, and notifications to followers (`FeedController`,
    `FeedPage`, the approve and publish paths).
 
-The order groups features by the files they share: the work pages first, then the feed and the
-library. Build them **one at a time**: merge each before starting the next, so the next one starts
+Both change the feed (`FeedController`, `FeedPage`), so library-browse comes first and follow
+builds on it. Build them **one at a time**: merge each before starting the next, so the next one starts
 from a `main` that already has it and shared files never conflict.
 
 Before each one:
@@ -111,9 +110,6 @@ Notes on the features (the product decisions are in `reference/FEATURES.md`):
   page by itself, since the page lists categories from the API; choose its email and push defaults).
   Follows are personal data: add them to the data export (`PrivacyController::export`) and delete
   them in `Actions/Account/DeleteAccount.php`.
-- **mentions:** people can only be mentioned where they can see the item (work view policy,
-  conversation membership). Reuse the people search (`/api/people/search`, `Users/PeopleController`). Text is encrypted at
-  rest; links are built by React, never by parsing text as HTML.
 
 ## 4. Avoiding conflicts
 

@@ -1,0 +1,12 @@
+.mention {
+  border-radius: 4px;
+  padding: 0 2px;
+  background: color-mix(in srgb, var(--lavender) 55%, transparent);
+  color: var(--action-text);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.mention:hover {
+  text-decoration: underline;
+}

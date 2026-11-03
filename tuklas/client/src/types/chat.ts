@@ -25,6 +25,8 @@ export interface ConversationSummary {
   /** Channel name, or the other person's name in a direct chat */
   name: string;
   group: { id: number; name: string } | null;
+  /** "@everyone" here would notify the whole group (channels, for the group's organizers) */
+  canMentionAll: boolean;
   other: ChatPerson | null;
   lastMessage: { text: string; senderName: string; createdAt: string; hasFile: boolean } | null;
   lastMessageAt: string;
