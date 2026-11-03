@@ -14,9 +14,13 @@ Start work on the planned branch `$ARGUMENTS`.
    every other active branch: file or folder overlaps, and logical overlaps (same table, same
    route names, same component or hook). If there's overlap, stop and recommend: wait, extract a
    shared mini-branch, or coordinate.
-5. **Create and claim the branch** (ask me before pushing; the push is visible to the team):
+5. **Create and claim the branch** (ask me before pushing; the push is visible to the team). First
+   mark the row in `docs/TODO.md` on `main`: Status `In progress (<my name>)` (ask me for the name
+   once), committed and pushed on its own, so the table shows the claim too:
    ```
    git switch main && git pull --ff-only
+   # edit the row's Status in docs/TODO.md, then:
+   git add docs/TODO.md && git commit -m "docs: claim $ARGUMENTS" && git push
    git switch -c $ARGUMENTS
    git commit --allow-empty -m "chore: start $ARGUMENTS"
    git push -u origin $ARGUMENTS
