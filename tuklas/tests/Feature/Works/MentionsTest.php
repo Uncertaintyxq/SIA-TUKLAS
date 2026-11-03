@@ -7,6 +7,7 @@ use App\Models\Notification;
 use App\Models\User;
 use App\Models\Work;
 use App\Support\Mentions;
+use App\Support\Usernames;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -79,6 +80,47 @@ class MentionsTest extends TestCase
         $this->actingAs(User::find(1))->postJson('/api/chat/conversations/4/messages', ['text' => 'Thanks @kim', 'parentId' => $id])->assertCreated();
         $this->assertSame("/messages/4?m={$id}", Notification::where('type', 'mention')->value('link'));
         $this->assertNotNull(Message::find($id));
+    }
+
+    public function test_everyone_in_a_group_channel_reaches_the_whole_group_once(): void
+    {
+        // Santos advises group 1 (Andrea leads it, Kim is a member, Aquino a mentor)
+        $this->actingAs(User::find(4))->postJson('/api/chat/conversations/4/messages', ['text' => '@everyone lab meeting moved to 3 PM. @kim bring the kits'])->assertCreated();
+
+        $this->assertSame([1, 3, 5], $this->mentioned());
+        $this->assertSame(1, Notification::where('type', 'mention')->where('user_id', 3)->count());
+        $this->assertStringStartsWith('Dr. Maria Santos mentioned everyone in #general (', Notification::where('type', 'mention')->value('message'));
+
+        // The student leader may too ("@all" works the same)
+        Notification::query()->delete();
+        $this->actingAs(User::find(1))->postJson('/api/chat/conversations/4/messages', ['text' => 'Reminder for @all'])->assertCreated();
+        $this->assertSame([3, 4, 5], $this->mentioned());
+    }
+
+    public function test_only_the_groups_organizers_can_mention_everyone(): void
+    {
+        // Kim is a plain member: her @everyone notifies no one, and the composer doesn't offer it
+        $this->actingAs(User::find(3))->postJson('/api/chat/conversations/4/messages', ['text' => '@everyone hello'])->assertCreated();
+        $this->assertSame([], $this->mentioned());
+        $this->actingAs(User::find(3))->getJson('/api/chat/conversations/4')->assertJsonPath('conversation.canMentionAll', false);
+        $this->actingAs(User::find(4))->getJson('/api/chat/conversations/4')->assertJsonPath('conversation.canMentionAll', true);
+
+        // Never in a direct chat
+        $this->actingAs(User::find(1))->postJson('/api/chat/conversations/1/messages', ['text' => '@everyone hi'])->assertCreated();
+        $this->assertSame([], $this->mentioned());
+        $this->actingAs(User::find(1))->getJson('/api/chat/conversations/1')->assertJsonPath('conversation.canMentionAll', false);
+    }
+
+    public function test_adding_everyone_in_an_edit_notifies_once_and_the_names_are_reserved(): void
+    {
+        $id = $this->actingAs(User::find(4))->postJson('/api/chat/conversations/4/messages', ['text' => 'Lab meeting moved'])->assertCreated()->json('id');
+        $this->actingAs(User::find(4))->patchJson("/api/chat/messages/{$id}", ['text' => 'Lab meeting moved, @everyone'])->assertOk();
+        $this->actingAs(User::find(4))->patchJson("/api/chat/messages/{$id}", ['text' => 'Lab meeting moved to Friday, @everyone'])->assertOk();
+        $this->assertSame([1, 3, 5], $this->mentioned());
+
+        $this->assertSame([], Mentions::usernames('@everyone @ALL'));
+        $this->assertSame('everyone2', Usernames::unique('everyone@tuklas.edu'));
+        $this->assertSame('all2', Usernames::unique('all@tuklas.edu'));
     }
 
     public function test_the_pattern_and_the_limit(): void

@@ -1,14 +1,17 @@
 /**
  * useMentionPicker — adds @mention suggestions to a textarea. Typing "@" and two letters lists
  * matching people (the people search); ↑/↓ choose, Enter or Tab insert "@username ", Esc closes.
+ * With `everyone`, "@everyone" is offered too (a group channel, for the group's organizers).
  * The textarea keeps its own label and behaviour: spread `textareaProps` on it, call `onKeyDown`
  * first in its key handler (it returns true when it used the key), and render `list` next to it
  * inside an element with the `anchor` class.
  */
 import { useId, useRef, useState, type ChangeEvent, type KeyboardEvent, type SyntheticEvent } from 'react';
 import clsx from 'clsx';
+import { Users } from 'lucide-react';
 import { usePeopleSearch } from '../../api/portfolio';
 import { useDebounced } from '../../lib/useDebounced';
+import type { UserCard } from '../../types/common';
 import { Avatar } from './Avatar';
 import styles from './MentionInput.module.css';
 
@@ -18,7 +21,9 @@ function queryAt(text: string, caret: number) {
   return m ? { start: caret - m[2]!.length - 1, term: m[2]! } : null;
 }
 
-export function useMentionPicker(value: string, onChange: (value: string) => void, placement: 'above' | 'below' = 'below') {
+type Option = { kind: 'everyone' } | { kind: 'person'; user: UserCard };
+
+export function useMentionPicker(value: string, onChange: (value: string) => void, placement: 'above' | 'below' = 'below', everyone = false) {
   const ref = useRef<HTMLTextAreaElement>(null);
   const listId = useId();
   const [caret, setCaret] = useState(0);
@@ -29,22 +34,29 @@ export function useMentionPicker(value: string, onChange: (value: string) => voi
   const query = queryAt(value, caret);
   const term = useDebounced(query?.term ?? '', 200);
   const { data } = usePeopleSearch(query ? term : '');
-  const people = query && query.start !== dismissed && term.length >= 2 ? (data ?? []).slice(0, 6) : [];
-  const open = people.length > 0;
-  const current = Math.min(active, people.length - 1);
+  const showing = query !== null && query.start !== dismissed;
+  const typed = query?.term.toLowerCase() ?? '';
+  const options: Option[] = showing
+    ? [
+        ...(everyone && ['everyone', 'all'].some((w) => w.startsWith(typed)) ? [{ kind: 'everyone' as const }] : []),
+        ...(term.length >= 2 ? (data ?? []).slice(0, 6).map((user) => ({ kind: 'person' as const, user })) : []),
+      ]
+    : [];
+  const open = options.length > 0;
+  const current = Math.min(active, options.length - 1);
 
-  const pick = (username: string) => {
+  const insert = (handle: string) => {
     if (!query) return;
-    const insert = `@${username} `;
-    const next = value.slice(0, query.start) + insert + value.slice(caret);
-    const position = query.start + insert.length;
-    onChange(next);
+    const text = `@${handle} `;
+    const position = query.start + text.length;
+    onChange(value.slice(0, query.start) + text + value.slice(caret));
     setCaret(position);
     requestAnimationFrame(() => {
       ref.current?.focus();
       ref.current?.setSelectionRange(position, position);
     });
   };
+  const pick = (o: Option) => insert(o.kind === 'everyone' ? 'everyone' : o.user.username);
 
   const track = (e: SyntheticEvent<HTMLTextAreaElement>) => setCaret(e.currentTarget.selectionStart);
 
@@ -52,9 +64,9 @@ export function useMentionPicker(value: string, onChange: (value: string) => voi
   const onKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (!open || e.nativeEvent.isComposing) return false;
     if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-      setActive((current + (e.key === 'ArrowDown' ? 1 : people.length - 1)) % people.length);
+      setActive((current + (e.key === 'ArrowDown' ? 1 : options.length - 1)) % options.length);
     } else if (e.key === 'Enter' || e.key === 'Tab') {
-      pick(people[current]!.username);
+      pick(options[current]!);
     } else if (e.key === 'Escape') {
       setDismissed(query!.start);
     } else {
@@ -83,9 +95,9 @@ export function useMentionPicker(value: string, onChange: (value: string) => voi
     },
     list: open ? (
       <ul id={listId} role="listbox" aria-label="People to mention" className={clsx(styles.list, styles[placement])}>
-        {people.map((u, i) => (
+        {options.map((o, i) => (
           <li
-            key={u.id}
+            key={o.kind === 'everyone' ? 'everyone' : o.user.id}
             id={`${listId}-${i}`}
             role="option"
             aria-selected={i === current}
@@ -93,14 +105,28 @@ export function useMentionPicker(value: string, onChange: (value: string) => voi
             // mousedown, so the textarea keeps focus and the caret position
             onMouseDown={(e) => {
               e.preventDefault();
-              pick(u.username);
+              pick(o);
             }}
           >
-            <Avatar name={u.name} role={u.role} photo={u.photoUrl} size="sm" />
-            <span className={styles.who}>
-              <span className={styles.name}>{u.name}</span>
-              <span className={styles.handle}>@{u.username}</span>
-            </span>
+            {o.kind === 'everyone' ? (
+              <>
+                <span className={styles.everyoneIcon} aria-hidden="true">
+                  <Users size={16} />
+                </span>
+                <span className={styles.who}>
+                  <span className={styles.name}>@everyone</span>
+                  <span className={styles.handle}>Notify everyone in this channel</span>
+                </span>
+              </>
+            ) : (
+              <>
+                <Avatar name={o.user.name} role={o.user.role} photo={o.user.photoUrl} size="sm" />
+                <span className={styles.who}>
+                  <span className={styles.name}>{o.user.name}</span>
+                  <span className={styles.handle}>@{o.user.username}</span>
+                </span>
+              </>
+            )}
           </li>
         ))}
       </ul>

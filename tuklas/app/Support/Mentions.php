@@ -22,12 +22,38 @@ class Mentions
     /** More than this in one message is treated as spam: only the first ones are notified. */
     public const MAX = 10;
 
+    /**
+     * "@everyone" and "@all" mean every member of a group channel (ChatController), not a person.
+     * Usernames never take these names (Usernames::unique).
+     */
+    public const EVERYONE = ['everyone', 'all'];
+
     /** @return list<string> The usernames mentioned, lowercased, first ones first, at most MAX */
     public static function usernames(string $text): array
     {
         preg_match_all(self::PATTERN, $text, $m);
+        $names = array_diff(array_unique(array_map('mb_strtolower', $m[1])), self::EVERYONE);
 
-        return array_slice(array_values(array_unique(array_map('mb_strtolower', $m[1]))), 0, self::MAX);
+        return array_slice(array_values($names), 0, self::MAX);
+    }
+
+    /** Whether the text says "@everyone" or "@all". */
+    public static function mentionsEveryone(string $text): bool
+    {
+        preg_match_all(self::PATTERN, $text, $m);
+
+        return array_intersect(array_map('mb_strtolower', $m[1]), self::EVERYONE) !== [];
+    }
+
+    /**
+     * Tells everyone in $ids that $author mentioned them all. The caller decides who may do this
+     * and who "everyone" is.
+     *
+     * @param  list<int>  $ids
+     */
+    public static function notifyEveryone(array $ids, User $author, string $where, string $link): void
+    {
+        Notifier::notify($ids, 'mention', "{$author->name} mentioned everyone {$where}.", $link, $author->id);
     }
 
     /**
