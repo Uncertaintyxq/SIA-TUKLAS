@@ -9,6 +9,7 @@ import { Download, FileText, Flag, MessageSquareReply, PenLine, SmilePlus, Trash
 import type { MessageView } from '../../api/chat';
 import { fileSize } from '../../lib/format';
 import { Avatar } from '../ui/Avatar';
+import { withMentions } from '../ui/MentionText';
 import { Button } from '../ui/Button';
 import styles from './MessageItem.module.css';
 
@@ -17,15 +18,15 @@ const LINK = /(https?:\/\/[^\s<]+[^\s<.,;:!?)\]'"])/g;
 /** The emoji people can react with (the server allows only these, in this order) */
 export const REACTION_EMOJI = ['👍', '❤️', '😂', '🎉', '🤔', '🙏'];
 
-/** Plain text with web links made clickable. Text is never parsed as HTML. */
+/** Plain text with web links and @mentions made clickable. Text is never parsed as HTML. */
 function MessageText({ text }: { text: string }) {
-  const parts: ReactNode[] = text.split(LINK).map((part, i) =>
+  const parts: ReactNode[] = text.split(LINK).flatMap((part, i) =>
     i % 2 === 1 ? (
       <a key={i} href={part} target="_blank" rel="noreferrer noopener">
         {part}
       </a>
     ) : (
-      part
+      withMentions(part, `p${i}`)
     ),
   );
   return <p className={styles.text}>{parts}</p>;

@@ -23,6 +23,15 @@ Merged into `main` but not on <https://tuklas-sia-jm.japaneast.cloudapp.azure.co
   next to the abstract.
 - The panel reads it during review; everyone sees it on the work page once the work is approved.
 
+**@mentions**
+- Type **@** and a name in a discussion, a review thread or a chat to mention someone: a list of
+  matching people appears (↑/↓ to choose, Enter or Tab to pick, Esc to close).
+- The person mentioned gets a notification, and the mention links to their portfolio.
+- Only people who can see the message are told: someone outside a private chat or review thread
+  isn't. The notification says who mentioned you and where, not what they wrote.
+- **Account and security → Notifications** has a new **Mentions** row: push is on and email is off
+  to start with.
+
 ## Staging update 1 (November 2026)
 
 Everything added since staging first went live at

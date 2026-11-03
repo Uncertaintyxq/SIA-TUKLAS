@@ -13,6 +13,8 @@ import { Person } from '../people/Person';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
 import { TextAreaField } from '../ui/Field';
+import { useMentionPicker } from '../ui/MentionInput';
+import { withMentions } from '../ui/MentionText';
 import { Modal } from '../ui/Modal';
 import { Notice } from '../ui/Notice';
 import { Sheet } from '../ui/Sheet';
@@ -218,6 +220,7 @@ export function ReviewHistory({ work }: { work: WorkDetail }) {
 /** The private thread between authors and adviser while the work is in review. */
 export function ReviewThread({ work }: { work: WorkDetail }) {
   const [text, setText] = useState('');
+  const mention = useMentionPicker(text, setText);
   const send = useReviewComment();
   const toast = useToast();
   if (!work.can.comment && work.thread.length === 0) return null;
@@ -234,12 +237,24 @@ export function ReviewThread({ work }: { work: WorkDetail }) {
         {work.thread.map((c) => (
           <div key={c.id} className={styles.message}>
             <Person user={c.author} size="sm" sub={relTime(c.createdAt)} />
-            <p className={styles.bubble}>{c.text}</p>
+            <p className={styles.bubble}>{withMentions(c.text)}</p>
           </div>
         ))}
         {work.can.comment && (
           <form className={styles.reply} onSubmit={submit}>
-            <TextAreaField label="Add a comment" value={text} onChange={(e) => setText(e.target.value)} rows={3} maxLength={4000} required />
+            <div className={mention.anchor}>
+              <TextAreaField
+                label="Add a comment"
+                hint="Type @ and a name to mention someone; only people who can see this thread are told."
+                value={text}
+                rows={3}
+                maxLength={4000}
+                required
+                {...mention.textareaProps}
+                onKeyDown={mention.onKeyDown}
+              />
+              {mention.list}
+            </div>
             <Button type="submit" icon={<Send size={16} aria-hidden="true" />} loading={send.isPending}>
               Comment
             </Button>
