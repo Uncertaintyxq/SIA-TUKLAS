@@ -393,6 +393,15 @@ branch rule; the deployment plan is in [DEPLOYMENT.md](DEPLOYMENT.md).
   department and keyword, and `GET /api/publications/browse` returns every department with its
   research and student-work counts (what the viewer may read), plus years and keywords, for the
   "Browse by department" grid. Keywords are grouped ignoring case (`FeedController::topKeywords`).
+- 2026-11-04: `feat/follow`. A `follows` row is (user, kind person|department|tag, target: the
+  user id, department name or keyword). `GET/POST/DELETE /api/follows` (`Users/FollowController`);
+  following twice is fine, keywords match ignoring case, at most `Follow::MAX` (200). The feed's
+  `type=following` shows public works by followed people (author or co-author), from followed
+  departments or with followed keywords; works only. `Support/Followers` tells followers
+  (`follow_work`, `follow_research`, category `following`, in-app only by default) when a work is
+  approved or research first leaves Draft, never the authors themselves. Portfolios return
+  `followers` and `followedByMe`. Follows are in the data export and removed with the account (both
+  theirs and others' follows of them).
 
 ## How the code is laid out (for the next modules)
 

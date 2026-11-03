@@ -66,12 +66,9 @@ before real student data goes on a server (`docs/TODO.md`, "Before real student 
 decides when and who builds them, and they depend on the client's answer. If the user assigns them,
 build in that order: `feat/institutions` first, the other two depend on it.
 
-**Yours, in this order** (unless the user wants a different subset or order; ask which they want):
-1. `feat/follow`: follows, the "Following" filter, and notifications to followers (`FeedController`,
-   `FeedPage`, the approve and publish paths).
-
-It changes the feed (`FeedController`, `FeedPage`), which `feat/library-browse` already extended
-with year, adviser and keyword filters: follow the same pattern for the "Following" filter. Build them **one at a time**: merge each before starting the next, so the next one starts
+**Yours:** every planned feature row is built (`feat/follow` was the last, 2026-11-04). Ask the
+user what to take next: a new row they add to `docs/TODO.md`, or the institution rows above if they
+assign them. Build one at a time: merge each before starting the next, so the next one starts
 from a `main` that already has it and shared files never conflict.
 
 Before each one:
@@ -98,13 +95,7 @@ git branch -r                           # what else is in flight; the scope hook
   the name to put in the Status the first time.
 
 Notes on the features (the product decisions are in `reference/FEATURES.md`):
-- **follow:** a follow has a kind (person, department, tag). Followers hear when a followed
-  person's work is approved (`Actions/Works/DecideOnWork.php`) or a publication becomes public
-  (`PublicationController`); never about anything not public. The notification type needs a
-  category in `App\Support\NotificationPrefs::categoryOf()` (a new category appears in the Account
-  page by itself, since the page lists categories from the API; choose its email and push defaults).
-  Follows are personal data: add them to the data export (`PrivacyController::export`) and delete
-  them in `Actions/Account/DeleteAccount.php`.
+- (No open feature notes: every planned feature is built.)
 
 ## 4. Avoiding conflicts
 

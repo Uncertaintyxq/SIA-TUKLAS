@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Users\FollowController;
 use App\Http\Controllers\Users\PeopleController;
 use App\Http\Controllers\Users\PortfolioController;
 use App\Http\Controllers\Users\ProfileController;
@@ -30,6 +31,13 @@ Route::middleware(['auth:sanctum', 'account.ready'])->prefix('profile')->group(f
     });
     Route::delete('/photo', [ProfileController::class, 'deletePhoto'])->name('profile.photo.destroy');
     Route::delete('/cv', [ProfileController::class, 'deleteCv'])->name('profile.cv.destroy');
+});
+
+// Following people, departments and keywords
+Route::middleware(['auth:sanctum', 'account.ready'])->prefix('follows')->group(function () {
+    Route::get('/', [FollowController::class, 'index'])->name('follows.index');
+    Route::post('/', [FollowController::class, 'store'])->middleware('throttle:posting')->name('follows.store');
+    Route::delete('/', [FollowController::class, 'destroy'])->name('follows.destroy');
 });
 
 // Pickers

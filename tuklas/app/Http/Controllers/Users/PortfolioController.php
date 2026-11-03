@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\Users;
 
+use App\Enums\FollowKind;
 use App\Enums\PublicationVisibility;
 use App\Enums\Role;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\PublicationCardResource;
 use App\Http\Resources\UserCardResource;
 use App\Http\Resources\WorkCardResource;
+use App\Models\Follow;
 use App\Models\Profile;
 use App\Models\Publication;
 use App\Models\User;
@@ -71,6 +73,8 @@ class PortfolioController extends Controller
                 'downloads' => (int) ($works->sum('download_count') + $publications->sum('download_count')),
             ],
             'isOwner' => $isOwner,
+            'followers' => Follow::where('kind', FollowKind::Person)->where('target', (string) $user->id)->count(),
+            'followedByMe' => $viewer !== null && ! $isOwner && Follow::where('user_id', $viewer->id)->where('kind', FollowKind::Person)->where('target', (string) $user->id)->exists(),
         ]);
     }
 

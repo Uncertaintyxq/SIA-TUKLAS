@@ -3,7 +3,7 @@ import type { UserCard } from './common';
 import type { AdCard, EventCard } from './events';
 import type { WorkCard } from './works';
 
-export type FeedFilter = 'all' | 'research' | 'literary' | 'innovation' | 'opportunities' | 'events' | 'saved';
+export type FeedFilter = 'all' | 'research' | 'literary' | 'innovation' | 'opportunities' | 'events' | 'saved' | 'following';
 export type OpportunityKind = 'mentorship' | 'grant' | 'call';
 
 export interface OpportunityInput {

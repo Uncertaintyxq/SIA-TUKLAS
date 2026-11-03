@@ -40,6 +40,16 @@ Merged into `main` but not on <https://tuklas-sia-jm.japaneast.cloudapp.azure.co
   department** list: each department with how many publications and student works it has.
 - Clicking a keyword on a work or a publication shows everything with that keyword.
 
+**Follow people and topics**
+- **Follow** a person from their portfolio, or a department or keyword from the feed's filters
+  (and a department from the research library's).
+- The feed's new **Following** filter shows works from everyone and everything you follow, with a
+  list of what you follow and a button to unfollow each.
+- You're told when someone you follow has a work approved or publishes research, or when something
+  new comes out in a department or keyword you follow. These arrive in Tuklas; turn on email or
+  push under **People and topics you follow** in your notification settings.
+- Portfolios show how many followers a person has.
+
 ## Staging update 1 (November 2026)
 
 Everything added since staging first went live at

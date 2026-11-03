@@ -70,6 +70,58 @@
   font-weight: 600;
 }
 
+/* Follow the department or keyword the feed is filtered by */
+.follows {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2);
+}
+
+.followsHint {
+  font-size: var(--fs-small);
+  color: var(--text-soft);
+}
+
+/* The Following filter's list of what I follow */
+.followed {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.followedItem {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--rule-strong);
+  border-radius: 999px;
+}
+
+.followedLink {
+  padding: var(--s-1) var(--s-1) var(--s-1) var(--s-3);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.unfollow {
+  display: inline-grid;
+  place-items: center;
+  min-width: var(--tap);
+  min-height: var(--tap);
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--text-soft);
+  cursor: pointer;
+}
+
+.unfollow:hover {
+  color: var(--text);
+}
+
 .people {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
