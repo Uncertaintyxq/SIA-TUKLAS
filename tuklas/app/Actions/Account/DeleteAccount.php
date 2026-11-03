@@ -21,7 +21,7 @@ use Illuminate\Support\Str;
  *
  * The user row stays, anonymised as "Former member", because approved works, reviews and groups
  * point at it. Everything personal goes: portfolio, unfinished works, comments, reactions, messages,
- * files, memberships, notifications, sessions. What others rely on stays under "Former member":
+ * files, memberships, follows, notifications, sessions. What others rely on stays under "Former member":
  * approved works, reviews, approved events, published research, announcements, the groups they
  * advise (admins are told to take them over) and shared group deliverables.
  */
@@ -53,6 +53,8 @@ class DeleteAccount
                 DB::table($table)->where($column, $id)->delete();
             }
             DB::table('opportunities')->where('adviser_id', $id)->delete();
+            // What they follow, and others following them
+            DB::table('follows')->where('user_id', $id)->orWhere(fn ($f) => $f->where('kind', 'person')->where('target', (string) $id))->delete();
 
             // Events and ads waiting for approval go; approved ones are part of the calendar
             array_push($files, ...DB::table('ads')->where('created_by_id', $id)->where('status', '!=', 'approved')->pluck('image_file'));

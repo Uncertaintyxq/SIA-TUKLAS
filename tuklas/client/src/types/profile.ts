@@ -74,4 +74,7 @@ export interface Portfolio {
   /** views and downloads: the reach of their own works and research on the page */
   stats: { published: number; mentored: number; publications: number; verifiedHonors: number; degrees: number; views: number; downloads: number };
   isOwner: boolean;
+  /** How many people follow them, and whether I do */
+  followers: number;
+  followedByMe: boolean;
 }
