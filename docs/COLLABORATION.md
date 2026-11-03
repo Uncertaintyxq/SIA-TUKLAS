@@ -24,8 +24,10 @@ controllers and pages with no contract.
 
 1. Checks the row is free (`git ls-remote --heads origin <branch>` prints nothing) and its
    dependencies are Done.
-2. Creates the branch from an up-to-date `main`, makes an empty commit and pushes it. **The pushed
-   branch is the claim**: anyone checking that name sees it's taken.
+2. Marks the row `In progress (<your name>)` in `docs/TODO.md` on `main` (a one-line docs commit,
+   pushed at once), then creates the branch from that `main`, makes an empty commit and pushes it.
+   **The pushed branch is the claim**: anyone checking that name sees it's taken; the Status tells
+   people reading the table.
 3. Compares the row's Scope with every other active branch and warns about overlaps.
 
 **Push at least once a day**, even unfinished work: that keeps the overlap check accurate. With the

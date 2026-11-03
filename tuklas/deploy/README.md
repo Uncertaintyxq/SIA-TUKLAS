@@ -49,9 +49,13 @@ bash ~/SIA-TUKLAS/tuklas/deploy/deploy.sh
 ```
 It clones `main` fresh, so the `~/SIA-TUKLAS` copy only matters for the scripts themselves (run
 `git -C ~/SIA-TUKLAS pull` when they change). `--ref <tag or branch>` deploys something other
-than `main`. Once [automatic deploys](#automatic-deploys) are set up, GitHub does this for you.
+than `main`. (Automatic deploys from GitHub are built but not set up: see [below](#automatic-deploys).)
 
 ## Automatic deploys
+
+> **Status: built, not set up on staging.** On 2026-11-04 the team chose to keep deploying by hand
+> (`deploy.sh`, above) for now. Nothing breaks without it: the workflow skips itself with a notice
+> while there is no `staging` environment on GitHub. This is the guide if it's taken up again.
 
 `.github/workflows/deploy.yml` deploys staging by itself whenever the `ci` checks pass on `main`
 (and can be run by hand: **Actions → deploy → Run workflow**). It logs in with its own SSH key, which

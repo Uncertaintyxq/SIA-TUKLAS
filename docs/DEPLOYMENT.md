@@ -17,7 +17,8 @@ How Tuklas goes from the repo to a public, secure site. The work is split into t
 ```
 
 One server is enough at Tuklas's scale: one university, hundreds to a few thousand users. (Several
-schools on one site is planned but waits on the client: `docs/TODO.md`, "Future" section.)
+schools on one site is planned, to be built before real student data: `docs/TODO.md`, "Before real
+student data".)
 Everything is on one domain, so the session cookie, CSRF and WebSocket all stay same-origin.
 
 | Piece | Choice | Why |
@@ -36,7 +37,7 @@ Everything is on one domain, so the session cookie, CSRF and WebSocket all stay 
 | Environment | Purpose | Data | Deploys |
 |---|---|---|---|
 | Local | Development | Demo seed (`DEMO_MODE=true`) | By hand |
-| Staging | Client reviews and testing before release | Demo seed, reset freely | Automatically on every merge to `main` |
+| Staging | Client reviews and testing before release | Demo seed, reset freely | By hand with `deploy.sh` for now (automatic on every merge to `main` is built, not set up) |
 | Production | The real site | Real people's data | On a tagged release (`v1.0.0`, …), by hand approval in GitHub |
 
 Staging and production are separate servers (or at least separate databases, `.env` files
@@ -69,9 +70,10 @@ PHP (`deploy/php.ini`): `expose_php=Off`, `display_errors=Off`, `post_max_size=2
 
 ## Deploying a release
 
-`tuklas/deploy/deploy.sh`, run by the pipeline (`.github/workflows/deploy.yml`: staging after `ci`
-passes on `main`, production on a release tag once someone approves it; setup in
-[`tuklas/deploy/README.md`](../tuklas/deploy/README.md#automatic-deploys)). Each release goes in
+`tuklas/deploy/deploy.sh`, run by hand on the server for now. A pipeline that runs it is built
+(`.github/workflows/deploy.yml`: staging after `ci` passes on `main`, production on a release tag
+once someone approves it) but not set up; the guide is
+[`tuklas/deploy/README.md`](../tuklas/deploy/README.md#automatic-deploys). Each release goes in
 its own folder and a symlink switches to it, so a failed build never takes the site down.
 
 1. Check out the tag into `releases/<timestamp>/`.
@@ -85,7 +87,8 @@ its own folder and a symlink switches to it, so a failed build never takes the s
 9. Check `https://<domain>/up` returns 200; keep the last 5 releases.
 
 **Rollback:** point `current` at the previous release and reload. If the release ran a
-migration, restore the database backup taken just before step 5 (the pipeline takes one).
+migration, restore the database backup taken just before step 5 (`deploy.sh` takes one when
+backups are on).
 
 ## Security checklist (before the first public launch)
 
@@ -133,6 +136,9 @@ restore: [`tuklas/deploy/README.md`](../tuklas/deploy/README.md#backups)):
 ## Data Privacy Act (RA 10173)
 
 Before real students' data goes in:
+- [ ] If several schools share the site: the three institution features are built (`docs/TODO.md`),
+      so each school's people, announcements and admins are separate, and it's agreed who controls
+      each school's data.
 - [ ] Final privacy notice text, shown at signup. Changing it means bumping `privacy_version`
       in `config/tuklas.php`, which asks everyone to accept again.
 - [ ] A named Data Protection Officer, with contact details in the privacy notice.

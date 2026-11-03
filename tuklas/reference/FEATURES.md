@@ -121,3 +121,7 @@ browsing scoped to the institution, admins per institution with super-admins, an
 using each author's own institution. Three rows in `docs/TODO.md` ("Future: several schools on one
 site"), waiting on the client's answer. If the answer is one site per school, nothing changes and
 each server sets `TUKLAS_INSTITUTION`.
+
+**2026-11-04:** these come before real student data goes on any server (launch order in
+`docs/TODO.md`, "Before real student data"): every account then carries its school from the start,
+instead of real accounts being moved and re-checked afterwards.
