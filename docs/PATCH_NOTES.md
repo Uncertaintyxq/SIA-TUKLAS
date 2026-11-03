@@ -17,6 +17,12 @@ Merged into `main` but not on <https://tuklas-sia-jm.japaneast.cloudapp.azure.co
 - Privacy: Tuklas doesn't keep who viewed what. To count each reader once a day it keeps a scrambled
   code for the day, never your IP address or browser, and deletes it the next day.
 
+**"How we made this" on a work**
+- Students can add a short story to a work, in their own words: how the idea started, what went
+  wrong along the way, what they'd tell the next student. It's optional, written in the entry form
+  next to the abstract.
+- The panel reads it during review; everyone sees it on the work page once the work is approved.
+
 ## Staging update 1 (November 2026)
 
 Everything added since staging first went live at

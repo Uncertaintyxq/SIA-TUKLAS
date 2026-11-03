@@ -75,6 +75,17 @@
   white-space: pre-line;
 }
 
+/* The researchers' own words: same reading measure as the abstract, set apart like a quote */
+.story {
+  max-width: var(--measure);
+  margin: 0;
+  padding-left: var(--s-3);
+  border-left: 3px solid var(--gold);
+  font-size: 16px;
+  line-height: 1.7;
+  white-space: pre-line;
+}
+
 .tags {
   display: flex;
   flex-wrap: wrap;

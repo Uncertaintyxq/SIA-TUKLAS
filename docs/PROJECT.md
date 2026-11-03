@@ -51,6 +51,5 @@ The Laravel conversion is done. Next: tooling (`chore/ci`, `chore/larastan`), th
 
 ## Out of scope (for now)
 
-- Personal quotes on how the research was made (client Q&A 2a): not built.
 - Searching inside chat messages (they're encrypted; D7).
 - Passkeys sign-in (optional later).

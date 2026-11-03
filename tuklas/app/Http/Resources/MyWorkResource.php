@@ -24,6 +24,7 @@ class MyWorkResource extends WorkCardResource
             'submittedAt' => $this->submitted_at?->toISOString(),
             'versionCount' => (int) $this->versions_count,
             'hasPdf' => $this->pdf_file !== null,
+            'story' => $this->story,
             'isOwner' => $this->author_id === $request->user()?->id,
             'openItems' => $this->reviews->flatMap->revisionItems->where('confirmed_by_adviser', false)->count(),
             'latestReview' => $latest ? [

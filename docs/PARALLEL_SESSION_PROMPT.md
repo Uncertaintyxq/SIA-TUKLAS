@@ -3,7 +3,7 @@
 Paste everything below the line into a new Claude Code session. It is written so several sessions
 (on one machine or several) can build Tuklas features at the same time without picking the same
 feature or editing the same files. Update the **Assignment** section before each use (last updated
-2026-11-04, after `feat/work-metrics`).
+2026-11-04, after `feat/work-metrics` and `feat/research-story`).
 
 ---
 
@@ -67,12 +67,10 @@ decides when and who builds them, and they depend on the client's answer. If the
 build in that order: `feat/institutions` first, the other two depend on it.
 
 **Yours, in this order** (unless the user wants a different subset or order; ask which they want):
-1. `feat/research-story`: the "How we made this" section (`WorkController`, the work's Resource,
-   `WorkPage`, the work editor).
-2. `feat/mentions`: `@username` in comments and chat (`WorkController`, `WorkPage`, `ChatController`).
-3. `feat/library-browse`: filters and "Browse by department". Touches `FeedController` (index),
+1. `feat/mentions`: `@username` in comments and chat (`WorkController`, `WorkPage`, `ChatController`).
+2. `feat/library-browse`: filters and "Browse by department". Touches `FeedController` (index),
    `PublicationController` (index), `FeedPage`, `LibraryPage`, `components/feed/`.
-4. `feat/follow`: follows, the "Following" filter, and notifications to followers (`FeedController`,
+3. `feat/follow`: follows, the "Following" filter, and notifications to followers (`FeedController`,
    `FeedPage`, the approve and publish paths).
 
 The order groups features by the files they share: the work pages first, then the feed and the
@@ -116,10 +114,6 @@ Notes on the features (the product decisions are in `reference/FEATURES.md`):
 - **mentions:** people can only be mentioned where they can see the item (work view policy,
   conversation membership). Reuse the people search (`/api/people/search`, `Users/PeopleController`). Text is encrypted at
   rest; links are built by React, never by parsing text as HTML.
-- **research-story:** follow how `abstract` is stored and versioned (`WorkVersion`). It shows on
-  the work page only while the work is public (`WorkPolicy`). When it ships, update the
-  "Personal quotes" row in `tuklas/reference/README.md` and the out-of-scope line in
-  `docs/PROJECT.md`.
 
 ## 4. Avoiding conflicts
 

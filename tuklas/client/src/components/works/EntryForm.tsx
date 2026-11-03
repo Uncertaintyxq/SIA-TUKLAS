@@ -21,7 +21,11 @@ import { TopicOverlap } from './TopicOverlap';
 import styles from './EntryForm.module.css';
 
 /** What the form needs from an existing work to edit it. */
-export type EditableWork = Pick<WorkCard, 'id' | 'type' | 'title' | 'abstract' | 'tags' | 'authors' | 'adviser' | 'status'> & { pdfName?: string | null; hasPdf?: boolean };
+export type EditableWork = Pick<WorkCard, 'id' | 'type' | 'title' | 'abstract' | 'tags' | 'authors' | 'adviser' | 'status'> & {
+  pdfName?: string | null;
+  hasPdf?: boolean;
+  story?: string | null;
+};
 
 /**
  * The "New entry" form, also used to edit a draft and to revise and resubmit.
@@ -40,6 +44,7 @@ export function EntryForm({ open, onClose, work, onSaved }: { open: boolean; onC
   const [adviserId, setAdviserId] = useState<number>(work?.adviser.id ?? 0);
   const [title, setTitle] = useState(work?.title ?? '');
   const [abstract, setAbstract] = useState(work?.abstract ?? '');
+  const [story, setStory] = useState(work?.story ?? '');
   const [keywords, setKeywords] = useState(work?.tags.join(', ') ?? '');
   const [coAuthors, setCoAuthors] = useState<UserCard[]>(work?.authors.slice(1) ?? []);
   const [pdf, setPdf] = useState<File | null>(null);
@@ -60,7 +65,7 @@ export function EntryForm({ open, onClose, work, onSaved }: { open: boolean; onC
     }
     setBusy(submit ? 'submit' : 'draft');
     try {
-      const payload = { type, title, abstract, tags, adviserId, coAuthorIds: coAuthors.map((c) => c.id) };
+      const payload = { type, title, abstract, story, tags, adviserId, coAuthorIds: coAuthors.map((c) => c.id) };
       let id = work?.id;
       if (id) await update.mutateAsync({ id, ...payload });
       else id = (await create.mutateAsync({ ...payload, submit: false })).id;
@@ -144,6 +149,14 @@ export function EntryForm({ open, onClose, work, onSaved }: { open: boolean; onC
         />
         <TopicOverlap title={title} keywords={keywords} exclude={work?.id} />
         <TextAreaField label="Abstract" value={abstract} onChange={(e) => setAbstract(e.target.value)} required minLength={30} maxLength={6000} rows={7} />
+        <TextAreaField
+          label="How we made this (optional)"
+          value={story}
+          onChange={(e) => setStory(e.target.value)}
+          maxLength={3000}
+          rows={4}
+          hint="In your own words: how the idea started, what went wrong along the way, what you’d tell the next student. Your panel reads it with the work; it’s public once the work is approved."
+        />
 
         <div className={styles.coauthors}>
           <PeoplePicker

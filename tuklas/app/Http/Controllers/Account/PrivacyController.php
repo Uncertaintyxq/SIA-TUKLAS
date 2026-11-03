@@ -39,7 +39,7 @@ class PrivacyController extends Controller
             'links' => $me->links->map->only(['type', 'url', 'label']),
             'background' => $me->backgrounds->map->only(['degree', 'school', 'year']),
             'honors' => $me->honors->map->only(['kind', 'title', 'issuer', 'year', 'verified']),
-            'works' => $me->works()->with('versions')->get()->map(fn ($w) => $w->only(['id', 'type', 'title', 'abstract', 'tags', 'status', 'submitted_at', 'approved_at', 'created_at'])
+            'works' => $me->works()->with('versions')->get()->map(fn ($w) => $w->only(['id', 'type', 'title', 'abstract', 'story', 'tags', 'status', 'submitted_at', 'approved_at', 'created_at'])
                 + ['versions' => $w->versions->map->only(['version', 'title', 'note', 'submitted_at'])]),
             'publications' => $me->publications()->get()->map->only(['id', 'title', 'abstract', 'keywords', 'visibility', 'published_at']),
             'comments' => Comment::where('author_id', $me->id)->get()->map->only(['work_id', 'scope', 'text', 'created_at']),
