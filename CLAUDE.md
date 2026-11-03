@@ -14,7 +14,7 @@ The git root holds the docs; **the app lives in `tuklas/`**. Run every command b
 - Database: MySQL 8 (SQLite for quick local setups; tests use in-memory SQLite)
 - Frontend: React 19 + Vite + TypeScript in `tuklas/client/` (TanStack Query, CSS Modules, Framer Motion)
 - Tests: PHPUnit (`tests/Feature/<Module>`). Client: `tsc`, ESLint, `vite build`
-- Formatting: Laravel Pint (`pint.json`). Static analysis: Larastan, once `chore/larastan` lands
+- Formatting: Laravel Pint (`pint.json`). Static analysis: Larastan level 5 (`phpstan.neon`); CI runs both
 
 ## Commands (from `tuklas/`)
 
@@ -26,6 +26,7 @@ The git root holds the docs; **the app lives in `tuklas/`**. Run every command b
 | All tests | `php artisan test` |
 | One area | `php artisan test --filter=DeliverableTest` |
 | Format PHP | `vendor/bin/pint --dirty` (check only: `vendor/bin/pint --test`) |
+| Static analysis | `vendor/bin/phpstan analyse` (fix what it reports; no ignores without a reason) |
 | Client checks | `npm run typecheck`, `npm run lint`, `npm run build` |
 | Routes | `php artisan route:list --path=api` |
 
