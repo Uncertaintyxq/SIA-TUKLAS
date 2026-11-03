@@ -9,13 +9,24 @@ import { useMentionPicker } from '../ui/MentionInput';
 import { useToast } from '../ui/Toast';
 import styles from './MessageComposer.module.css';
 
-export function MessageComposer({ conversationId, parentId, placeholder }: { conversationId: number; parentId?: number; placeholder: string }) {
+export function MessageComposer({
+  conversationId,
+  parentId,
+  placeholder,
+  canMentionAll = false,
+}: {
+  conversationId: number;
+  parentId?: number;
+  placeholder: string;
+  /** Offer "@everyone" (a group channel, for the group's organizers) */
+  canMentionAll?: boolean;
+}) {
   const [text, setText] = useState('');
   const send = useSendMessage();
   const sendFile = useSendFile();
   const toast = useToast();
   const busy = send.isPending || sendFile.isPending;
-  const mention = useMentionPicker(text, setText, 'above');
+  const mention = useMentionPicker(text, setText, 'above', canMentionAll);
 
   const submit = (e?: FormEvent) => {
     e?.preventDefault();

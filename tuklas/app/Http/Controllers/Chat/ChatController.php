@@ -349,11 +349,31 @@ class ChatController extends Controller
     private function mention(Conversation $c, Message $m, User $me, string $previous = ''): void
     {
         $direct = $c->kind === ConversationKind::Direct;
+        $text = (string) $m->text;
         $members = $direct ? ConversationMember::where('conversation_id', $c->id)->pluck('user_id')->map(fn ($id) => (int) $id)->all() : [];
         $where = $direct ? 'in a message' : "in #{$c->name}".($c->group ? " ({$c->group->name})" : '');
-        Mentions::notify((string) $m->text, $me,
+        $link = "/messages/{$c->id}?m=".($m->parent_id ?? $m->id);
+
+        // "@everyone" / "@all": the whole group, newly in this text, from someone who organizes it
+        $everyone = [];
+        if ($this->mayMentionEveryone($c, $me) && Mentions::mentionsEveryone($text) && ! Mentions::mentionsEveryone($previous)) {
+            $everyone = array_values(array_diff($c->group->participantIds(), [$me->id]));
+            Mentions::notifyEveryone($everyone, $me, $where, $link);
+        }
+
+        Mentions::notify($text, $me,
             fn (User $u) => $direct ? in_array($u->id, $members, true) : $c->group !== null && Gate::forUser($u)->allows('open', $c->group),
-            $where, "/messages/{$c->id}?m=".($m->parent_id ?? $m->id), $previous);
+            $where, $link, $previous, alreadyTold: $everyone);
+    }
+
+    /**
+     * "@everyone" in a group channel: the people who organize the group (its adviser, mentors with the
+     * moderation right, the student leader, admins), so a big group isn't pinged by every member.
+     * Never in a direct chat, where there's only one other person.
+     */
+    private function mayMentionEveryone(Conversation $c, User $me): bool
+    {
+        return $c->kind === ConversationKind::Channel && $c->group !== null && Gate::forUser($me)->allows('organize', $c->group);
     }
 
     /** The sender can always remove their message; in a channel, so can the group's moderators. */
@@ -417,6 +437,8 @@ class ChatController extends Controller
             'kind' => $c->kind->value,
             'name' => $c->kind === ConversationKind::Direct ? ($other->name ?? 'Former member') : $c->name,
             'group' => $c->group?->only(['id', 'name']),
+            // The composer offers "@everyone" only to those it would notify for
+            'canMentionAll' => $this->mayMentionEveryone($c, $me),
             'other' => $other ? [...(new UserCardResource($other))->resolve(), 'online' => $online, 'lastSeenAt' => $online ? null : $other->last_seen_at?->toISOString()] : null,
             'lastMessage' => $last ? ['text' => $last->text, 'senderName' => $last->sender->name, 'createdAt' => $last->created_at->toISOString(), 'hasFile' => $last->file_name !== null] : null,
             'lastMessageAt' => $c->last_message_at->toISOString(),

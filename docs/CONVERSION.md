@@ -381,6 +381,10 @@ branch rule; the deployment plan is in [DEPLOYMENT.md](DEPLOYMENT.md).
   a channel. Notifications say who and where, never the text. People the post notifies anyway (a
   work's authors) aren't told twice, an edit only notifies newly mentioned people, and at most 10
   per message count. New notification category "Mentions" (push on, email off by default).
+  `@everyone` (or `@all`) in a group channel notifies the whole group, for the people who organize
+  it (adviser, mentors with the moderation right, the student leader, admins; `canMentionAll` on the
+  conversation). Nowhere else: in a direct chat or review thread everyone is told already, and a
+  public discussion would reach everyone. "all" and "everyone" are never given out as usernames.
 
 ## How the code is laid out (for the next modules)
 

@@ -29,6 +29,8 @@ Merged into `main` but not on <https://tuklas-sia-jm.japaneast.cloudapp.azure.co
 - The person mentioned gets a notification, and the mention links to their portfolio.
 - Only people who can see the message are told: someone outside a private chat or review thread
   isn't. The notification says who mentioned you and where, not what they wrote.
+- **@everyone** (or **@all**) in a group channel notifies everyone in the group. The adviser,
+  mentors and the student leader can use it; for other members it's plain text.
 - **Account and security → Notifications** has a new **Mentions** row: push is on and email is off
   to start with.
 

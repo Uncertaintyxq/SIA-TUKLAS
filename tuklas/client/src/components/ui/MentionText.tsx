@@ -9,6 +9,7 @@ import styles from './MentionText.module.css';
 
 // The character before the @ is captured (instead of a lookbehind) so older Safari can run it
 const MENTION = /(^|[^A-Za-z0-9_.@])@([a-z0-9][a-z0-9-]{1,39})/gi;
+const EVERYONE = ['everyone', 'all'];
 
 export function withMentions(text: string, keyPrefix = 'm'): ReactNode[] {
   const parts: ReactNode[] = [];
@@ -18,9 +19,16 @@ export function withMentions(text: string, keyPrefix = 'm'): ReactNode[] {
     if (at > last) parts.push(text.slice(last, at));
     const username = m[2]!.toLowerCase();
     parts.push(
-      <Link key={`${keyPrefix}-${at}`} to={`/u/${username}`} className={styles.mention}>
-        @{m[2]}
-      </Link>,
+      // "@everyone" / "@all" mean a whole group chat, not a person: highlighted, no link
+      EVERYONE.includes(username) ? (
+        <span key={`${keyPrefix}-${at}`} className={styles.mention}>
+          @{m[2]}
+        </span>
+      ) : (
+        <Link key={`${keyPrefix}-${at}`} to={`/u/${username}`} className={styles.mention}>
+          @{m[2]}
+        </Link>
+      ),
     );
     last = at + 1 + m[2]!.length;
   }
