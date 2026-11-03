@@ -12,6 +12,7 @@ use App\Models\Publication;
 use App\Models\User;
 use App\Models\Work;
 use App\Support\Cards;
+use App\Support\Followers;
 use App\Support\Reach;
 use App\Support\Uploads;
 use Illuminate\Database\Eloquent\Builder;
@@ -141,11 +142,14 @@ class PublicationController extends Controller
 
             return $p;
         });
+        if ($p->published_at !== null) {
+            Followers::tellAboutPublication($p);
+        }
 
         return response()->json(['id' => $p->id], 201);
     }
 
-    /** PUT /api/publications/{id} — the first move out of Draft stamps the publication date. */
+    /** PUT /api/publications/{id} — the first move out of Draft stamps the publication date and tells followers. */
     public function update(PublicationRequest $request, int $id): Response
     {
         /** @var User $me */
@@ -156,6 +160,7 @@ class PublicationController extends Controller
         }
         $this->check($request, $me);
 
+        $wasDraft = $p->published_at === null;
         DB::transaction(function () use ($request, $p) {
             $p->fill($request->fields());
             if ($request->visibility() !== PublicationVisibility::Draft) {
@@ -164,6 +169,10 @@ class PublicationController extends Controller
             $p->save();
             $p->coAuthors()->sync($request->byline());
         });
+        // Followers hear once, the first time it leaves Draft
+        if ($wasDraft && $p->published_at !== null) {
+            Followers::tellAboutPublication($p->unsetRelation('coAuthors'));
+        }
 
         return response()->noContent();
     }

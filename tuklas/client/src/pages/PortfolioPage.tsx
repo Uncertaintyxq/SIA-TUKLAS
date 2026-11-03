@@ -23,6 +23,7 @@ import { useMe } from '../api/auth';
 import { useDeleteBackground, useDeleteHonor, usePortfolio, useRemoveCv, useUploadCv, type Portfolio } from '../api/portfolio';
 import { BackgroundForm, HonorForm, LinksForm, ProfileForm } from '../components/portfolio/PortfolioForms';
 import { PublicationEntry } from '../components/publications/PublicationEntry';
+import { FollowButton } from '../components/people/FollowButton';
 import { ReportButton } from '../components/reports/ReportDialog';
 import { WorkEntry, useShare } from '../components/works/WorkEntry';
 import { Avatar } from '../components/ui/Avatar';
@@ -92,7 +93,7 @@ function PortfolioView({ username, editMode }: { username: string | undefined; e
           <Link to={`/u/${p.user.username}`}>/u/{p.user.username}</Link>.
         </Notice>
       )}
-      <Cover p={p} edit={edit} onEdit={() => open({ kind: 'profile' })} />
+      <Cover p={p} edit={edit} signedIn={Boolean(me)} onEdit={() => open({ kind: 'profile' })} />
 
       <div className={styles.layout}>
         <div className={styles.main}>
@@ -182,7 +183,7 @@ function EditButton({ label, onClick }: { label: string; onClick: () => void }) 
   );
 }
 
-function Cover({ p, edit, onEdit }: { p: Portfolio; edit: boolean; onEdit: () => void }) {
+function Cover({ p, edit, signedIn, onEdit }: { p: Portfolio; edit: boolean; signedIn: boolean; onEdit: () => void }) {
   const share = useShare();
   const { user } = p;
   const badgeTone = user.role === 'admin' ? 'neutral' : user.role === 'educator' ? (user.verified ? 'blue' : 'warn') : 'purple';
@@ -222,6 +223,7 @@ function Cover({ p, edit, onEdit }: { p: Portfolio; edit: boolean; onEdit: () =>
                 Edit portfolio
               </ButtonLink>
             )}
+            {!edit && signedIn && !p.isOwner && <FollowButton kind="person" target={String(user.id)} label={user.name} />}
             <Button icon={<Link2 size={16} aria-hidden="true" />} onClick={() => share(`/u/${user.username}`, 'Portfolio link')}>
               Share
             </Button>
@@ -252,6 +254,10 @@ function Cover({ p, edit, onEdit }: { p: Portfolio; edit: boolean; onEdit: () =>
         <div>
           <dt>Degrees &amp; diplomas</dt>
           <dd>{p.stats.degrees}</dd>
+        </div>
+        <div>
+          <dt>Followers</dt>
+          <dd>{p.followers.toLocaleString('en-US')}</dd>
         </div>
         <div>
           <dt>Views</dt>

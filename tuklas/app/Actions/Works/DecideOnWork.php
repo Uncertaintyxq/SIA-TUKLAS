@@ -9,6 +9,7 @@ use App\Models\RevisionItem;
 use App\Models\User;
 use App\Models\Work;
 use App\Support\Audit;
+use App\Support\Followers;
 use App\Support\Notifier;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -69,5 +70,8 @@ class DecideOnWork
             ReviewDecision::Reject => ['work_rejected', "{$me->name} marked “{$work->title}” as not approved."],
         };
         Notifier::notify($work->authorIds(), $type, $message, "/works/{$work->id}", $me->id);
+        if ($decision === ReviewDecision::Approve) {
+            Followers::tellAboutWork($work);
+        }
     }
 }

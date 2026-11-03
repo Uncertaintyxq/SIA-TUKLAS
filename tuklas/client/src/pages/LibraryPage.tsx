@@ -1,13 +1,15 @@
 /**
  * LibraryPage — /library. The student browsing view of educator research: search by title,
- * keyword or author, narrow by year, department and keyword, or browse by department, then open a
- * publication to read, cite and reference it.
+ * keyword or author, narrow by year, department and keyword, or browse by department (and follow
+ * one), then open a publication to read, cite and reference it.
  */
 import { Link, useSearchParams } from 'react-router-dom';
 import { Building2, Search, X } from 'lucide-react';
+import { useMe } from '../api/auth';
 import { useLibrary, useLibraryBrowse } from '../api/publications';
 import type { LibraryParams } from '../types/publications';
 import { PageHeader } from '../components/layout/PageHeader';
+import { FollowButton } from '../components/people/FollowButton';
 import { PublicationEntry } from '../components/publications/PublicationEntry';
 import { Button } from '../components/ui/Button';
 import { EmptyState } from '../components/ui/EmptyState';
@@ -27,6 +29,7 @@ export function LibraryPage() {
   const filters: LibraryParams = { q: term, year: params.get('year') ?? '', dept: params.get('dept') ?? '', keyword: params.get('keyword') ?? '' };
   const { data, isPending, isFetching } = useLibrary(filters);
   const { data: browse } = useLibraryBrowse();
+  const { data: me } = useMe();
   const narrowed = FILTERS.some((k) => filters[k]);
 
   const set = (key: 'q' | (typeof FILTERS)[number], value: string) =>
@@ -102,6 +105,7 @@ export function LibraryPage() {
               </option>
             ))}
           </SelectField>
+          {me && filters.dept && <FollowButton kind="department" target={filters.dept} label={filters.dept} />}
           {narrowed && (
             <Button variant="ghost" icon={<X size={16} aria-hidden="true" />} onClick={clearFilters}>
               Clear filters

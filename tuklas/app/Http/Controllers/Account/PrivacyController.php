@@ -9,6 +9,7 @@ use App\Models\Message;
 use App\Models\Report;
 use App\Models\User;
 use App\Support\Audit;
+use App\Support\Followers;
 use App\Support\NotificationPrefs;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -51,6 +52,7 @@ class PrivacyController extends Controller
             'reports' => Report::where('reporter_id', $me->id)->get()->map(fn (Report $r) => [
                 'type' => $r->target_type->value, 'reason' => $r->reason->value, 'details' => $r->details, 'status' => $r->status->value, 'createdAt' => $r->created_at->toISOString(),
             ]),
+            'following' => Followers::of($me),
             'eventRegistrations' => DB::table('event_registrations')->where('user_id', $me->id)->get(['event_id', 'created_at']),
             'opportunityApplications' => DB::table('opportunity_applications')->where('user_id', $me->id)->get(['opportunity_id', 'message', 'created_at']),
             'notifications' => $me->appNotifications()->latest('created_at')->get()->map->only(['type', 'message', 'read', 'created_at']),
