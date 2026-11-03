@@ -14,7 +14,7 @@ and [`tuklas/deploy/azure/README.md`](../tuklas/deploy/azure/README.md).
 | Site address | <https://tuklas-sia-jm.japaneast.cloudapp.azure.com> |
 | Demo accounts | One-click logins on the login page; the password for all of them is `tuklas123` |
 | Turns itself off | Every day at **11:00 PM Philippine time**, with an email 30 minutes before |
-| Updates | Automatic after `main` passes CI, once [automatic deploys](../tuklas/deploy/README.md#automatic-deploys) are set up; until then someone runs `deploy.sh` ([below](#put-a-new-version-live)) |
+| Updates | **Manual, for now:** someone runs `deploy.sh` on the server after changes reach `main` ([below](#put-a-new-version-live)). Automatic deploys from GitHub are built but not set up (paused 2026-11-04) |
 
 ## Three different terminals
 
@@ -90,27 +90,19 @@ only if everything worked, so a failed deploy leaves the site running as before.
 
 ## One-time steps waiting for the next deploy
 
-Some features need a small change on the server itself, once. Do these **before** the next
-`deploy.sh`, then delete each line here when it's done (in a docs branch).
+Some features need a small change on the server itself, once. When one does, it's listed here with
+the commands: do it **before** the next `deploy.sh`, then delete the line (in a docs branch).
 
-1. *(`feat/search-indexing`)* Let Laravel answer `/robots.txt`:
-   ```bash
-   sudo sed -i '/location = \/robots.txt/d' /etc/nginx/sites-available/tuklas
-   sudo nginx -t && sudo systemctl reload nginx
-   ```
-2. *(`feat/notification-settings`)* Run Laravel's scheduler every minute (it sends the weekly digest):
-   ```bash
-   echo '* * * * * www-data umask 002 && cd /var/www/tuklas/current && php artisan schedule:run >> /dev/null 2>&1' | sudo tee /etc/cron.d/tuklas
-   ```
-3. *(`chore/deploy-backups`)* The nightly backup: `git -C ~/SIA-TUKLAS pull`, then rerun
-   `sudo bash ~/SIA-TUKLAS/tuklas/deploy/setup-server.sh --domain tuklas-sia-jm.japaneast.cloudapp.azure.com`
-   (it keeps the `.env`; it installs `age`, the backup folder and the cron line), deploy, then
-   "Turn them on" in [`tuklas/deploy/README.md`](../tuklas/deploy/README.md#backups).
-4. *(`chore/deploy-pipeline`)* Automatic deploys from GitHub: "Automatic deploys" in
-   [`tuklas/deploy/README.md`](../tuklas/deploy/README.md#automatic-deploys) (a key for GitHub, one
-   line on the server, a `staging` environment in the repo settings).
-5. Optional: put the university's name in `/var/www/tuklas/shared/.env` as `TUKLAS_INSTITUTION=…`
-   (Google Scholar shows it on student research).
+**Nothing is waiting.** Done on 2026-11-01: the `/robots.txt` Nginx change, the scheduler and
+nightly backup (`setup-server.sh` re-run) and the backup key.
+
+Skipped or optional:
+- Automatic deploys from GitHub: paused on 2026-11-04, deploys are manual for now. The guide is
+  "Automatic deploys" in [`tuklas/deploy/README.md`](../tuklas/deploy/README.md#automatic-deploys).
+- An off-server copy of the backups (`rclone config`, `BACKUP_RCLONE_REMOTE`): do it before real
+  data goes on the server.
+- `TUKLAS_INSTITUTION=…` in `/var/www/tuklas/shared/.env`: leave it empty until the client says
+  whether Tuklas is one site per school or several schools on one site (`docs/TODO.md`, "Future").
 
 Staging writes emails to the log instead of sending them (`MAIL_MAILER=log`), so email settings
 and the digest can be tried there without a mail provider: read them in
