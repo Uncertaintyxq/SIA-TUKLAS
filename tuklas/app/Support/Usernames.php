@@ -14,6 +14,10 @@ class Usernames
         $base = substr(preg_replace('/[^a-z0-9]/', '', Str::lower(Str::before($email, '@'))) ?? '', 0, 30) ?: 'user';
         for ($n = 1; $n < 100; $n++) {
             $candidate = $n === 1 ? $base : $base.$n;
+            // "@all" and "@everyone" mean a whole group chat (Mentions), never one person
+            if (in_array($candidate, Mentions::EVERYONE, true)) {
+                continue;
+            }
             if (! User::where('username', $candidate)->exists()) {
                 return $candidate;
             }

@@ -14,6 +14,7 @@ use App\Models\User;
 use App\Support\Cards;
 use App\Support\Chat;
 use App\Support\Groups;
+use App\Support\Mentions;
 use App\Support\Uploads;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -143,6 +144,7 @@ class ChatController extends Controller
         }
 
         $m = $this->deliver($c, $me, ['parent_id' => $parentId, 'text' => $input['text']]);
+        $this->mention($c, $m, $me);
 
         return response()->json($this->view($m, true, $me->id), 201);
     }
@@ -167,7 +169,10 @@ class ChatController extends Controller
             $fields['file'] = $upload['file'];
         }
 
-        return response()->json($this->view($this->deliver($c, $me, $fields), true, $me->id), 201);
+        $m = $this->deliver($c, $me, $fields);
+        $this->mention($c, $m, $me);
+
+        return response()->json($this->view($m, true, $me->id), 201);
     }
 
     /** GET /api/chat/messages/{id}/replies — a thread: the message and its replies, oldest first */
@@ -192,7 +197,7 @@ class ChatController extends Controller
     {
         $me = $request->user();
         $m = Message::whereNull('deleted_at')->find($id) ?? throw new HttpException(404, self::NOT_FOUND);
-        $this->open($m->conversation_id, $me);
+        $c = $this->open($m->conversation_id, $me);
         if ($m->sender_id !== $me->id) {
             throw new HttpException(403, 'Only the sender can edit a message.');
         }
@@ -203,8 +208,11 @@ class ChatController extends Controller
         );
         $text = trim((string) $request->input('text', ''));
         if ($text !== $m->text) {
+            $before = $m->text;
             $m->forceFill(['text' => $text, 'edited_at' => now()])->save();
             Chat::announceChange($m->conversation_id, $m->id);
+            // Only people this edit newly mentions hear about it
+            $this->mention($c, $m, $me, $before);
         }
 
         return response()->json($this->view($this->withMessageData(Message::query())->findOrFail($m->id), true, $me->id));
@@ -333,6 +341,41 @@ class ChatController extends Controller
         return $this->withMessageData(Message::query())->findOrFail($m->id);
     }
 
+    /**
+     * Notifies people @mentioned in a message who can read the conversation: the two people in a
+     * direct chat, or the group's members in a channel. The link opens the conversation at the
+     * message (a reply opens at the message it answers).
+     */
+    private function mention(Conversation $c, Message $m, User $me, string $previous = ''): void
+    {
+        $direct = $c->kind === ConversationKind::Direct;
+        $text = (string) $m->text;
+        $members = $direct ? ConversationMember::where('conversation_id', $c->id)->pluck('user_id')->map(fn ($id) => (int) $id)->all() : [];
+        $where = $direct ? 'in a message' : "in #{$c->name}".($c->group ? " ({$c->group->name})" : '');
+        $link = "/messages/{$c->id}?m=".($m->parent_id ?? $m->id);
+
+        // "@everyone" / "@all": the whole group, newly in this text, from someone who organizes it
+        $everyone = [];
+        if ($this->mayMentionEveryone($c, $me) && Mentions::mentionsEveryone($text) && ! Mentions::mentionsEveryone($previous)) {
+            $everyone = array_values(array_diff($c->group->participantIds(), [$me->id]));
+            Mentions::notifyEveryone($everyone, $me, $where, $link);
+        }
+
+        Mentions::notify($text, $me,
+            fn (User $u) => $direct ? in_array($u->id, $members, true) : $c->group !== null && Gate::forUser($u)->allows('open', $c->group),
+            $where, $link, $previous, alreadyTold: $everyone);
+    }
+
+    /**
+     * "@everyone" in a group channel: the people who organize the group (its adviser, mentors with the
+     * moderation right, the student leader, admins), so a big group isn't pinged by every member.
+     * Never in a direct chat, where there's only one other person.
+     */
+    private function mayMentionEveryone(Conversation $c, User $me): bool
+    {
+        return $c->kind === ConversationKind::Channel && $c->group !== null && Gate::forUser($me)->allows('organize', $c->group);
+    }
+
     /** The sender can always remove their message; in a channel, so can the group's moderators. */
     private function mayDelete(Conversation $c, Message $m, User $me): bool
     {
@@ -394,6 +437,8 @@ class ChatController extends Controller
             'kind' => $c->kind->value,
             'name' => $c->kind === ConversationKind::Direct ? ($other->name ?? 'Former member') : $c->name,
             'group' => $c->group?->only(['id', 'name']),
+            // The composer offers "@everyone" only to those it would notify for
+            'canMentionAll' => $this->mayMentionEveryone($c, $me),
             'other' => $other ? [...(new UserCardResource($other))->resolve(), 'online' => $online, 'lastSeenAt' => $online ? null : $other->last_seen_at?->toISOString()] : null,
             'lastMessage' => $last ? ['text' => $last->text, 'senderName' => $last->sender->name, 'createdAt' => $last->created_at->toISOString(), 'hasFile' => $last->file_name !== null] : null,
             'lastMessageAt' => $c->last_message_at->toISOString(),

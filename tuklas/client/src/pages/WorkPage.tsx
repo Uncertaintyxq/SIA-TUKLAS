@@ -21,6 +21,8 @@ import { useShare } from '../components/works/WorkEntry';
 import { Button, ButtonLink } from '../components/ui/Button';
 import { EmptyState } from '../components/ui/EmptyState';
 import { TextAreaField } from '../components/ui/Field';
+import { useMentionPicker } from '../components/ui/MentionInput';
+import { withMentions } from '../components/ui/MentionText';
 import { Notice } from '../components/ui/Notice';
 import { Sheet, SheetEmpty } from '../components/ui/Sheet';
 import { Skeleton } from '../components/ui/Skeleton';
@@ -276,6 +278,7 @@ function Discussion({ work }: { work: WorkDetail }) {
   const { data: me } = useMe();
   const { report, dialog: reportDialog } = useReport();
   const [text, setText] = useState('');
+  const mention = useMentionPicker(text, setText);
   const discuss = useDiscuss();
   const remove = useDeleteDiscussion();
   const toast = useToast();
@@ -310,12 +313,24 @@ function Discussion({ work }: { work: WorkDetail }) {
                 </button>
               )}
             </div>
-            <p className={styles.commentText}>{c.text}</p>
+            <p className={styles.commentText}>{withMentions(c.text)}</p>
           </div>
         ))}
         {work.can.discuss ? (
           <form className={styles.reply} onSubmit={submit}>
-            <TextAreaField label="Add to the discussion" value={text} onChange={(e) => setText(e.target.value)} rows={3} maxLength={4000} required />
+            <div className={mention.anchor}>
+              <TextAreaField
+                label="Add to the discussion"
+                hint="Type @ and a name to mention someone."
+                value={text}
+                rows={3}
+                maxLength={4000}
+                required
+                {...mention.textareaProps}
+                onKeyDown={mention.onKeyDown}
+              />
+              {mention.list}
+            </div>
             <Button type="submit" icon={<Send size={16} aria-hidden="true" />} loading={discuss.isPending}>
               Comment
             </Button>

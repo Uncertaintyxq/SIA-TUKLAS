@@ -1,19 +1,32 @@
 /**
  * MessageComposer — the text box at the foot of a chat or thread. Enter sends, Shift+Enter adds a line,
- * the paperclip sends a file (with whatever is typed as its caption).
+ * "@" suggests people to mention, the paperclip sends a file (with whatever is typed as its caption).
  */
 import { useState, type FormEvent, type KeyboardEvent } from 'react';
 import { LoaderCircle, Paperclip, SendHorizontal } from 'lucide-react';
 import { useSendFile, useSendMessage } from '../../api/chat';
+import { useMentionPicker } from '../ui/MentionInput';
 import { useToast } from '../ui/Toast';
 import styles from './MessageComposer.module.css';
 
-export function MessageComposer({ conversationId, parentId, placeholder }: { conversationId: number; parentId?: number; placeholder: string }) {
+export function MessageComposer({
+  conversationId,
+  parentId,
+  placeholder,
+  canMentionAll = false,
+}: {
+  conversationId: number;
+  parentId?: number;
+  placeholder: string;
+  /** Offer "@everyone" (a group channel, for the group's organizers) */
+  canMentionAll?: boolean;
+}) {
   const [text, setText] = useState('');
   const send = useSendMessage();
   const sendFile = useSendFile();
   const toast = useToast();
   const busy = send.isPending || sendFile.isPending;
+  const mention = useMentionPicker(text, setText, 'above', canMentionAll);
 
   const submit = (e?: FormEvent) => {
     e?.preventDefault();
@@ -29,6 +42,8 @@ export function MessageComposer({ conversationId, parentId, placeholder }: { con
   };
 
   const onKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    // Enter picks a suggested person while the list is open, instead of sending
+    if (mention.onKeyDown(e)) return;
     if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
       e.preventDefault();
       submit();
@@ -58,16 +73,19 @@ export function MessageComposer({ conversationId, parentId, placeholder }: { con
       <label className="sr-only" htmlFor={`compose-${conversationId}-${parentId ?? 0}`}>
         {placeholder}
       </label>
-      <textarea
-        id={`compose-${conversationId}-${parentId ?? 0}`}
-        className={styles.input}
-        rows={1}
-        value={text}
-        maxLength={4000}
-        placeholder={placeholder}
-        onChange={(e) => setText(e.target.value)}
-        onKeyDown={onKeyDown}
-      />
+      <div className={`${mention.anchor} ${styles.field}`}>
+        <textarea
+          id={`compose-${conversationId}-${parentId ?? 0}`}
+          className={styles.input}
+          rows={1}
+          value={text}
+          maxLength={4000}
+          placeholder={placeholder}
+          {...mention.textareaProps}
+          onKeyDown={onKeyDown}
+        />
+        {mention.list}
+      </div>
       <button type="submit" className={styles.send} disabled={!text.trim() || busy}>
         <SendHorizontal size={19} aria-hidden="true" />
         <span className="sr-only">Send</span>

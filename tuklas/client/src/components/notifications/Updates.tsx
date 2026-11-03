@@ -5,7 +5,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import clsx from 'clsx';
-import { Bell, BookCheck, CalendarCheck, CircleAlert, MessageSquare, ShieldCheck, Users } from 'lucide-react';
+import { AtSign, Bell, BookCheck, CalendarCheck, CircleAlert, MessageSquare, ShieldCheck, Users } from 'lucide-react';
 import { useMarkRead, useNotifications } from '../../api/admin';
 import { relTime } from '../../lib/format';
 import { Sheet, SheetEmpty } from '../ui/Sheet';
@@ -13,6 +13,7 @@ import { Skeleton } from '../ui/Skeleton';
 import styles from './Updates.module.css';
 
 const iconFor = (type: string) => {
+  if (type === 'mention') return AtSign;
   if (type.startsWith('work_approved') || type === 'honor_verified' || type === 'educator_verified') return BookCheck;
   if (type.includes('revision') || type.includes('rejected') || type.includes('removed') || type.includes('declined')) return CircleAlert;
   if (type.includes('comment')) return MessageSquare;

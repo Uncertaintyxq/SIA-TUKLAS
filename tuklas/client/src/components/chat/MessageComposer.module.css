@@ -46,6 +46,12 @@
 }
 
 /* Grows with its content up to about six lines */
+/* Holds the text box and the mention suggestions */
+.field {
+  display: flex;
+  flex: 1;
+}
+
 .input {
   flex: 1;
   min-width: 0;

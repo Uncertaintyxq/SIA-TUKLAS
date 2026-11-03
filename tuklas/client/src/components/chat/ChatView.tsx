@@ -115,9 +115,12 @@ export function ChatView({ conversationId, embedded = false, backTo }: { convers
           <MessageComposer
             conversationId={conversationId}
             placeholder={conversation.kind === 'direct' ? `Message ${conversation.name}` : `Message #${conversation.name}`}
+            canMentionAll={conversation.canMentionAll}
           />
         </div>
-        {threadOf !== null && <ThreadPanel conversationId={conversationId} messageId={threadOf} onClose={() => setThreadOf(null)} meId={me?.id} />}
+        {threadOf !== null && (
+          <ThreadPanel conversationId={conversationId} messageId={threadOf} onClose={() => setThreadOf(null)} meId={me?.id} canMentionAll={conversation.canMentionAll} />
+        )}
       </div>
       {reportDialog}
     </section>
@@ -205,7 +208,19 @@ function useScrollKeeping(scroller: RefObject<HTMLDivElement | null>, firstId: n
   }, [firstId, lastId, highlight, scroller]);
 }
 
-function ThreadPanel({ conversationId, messageId, onClose, meId }: { conversationId: number; messageId: number; onClose: () => void; meId?: number }) {
+function ThreadPanel({
+  conversationId,
+  messageId,
+  onClose,
+  meId,
+  canMentionAll,
+}: {
+  conversationId: number;
+  messageId: number;
+  onClose: () => void;
+  meId?: number;
+  canMentionAll: boolean;
+}) {
   const { data, isPending, error } = useThread(messageId);
   const remove = useDeleteMessage();
   const toast = useToast();
@@ -260,7 +275,14 @@ function ThreadPanel({ conversationId, messageId, onClose, meId }: { conversatio
         )}
         <div ref={end} />
       </div>
-      {data && !data.parent.deleted && <MessageComposer conversationId={conversationId} parentId={messageId} placeholder={meId === data.parent.sender.id ? 'Add to your thread' : 'Reply in thread'} />}
+      {data && !data.parent.deleted && (
+        <MessageComposer
+          conversationId={conversationId}
+          parentId={messageId}
+          placeholder={meId === data.parent.sender.id ? 'Add to your thread' : 'Reply in thread'}
+          canMentionAll={canMentionAll}
+        />
+      )}
       {reportDialog}
     </aside>
   );

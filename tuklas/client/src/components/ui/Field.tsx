@@ -2,7 +2,7 @@
  * Field — labeled form controls: text input, select, text area and file picker.
  * Each wires its label, hint and error note to the control for screen readers.
  */
-import { useId, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes, type TextareaHTMLAttributes } from 'react';
+import { useId, type InputHTMLAttributes, type ReactNode, type Ref, type SelectHTMLAttributes, type TextareaHTMLAttributes } from 'react';
 import clsx from 'clsx';
 import styles from './Field.module.css';
 
@@ -53,7 +53,14 @@ export function SelectField({
   );
 }
 
-export function TextAreaField({ label, hint, error, className, ...area }: FieldProps & TextareaHTMLAttributes<HTMLTextAreaElement>) {
+export function TextAreaField({
+  label,
+  hint,
+  error,
+  className,
+  ref,
+  ...area
+}: FieldProps & TextareaHTMLAttributes<HTMLTextAreaElement> & { ref?: Ref<HTMLTextAreaElement> }) {
   const id = useId();
   return (
     <div className={clsx(styles.field, className)}>
@@ -65,6 +72,7 @@ export function TextAreaField({ label, hint, error, className, ...area }: FieldP
         className={clsx(styles.control, styles.area)}
         aria-invalid={error ? true : undefined}
         aria-describedby={error || hint ? `${id}-note` : undefined}
+        ref={ref}
         {...area}
       />
       <Note id={`${id}-note`} hint={hint} error={error} />

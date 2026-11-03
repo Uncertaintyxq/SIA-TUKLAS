@@ -9,9 +9,11 @@ use App\Models\Comment;
 use App\Models\Reaction;
 use App\Models\User;
 use App\Models\Work;
+use App\Support\Mentions;
 use App\Support\Notifier;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
@@ -62,6 +64,9 @@ class ReadingController extends Controller
         $work = $this->publicWork($id);
         $work->comments()->create(['author_id' => $me->id, 'text' => $text, 'scope' => CommentScope::Public]);
         Notifier::notify($work->authorIds(), 'work_comment', "{$me->name} commented on your published work “{$work->title}”.", "/works/{$work->id}#discussion", $me->id);
+        // A public work: anyone mentioned can read the discussion
+        Mentions::notify($text, $me, fn (User $u) => Gate::forUser($u)->allows('view', $work),
+            "in the discussion on “{$work->title}”", "/works/{$work->id}#discussion", alreadyTold: $work->authorIds());
 
         return response()->noContent(201);
     }
