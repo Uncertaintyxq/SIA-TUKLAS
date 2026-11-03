@@ -5,13 +5,16 @@ namespace App\Http\Controllers\Publications;
 use App\Enums\PublicationVisibility;
 use App\Enums\Role;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Feed\FeedController;
 use App\Http\Requests\Publications\PublicationRequest;
 use App\Http\Resources\PublicationCardResource;
 use App\Models\Publication;
 use App\Models\User;
+use App\Models\Work;
 use App\Support\Cards;
 use App\Support\Reach;
 use App\Support\Uploads;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -29,12 +32,17 @@ class PublicationController extends Controller
 {
     private const NOT_FOUND = 'That research doesn’t exist or isn’t published.';
 
-    /** GET /api/publications?q= — the library: published research the viewer may read, newest first. */
+    /** GET /api/publications?q=&year=&dept=&keyword= — the library: published research the viewer may read, newest first. */
     public function index(Request $request): AnonymousResourceCollection
     {
         $term = mb_strtolower(mb_substr(trim((string) $request->query('q', '')), 0, 80));
-        $rows = Cards::publications(Publication::query())
-            ->whereIn('visibility', $request->user() ? [PublicationVisibility::Internal, PublicationVisibility::Public] : [PublicationVisibility::Public])
+        $year = FeedController::year($request->query('year'));
+        $dept = mb_substr(trim((string) $request->query('dept', '')), 0, 160);
+        $keyword = mb_substr(trim((string) $request->query('keyword', '')), 0, 40);
+        $rows = Cards::publications($this->readable($request))
+            ->when($year !== null, fn ($q) => $q->whereYear('published_at', $year))
+            ->when($dept !== '', fn ($q) => $q->whereHas('author.profile', fn ($p) => $p->where('department', $dept)))
+            ->when($keyword !== '', fn ($q) => $q->whereJsonContains('keywords', $keyword))
             ->orderByDesc('published_at')
             ->limit(200)
             ->get()
@@ -43,6 +51,33 @@ class PublicationController extends Controller
             ->values();
 
         return PublicationCardResource::collection($rows);
+    }
+
+    /**
+     * GET /api/publications/browse — what the library can be browsed by: every department with how
+     * much research and how many student works it has, and the years and keywords research has.
+     * Counts only what the viewer may read (internal research needs an account).
+     */
+    public function browse(Request $request): JsonResponse
+    {
+        $research = $this->readable($request)->with('author.profile:user_id,department')->get(['id', 'author_id', 'keywords', 'published_at']);
+        $works = Work::public()->with('author.profile:user_id,department')->get(['id', 'author_id']);
+        $departmentOf = fn ($item) => $item->author?->profile?->department ?: null;
+        $researchBy = $research->map($departmentOf)->filter()->countBy();
+        $worksBy = $works->map($departmentOf)->filter()->countBy();
+
+        return response()->json([
+            'departments' => $researchBy->keys()->merge($worksBy->keys())->unique()->sort()->values()
+                ->map(fn (string $d) => ['name' => $d, 'research' => (int) ($researchBy[$d] ?? 0), 'works' => (int) ($worksBy[$d] ?? 0)]),
+            'years' => $research->map(fn (Publication $p) => $p->published_at?->year)->filter()->unique()->sortDesc()->values(),
+            'keywords' => FeedController::topKeywords($research->pluck('keywords')),
+        ]);
+    }
+
+    /** @return Builder<Publication> Published research the viewer may read: public, plus internal when signed in */
+    private function readable(Request $request): Builder
+    {
+        return Publication::query()->whereIn('visibility', $request->user() ? [PublicationVisibility::Internal, PublicationVisibility::Public] : [PublicationVisibility::Public]);
     }
 
     /** GET /api/publications/mine — everything I wrote or co-wrote, drafts included. */

@@ -3,7 +3,7 @@
 Paste everything below the line into a new Claude Code session. It is written so several sessions
 (on one machine or several) can build Tuklas features at the same time without picking the same
 feature or editing the same files. Update the **Assignment** section before each use (last updated
-2026-11-04, after `feat/work-metrics`, `feat/research-story` and `feat/mentions`).
+2026-11-04, after `feat/work-metrics`, `feat/research-story`, `feat/mentions` and `feat/library-browse`).
 
 ---
 
@@ -67,13 +67,11 @@ decides when and who builds them, and they depend on the client's answer. If the
 build in that order: `feat/institutions` first, the other two depend on it.
 
 **Yours, in this order** (unless the user wants a different subset or order; ask which they want):
-1. `feat/library-browse`: filters and "Browse by department". Touches `FeedController` (index),
-   `PublicationController` (index), `FeedPage`, `LibraryPage`, `components/feed/`.
-2. `feat/follow`: follows, the "Following" filter, and notifications to followers (`FeedController`,
+1. `feat/follow`: follows, the "Following" filter, and notifications to followers (`FeedController`,
    `FeedPage`, the approve and publish paths).
 
-Both change the feed (`FeedController`, `FeedPage`), so library-browse comes first and follow
-builds on it. Build them **one at a time**: merge each before starting the next, so the next one starts
+It changes the feed (`FeedController`, `FeedPage`), which `feat/library-browse` already extended
+with year, adviser and keyword filters: follow the same pattern for the "Following" filter. Build them **one at a time**: merge each before starting the next, so the next one starts
 from a `main` that already has it and shared files never conflict.
 
 Before each one:
@@ -100,9 +98,6 @@ git branch -r                           # what else is in flight; the scope hook
   the name to put in the Status the first time.
 
 Notes on the features (the product decisions are in `reference/FEATURES.md`):
-- **library-browse:** tags are JSON arrays (`works.tags`, `publications.keywords`): use
-  `whereJsonContains`, which works on SQLite and MySQL. Years come from `approved_at` /
-  `published_at`.
 - **follow:** a follow has a kind (person, department, tag). Followers hear when a followed
   person's work is approved (`Actions/Works/DecideOnWork.php`) or a publication becomes public
   (`PublicationController`); never about anything not public. The notification type needs a

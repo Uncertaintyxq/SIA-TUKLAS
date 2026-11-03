@@ -30,6 +30,12 @@
   max-width: 320px;
 }
 
+/* Year, adviser and keyword: narrower than the department list */
+.filter {
+  flex: 1 1 150px;
+  max-width: 220px;
+}
+
 .sort {
   display: grid;
   gap: var(--s-1);
