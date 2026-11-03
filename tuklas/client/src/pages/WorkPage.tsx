@@ -9,6 +9,7 @@ import { useMe } from '../api/auth';
 import { useDeleteDiscussion, useDeleteWork, useDiscuss, useSave, useSubmitWork, useWork, type WorkDetail } from '../api/works';
 import { Tuko } from '../components/brand/Tuko';
 import { Person } from '../components/people/Person';
+import { reachLabel } from '../components/portfolio/Reach';
 import { ReportButton, useReport } from '../components/reports/ReportDialog';
 import { CitationBox, QrBox, Reactions } from '../components/works/CiteAndShare';
 import { DefenseTracker } from '../components/works/DefenseTracker';
@@ -237,6 +238,7 @@ function ReadingTools({ work }: { work: WorkDetail }) {
     <Sheet title="Readers">
       <div className={styles.reading}>
         <Reactions work={work} canReact={Boolean(me)} />
+        <p className={styles.reach}>{reachLabel(work.views, work.downloads)}</p>
         <div className={styles.readingButtons}>
           {me && (
             <Button
