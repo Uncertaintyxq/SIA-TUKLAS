@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Works;
 
 use App\Http\Controllers\Controller;
 use App\Models\WorkVersion;
+use App\Support\Reach;
 use App\Support\Uploads;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -43,10 +44,13 @@ class WorkFileController extends Controller
         return response()->noContent();
     }
 
-    /** GET /api/works/{id}/pdf[?download=1] */
+    /** GET /api/works/{id}/pdf[?download=1] — opening it in a browser counts as a download (Reach) */
     public function show(Request $request, int $id): StreamedResponse
     {
         $work = WorkController::visible($id);
+        if ($work->pdf_file !== null) {
+            Reach::download($work, $request);
+        }
 
         return Uploads::serve($work->pdf_file, 'application/pdf', $work->pdf_name ?? 'work.pdf', $request->query('download') === '1');
     }

@@ -26,6 +26,9 @@ export interface PublicationCard {
   authors: UserCard[];
   department: string;
   hasPdf: boolean;
+  /** Reach: each reader counts once a day; only grows once it's published */
+  views: number;
+  downloads: number;
   publishedAt: string | null;
   createdAt: string;
   updatedAt: string;

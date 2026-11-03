@@ -357,6 +357,16 @@ branch rule; the deployment plan is in [DEPLOYMENT.md](DEPLOYMENT.md).
   server's VAPID keys (`php artisan tuklas:vapid-keys`; `deploy.sh` adds them once). Expired devices
   are forgotten; devices are in the data export and go with a deleted account.
 
+- 2026-11-04: `feat/work-metrics`. Works and publications count views and downloads
+  (`view_count`, `download_count`; `app/Support/Reach.php`). A view is opening a public work or a
+  non-draft publication through the API (so crawlers reading the page don't count); a download is
+  opening its PDF as a page of its own (`Sec-Fetch-Dest: document`), not the PDF embedded in the work
+  page. Each person or visitor counts once per item per day, and authors' own visits never count.
+  `content_hits` remembers who already counted today as an HMAC of the day and the account (or the IP
+  and browser), never the IP or browser themselves, and is emptied of earlier days every hour.
+  Counting writes straight to the table, so `updated_at` doesn't move. Shown on the work page
+  ("Readers"), the publication page, the portfolio's stats and a Reach panel on My research.
+
 ## How the code is laid out (for the next modules)
 
 - **Routes:** `routes/modules/<module>.php`, required from `routes/api.php`. Signed-in groups use

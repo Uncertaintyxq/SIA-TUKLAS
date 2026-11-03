@@ -7,9 +7,10 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { FilePlus2, ListChecks, PenLine, Users } from 'lucide-react';
 import { useMe } from '../api/auth';
 import { useGroups } from '../api/groups';
-import { useMyPublications } from '../api/publications';
+import { useMyPublications, type PublicationCard } from '../api/publications';
 import { useMyWorks, type MyWork } from '../api/works';
 import { PageHeader } from '../components/layout/PageHeader';
+import { ReachPanel, type ReachItem } from '../components/portfolio/Reach';
 import { PublicationEntry } from '../components/publications/PublicationEntry';
 import { EntryForm } from '../components/works/EntryForm';
 import { Journey } from '../components/works/Journey';
@@ -98,6 +99,7 @@ function StudentResearch() {
           )}
         </div>
         <aside className={styles.side}>
+          {works && <ReachPanel items={works.filter(isPublic).map(workReach)} />}
           <Groups />
         </aside>
       </div>
@@ -105,6 +107,12 @@ function StudentResearch() {
     </>
   );
 }
+
+// ---------- Reach: only public works and published research are read by others ----------
+
+const isPublic = (w: MyWork) => w.status === 'approved' && !w.removed;
+const workReach = (w: MyWork): ReachItem => ({ key: `w${w.id}`, title: w.title, to: `/works/${w.id}`, views: w.views, downloads: w.downloads });
+const publicationReach = (p: PublicationCard): ReachItem => ({ key: `p${p.id}`, title: p.title, to: `/publications/${p.id}`, views: p.views, downloads: p.downloads });
 
 // ---------- Educators: their own research, published directly ----------
 
@@ -168,6 +176,7 @@ function EducatorResearch() {
           )}
         </div>
         <aside className={styles.side}>
+          {publications && <ReachPanel items={[...publications.filter((p) => p.visibility !== 'draft').map(publicationReach), ...(works ?? []).filter(isPublic).map(workReach)]} />}
           <Groups />
         </aside>
       </div>
