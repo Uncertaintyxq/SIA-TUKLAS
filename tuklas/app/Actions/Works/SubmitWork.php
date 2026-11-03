@@ -19,6 +19,7 @@ class SubmitWork
                 'version' => $version,
                 'title' => $work->title,
                 'abstract' => $work->abstract,
+                'story' => $work->story,
                 'tags' => $work->tags,
                 'pdf_file' => $work->pdf_file,
                 'pdf_name' => $work->pdf_name,
