@@ -3,7 +3,7 @@
 Paste everything below the line into a new Claude Code session. It is written so several sessions
 (on one machine or several) can build Tuklas features at the same time without picking the same
 feature or editing the same files. Update the **Assignment** section before each use (last updated
-2026-11-04).
+2026-11-04, after `feat/work-metrics`).
 
 ---
 
@@ -67,20 +67,12 @@ decides when and who builds them, and they depend on the client's answer. If the
 build in that order: `feat/institutions` first, the other two depend on it.
 
 **Yours, in this order** (unless the user wants a different subset or order; ask which they want):
-1. `feat/work-metrics`: view and download counts. Touches `WorkController` (show),
-   `WorkFileController`, `PublicationController`, their Resources, and the client's `WorkPage`,
-   `PublicationPage`, `MyResearchPage` and `components/portfolio/`. **Special case:** Benz Ashley
-   Limbadan started this row (an empty "start" commit on origin, 2026-11-01) and the user is taking
-   it over, so the claim check below will say it's taken. Ask the user to confirm Benz Ashley knows,
-   then continue on that same branch instead of creating a new one:
-   `git fetch && git switch -c feat/work-metrics origin/feat/work-metrics`. If it has more commits
-   than the start commit, stop and ask the user.
-2. `feat/research-story`: the "How we made this" section. It changes the same files as
-   work-metrics (`WorkController`, the work's Resource, `WorkPage`, the work editor), so it follows it.
-3. `feat/mentions`: `@username` in comments and chat (`WorkController`, `WorkPage`, `ChatController`).
-4. `feat/library-browse`: filters and "Browse by department". Touches `FeedController` (index),
+1. `feat/research-story`: the "How we made this" section (`WorkController`, the work's Resource,
+   `WorkPage`, the work editor).
+2. `feat/mentions`: `@username` in comments and chat (`WorkController`, `WorkPage`, `ChatController`).
+3. `feat/library-browse`: filters and "Browse by department". Touches `FeedController` (index),
    `PublicationController` (index), `FeedPage`, `LibraryPage`, `components/feed/`.
-5. `feat/follow`: follows, the "Following" filter, and notifications to followers (`FeedController`,
+4. `feat/follow`: follows, the "Following" filter, and notifications to followers (`FeedController`,
    `FeedPage`, the approve and publish paths).
 
 The order groups features by the files they share: the work pages first, then the feed and the
@@ -90,7 +82,7 @@ from a `main` that already has it and shared files never conflict.
 Before each one:
 ```bash
 git fetch --prune
-git ls-remote --heads origin <branch>   # prints a line = claimed (except the work-metrics hand-over above)
+git ls-remote --heads origin <branch>   # prints a line = claimed, skip it
 git branch -r                           # what else is in flight; the scope hook also lists it at session start
 ```
 - If a branch is claimed by someone else, or its row says In progress under another name, skip to
@@ -108,16 +100,9 @@ git branch -r                           # what else is in flight; the scope hook
   git push -u origin <branch>
   ```
   The pushed branch is the claim; the Status line is for people reading the table. Ask the user for
-  the name to put in the Status the first time. For
-  `feat/work-metrics`, do the first three lines, then check out the existing branch as described
-  above instead of `git switch -c`.
+  the name to put in the Status the first time.
 
 Notes on the features (the product decisions are in `reference/FEATURES.md`):
-- **work-metrics:** one view and one download count per person or visitor per day, and no personal
-  data kept: never store IP addresses or user agents; if you need to tell repeat visits apart, use
-  a one-way hash that is deleted after the day, and tell the user what you chose. Views count when
-  a public work or publication is opened; downloads count in the PDF endpoints (`WorkFileController`,
-  `PublicationController`). Show the counts only on public pages and to the authors ("Reach" panel).
 - **library-browse:** tags are JSON arrays (`works.tags`, `publications.keywords`): use
   `whereJsonContains`, which works on SQLite and MySQL. Years come from `approved_at` /
   `published_at`.

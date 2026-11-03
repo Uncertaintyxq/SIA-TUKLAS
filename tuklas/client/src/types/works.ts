@@ -68,6 +68,9 @@ export interface WorkCard {
   removed: boolean;
   commentCount: number;
   reactionCount: number;
+  /** Reach: each reader counts once a day; only grows while the work is public */
+  views: number;
+  downloads: number;
   myReaction: ReactionKind | null;
   saved: boolean;
 }

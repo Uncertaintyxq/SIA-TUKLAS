@@ -39,6 +39,9 @@ class WorkCardResource extends JsonResource
             'removed' => $this->removed_at !== null,
             'commentCount' => $isPublic ? (int) $this->public_comments_count : 0,
             'reactionCount' => $isPublic ? (int) $this->reactions_total : 0,
+            // Reach: these only grow while the work is public (App\Support\Reach)
+            'views' => (int) $this->view_count,
+            'downloads' => (int) $this->download_count,
             'myReaction' => $this->reactions->first()?->kind->value,
             'saved' => $this->savedBy->isNotEmpty(),
         ];

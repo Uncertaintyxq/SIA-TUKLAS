@@ -15,6 +15,7 @@ import { EmptyState } from '../components/ui/EmptyState';
 import { Notice } from '../components/ui/Notice';
 import { Sheet } from '../components/ui/Sheet';
 import { Skeleton } from '../components/ui/Skeleton';
+import { reachLabel } from '../components/portfolio/Reach';
 import { useToast } from '../components/ui/Toast';
 import { publicationSource } from '../lib/citation';
 import { fmtDate } from '../lib/format';
@@ -52,6 +53,7 @@ export function PublicationPage() {
           <VisibilityBadge value={p.visibility} />
           {p.department && <span className={styles.dept}>{p.department}</span>}
           {p.publishedAt && <span className={styles.dept}>Published {fmtDate(p.publishedAt)}</span>}
+          {p.visibility !== 'draft' && <span className={styles.dept}>{reachLabel(p.views, p.downloads)}</span>}
         </div>
         <h1 className={styles.title}>{p.title}</h1>
         <ul className={styles.authors} aria-label="Authors">

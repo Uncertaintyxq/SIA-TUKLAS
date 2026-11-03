@@ -17,6 +17,7 @@ use App\Models\Reaction;
 use App\Models\User;
 use App\Models\Work;
 use App\Support\Cards;
+use App\Support\Reach;
 use App\Support\Topics;
 use App\Support\Uploads;
 use Illuminate\Http\JsonResponse;
@@ -121,6 +122,7 @@ class WorkController extends Controller
         if ($work === null || Gate::denies('view', $work)) {
             throw new HttpException(404, self::NOT_FOUND);
         }
+        Reach::view($work, $request);
 
         $insider = Gate::allows('insider', $work);
         $reviewer = Gate::allows('review', $work);

@@ -253,6 +253,14 @@ function Cover({ p, edit, onEdit }: { p: Portfolio; edit: boolean; onEdit: () =>
           <dt>Degrees &amp; diplomas</dt>
           <dd>{p.stats.degrees}</dd>
         </div>
+        <div>
+          <dt>Views</dt>
+          <dd>{p.stats.views.toLocaleString('en-US')}</dd>
+        </div>
+        <div>
+          <dt>Downloads</dt>
+          <dd>{p.stats.downloads.toLocaleString('en-US')}</dd>
+        </div>
       </dl>
     </section>
   );
