@@ -15,6 +15,8 @@ export interface WorkInput {
   type: WorkType;
   title: string;
   abstract: string;
+  /** "How we made this": optional, the researchers' own words (empty clears it) */
+  story?: string;
   /** At most 10 keywords */
   tags?: string[];
   adviserId: number;
@@ -119,6 +121,8 @@ export interface CommentView {
 
 export interface WorkDetail extends WorkCard {
   pdfName: string | null;
+  /** "How we made this": the panel sees it during review, everyone once the work is public */
+  story: string | null;
   submittedAt: string | null;
   createdAt: string;
   updatedAt: string;
@@ -150,6 +154,7 @@ export interface MyWork extends WorkCard {
   submittedAt: string | null;
   versionCount: number;
   hasPdf: boolean;
+  story: string | null;
   isOwner: boolean;
   openItems: number;
   latestReview: { decision: ReviewDecision; comment: string | null; reviewerName: string; createdAt: string } | null;

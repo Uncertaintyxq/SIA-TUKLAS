@@ -141,6 +141,8 @@ class WorkController extends Controller
         return response()->json([
             ...(new WorkCardResource($work))->resolve($request),
             'pdfName' => $work->pdf_file ? ($work->pdf_name ?? 'work.pdf') : null,
+            // "How we made this": the panel reads it during review; everyone once the work is public
+            'story' => $open || $insider ? $work->story : null,
             'submittedAt' => $work->submitted_at?->toISOString(),
             'createdAt' => $work->created_at->toISOString(),
             'updatedAt' => $work->updated_at->toISOString(),
@@ -193,7 +195,7 @@ class WorkController extends Controller
         $work = DB::transaction(function () use ($request, $me, $coAuthors) {
             $work = new Work([
                 'type' => $request->validated('type'), 'title' => $request->validated('title'),
-                'abstract' => $request->validated('abstract'), 'tags' => $request->tags(), 'adviser_id' => $request->integer('adviserId'),
+                'abstract' => $request->validated('abstract'), 'story' => $request->story(), 'tags' => $request->tags(), 'adviser_id' => $request->integer('adviserId'),
             ]);
             $work->author()->associate($me)->save();
             $work->coAuthors()->sync(self::bylineOrder($coAuthors));
@@ -221,7 +223,7 @@ class WorkController extends Controller
         DB::transaction(function () use ($request, $work, $coAuthors) {
             $work->update([
                 'type' => $request->validated('type'), 'title' => $request->validated('title'),
-                'abstract' => $request->validated('abstract'), 'tags' => $request->tags(), 'adviser_id' => $request->integer('adviserId'),
+                'abstract' => $request->validated('abstract'), 'story' => $request->story(), 'tags' => $request->tags(), 'adviser_id' => $request->integer('adviserId'),
             ]);
             $work->coAuthors()->sync(self::bylineOrder($coAuthors));
         });

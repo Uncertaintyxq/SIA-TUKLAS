@@ -15,6 +15,8 @@ class WorkRequest extends FormRequest
             'type' => ['required', Rule::enum(WorkType::class)],
             'title' => ['required', 'string', 'min:5', 'max:180'],
             'abstract' => ['required', 'string', 'min:30', 'max:6000'],
+            // "How we made this": optional, the researchers' own words (client Q&A 2a)
+            'story' => ['nullable', 'string', 'max:3000'],
             'tags' => ['array', 'max:10'],
             'tags.*' => ['required', 'string', 'min:1', 'max:40'],
             'adviserId' => ['required', 'integer', 'min:1'],
@@ -30,10 +32,19 @@ class WorkRequest extends FormRequest
         return [
             'title.*' => 'Give the work a title of at least 5 characters',
             'abstract.*' => 'Write an abstract of at least 30 characters',
+            'story.*' => 'Keep “How we made this” under 3,000 characters',
             'tags.max' => 'Use at most 10 keywords',
             'adviserId.*' => 'Choose a research adviser',
             'coAuthorIds.max' => 'Add at most 10 co-authors',
         ];
+    }
+
+    /** "How we made this", or null when it's left empty */
+    public function story(): ?string
+    {
+        $story = trim((string) $this->validated('story', ''));
+
+        return $story === '' ? null : $story;
     }
 
     /** @return list<string> */

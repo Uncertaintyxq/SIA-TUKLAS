@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /** A snapshot taken at every submission, so each resubmission is kept. */
-#[Fillable(['version', 'title', 'abstract', 'tags', 'pdf_file', 'pdf_name', 'note', 'submitted_at'])]
+#[Fillable(['version', 'title', 'abstract', 'story', 'tags', 'pdf_file', 'pdf_name', 'note', 'submitted_at'])]
 class WorkVersion extends Model
 {
     public $timestamps = false;

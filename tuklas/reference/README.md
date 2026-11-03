@@ -30,5 +30,5 @@ Each `.pdf` is the original record. The `.md` files hold the same text in search
 | Portfolio order | Built (`/u/<username>`) |
 | Appearance options | Modern and Classic (2000s LinkedIn), each light or dark |
 | "Educator" vs "Research adviser" | Settled: "Educator" is the role, "Research adviser" is used in review copy (PLAN.md §8) |
-| Personal quotes on how the research was made (Q&A 2a) | **Not built.** Works have no field for it |
+| Personal quotes on how the research was made (Q&A 2a) | Built: an optional "How we made this" section on a work, written with the draft, public once approved (`feat/research-story`) |
 | Advisers post their students' papers (Q&A 6) | **Different in the build:** students submit, and the adviser reviews and approves |
