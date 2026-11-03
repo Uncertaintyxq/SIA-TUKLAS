@@ -60,12 +60,6 @@ rules, hooks, and the `/start-task` and `/finish-task` commands). Also read:
 
 ## 3. Assignment
 
-**Taken by someone else (don't start these; don't edit their files without asking the user):**
-- `feat/work-metrics`: Benz Ashley Limbadan's branch (view and download counts). On 2026-11-04 it
-  had only its start commit. It will change `WorkController` (show), `WorkFileController`,
-  `PublicationController`, their Resources, and the client's `WorkPage`, `PublicationPage`,
-  `MyResearchPage` and `components/portfolio/`.
-
 **Not yours unless the user says so (don't claim):** the three rows in "Several schools on one site"
 (`feat/institutions`, `feat/institution-scoping`, `feat/institution-admins`). They must be done
 before real student data goes on a server (`docs/TODO.md`, "Before real student data"), but the user
@@ -73,25 +67,36 @@ decides when and who builds them, and they depend on the client's answer. If the
 build in that order: `feat/institutions` first, the other two depend on it.
 
 **Yours, in this order** (unless the user wants a different subset or order; ask which they want):
-1. `feat/library-browse`: filters and "Browse by department". Touches `FeedController` (index),
+1. `feat/work-metrics`: view and download counts. Touches `WorkController` (show),
+   `WorkFileController`, `PublicationController`, their Resources, and the client's `WorkPage`,
+   `PublicationPage`, `MyResearchPage` and `components/portfolio/`. **Special case:** Benz Ashley
+   Limbadan started this row (an empty "start" commit on origin, 2026-11-01) and the user is taking
+   it over, so the claim check below will say it's taken. Ask the user to confirm Benz Ashley knows,
+   then continue on that same branch instead of creating a new one:
+   `git fetch && git switch -c feat/work-metrics origin/feat/work-metrics`. If it has more commits
+   than the start commit, stop and ask the user.
+2. `feat/research-story`: the "How we made this" section. It changes the same files as
+   work-metrics (`WorkController`, the work's Resource, `WorkPage`, the work editor), so it follows it.
+3. `feat/mentions`: `@username` in comments and chat (`WorkController`, `WorkPage`, `ChatController`).
+4. `feat/library-browse`: filters and "Browse by department". Touches `FeedController` (index),
    `PublicationController` (index), `FeedPage`, `LibraryPage`, `components/feed/`.
-2. `feat/follow`: follows, the "Following" filter, and notifications to followers.
-3. `feat/mentions`: `@username` in comments and chat.
-4. `feat/research-story`: the "How we made this" section. **Last**, because it overlaps
-   `feat/work-metrics` most (`WorkController`, the work's Resource, `WorkPage`, the work editor).
-   Start it after work-metrics has merged if you can.
+5. `feat/follow`: follows, the "Following" filter, and notifications to followers (`FeedController`,
+   `FeedPage`, the approve and publish paths).
+
+The order groups features by the files they share: the work pages first, then the feed and the
+library. Build them **one at a time**: merge each before starting the next, so the next one starts
+from a `main` that already has it and shared files never conflict.
 
 Before each one:
 ```bash
 git fetch --prune
-git ls-remote --heads origin <branch>                     # prints a line = claimed, skip it
-git diff --stat origin/main...origin/feat/work-metrics    # what Benz Ashley's branch changes so far
+git ls-remote --heads origin <branch>   # prints a line = claimed (except the work-metrics hand-over above)
+git branch -r                           # what else is in flight; the scope hook also lists it at session start
 ```
-- If it's claimed, or its row says In progress, skip to the next. Tell the user which one you
-  picked before claiming it.
-- If `feat/work-metrics` already changes a file you need, keep your change to different functions
-  and regions of it, small and append-only, and tell the user. If it has merged, rebase on `main`
-  first.
+- If a branch is claimed by someone else, or its row says In progress under another name, skip to
+  the next. Tell the user which one you picked before claiming it.
+- If another branch on origin changes a file you need, keep your change to different functions and
+  regions of it, small and append-only, and tell the user.
 - **Claim it** before writing code: mark the row, then make the branch. `/start-task <branch>` does
   all of this and asks you to approve each push; the steps are:
   ```bash
@@ -103,9 +108,16 @@ git diff --stat origin/main...origin/feat/work-metrics    # what Benz Ashley's b
   git push -u origin <branch>
   ```
   The pushed branch is the claim; the Status line is for people reading the table. Ask the user for
-  the name to put in the Status the first time.
+  the name to put in the Status the first time. For
+  `feat/work-metrics`, do the first three lines, then check out the existing branch as described
+  above instead of `git switch -c`.
 
 Notes on the features (the product decisions are in `reference/FEATURES.md`):
+- **work-metrics:** one view and one download count per person or visitor per day, and no personal
+  data kept: never store IP addresses or user agents; if you need to tell repeat visits apart, use
+  a one-way hash that is deleted after the day, and tell the user what you chose. Views count when
+  a public work or publication is opened; downloads count in the PDF endpoints (`WorkFileController`,
+  `PublicationController`). Show the counts only on public pages and to the authors ("Reach" panel).
 - **library-browse:** tags are JSON arrays (`works.tags`, `publications.keywords`): use
   `whereJsonContains`, which works on SQLite and MySQL. Years come from `approved_at` /
   `published_at`.
