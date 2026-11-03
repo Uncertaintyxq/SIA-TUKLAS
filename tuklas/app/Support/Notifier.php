@@ -18,7 +18,7 @@ use Illuminate\Support\Str;
  * work_revision, work_approved, work_rejected, work_comment, work_removed, educator_signup,
  * educator_verified, educator_rights, event_proposed, event_approved, event_rejected,
  * event_cancelled, ad_requested, ad_approved, ad_rejected, honor_claimed, honor_verified,
- * honor_declined, group_added, group_role, group_deadline, group_deliverable, group_orphaned, adviser_left, opportunity_application, announcement.
+ * honor_declined, group_added, group_role, group_deadline, group_deliverable, group_orphaned, adviser_left, opportunity_application, announcement, mention.
  */
 class Notifier
 {

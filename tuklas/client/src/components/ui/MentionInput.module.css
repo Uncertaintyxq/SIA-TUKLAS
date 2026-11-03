@@ -1,0 +1,62 @@
+/* The textarea's wrapper: the list is placed against it */
+.anchor {
+  position: relative;
+  min-width: 0;
+}
+
+.list {
+  position: absolute;
+  left: 0;
+  z-index: 20;
+  width: min(320px, 100%);
+  max-height: 280px;
+  margin: 0;
+  padding: var(--s-1);
+  overflow-y: auto;
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius-control);
+  background: var(--sheet);
+  box-shadow: var(--lift-2);
+  list-style: none;
+}
+
+/* Under a form's text box; above the chat composer, which sits at the bottom of the screen */
+.below {
+  top: calc(100% + 4px);
+}
+
+.above {
+  bottom: calc(100% + 4px);
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: var(--tap);
+  padding: var(--s-1) var(--s-2);
+  border-radius: var(--radius-control);
+  cursor: pointer;
+}
+
+.option[aria-selected='true'],
+.option:hover {
+  background: color-mix(in srgb, var(--lavender) 45%, var(--sheet));
+}
+
+.who {
+  display: grid;
+  min-width: 0;
+}
+
+.name {
+  font-weight: 650;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.handle {
+  color: var(--text-faint);
+  font-size: var(--fs-small);
+}

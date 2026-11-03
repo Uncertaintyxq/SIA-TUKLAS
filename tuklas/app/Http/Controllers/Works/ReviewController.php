@@ -10,6 +10,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Works\DecisionRequest;
 use App\Models\RevisionItem;
 use App\Models\User;
+use App\Support\Mentions;
 use App\Support\Notifier;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -65,6 +66,9 @@ class ReviewController extends Controller
         $work->comments()->create(['author_id' => $me->id, 'text' => $text, 'scope' => CommentScope::Review]);
         $to = $work->isAuthor($me) ? [$work->adviser_id, ...$work->authorIds()] : $work->authorIds();
         Notifier::notify($to, 'work_comment', "{$me->name} commented on “{$work->title}”.", "/works/{$work->id}", $me->id);
+        // Only the authors, the adviser, mentors on the panel and admins can read the review thread
+        Mentions::notify($text, $me, fn (User $u) => Gate::forUser($u)->allows('insider', $work),
+            "in the review thread of “{$work->title}”", "/works/{$work->id}", alreadyTold: $to);
 
         return response()->noContent(201);
     }
