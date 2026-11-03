@@ -86,9 +86,9 @@ update (`docs/STAGING_SERVER.md`, "One-time steps"); until then, staging runs th
   - static analysis (Larastan, level 5)
   - the React app's types, lint and build
   - a backup-and-restore test
-- **Automatic deploys:** once set up (`tuklas/deploy/README.md`, "Automatic deploys"), staging
-  updates itself after each merge that passes the checks. Release tags deploy to production after
-  an approval.
+- **Deploys are manual for now:** after a merge, someone runs `deploy.sh` on the server. A GitHub
+  workflow that deploys staging after each passing merge (and production on a release tag, after an
+  approval) is built but not set up (`tuklas/deploy/README.md`, "Automatic deploys").
 - **Nightly encrypted backups** at 10:30 PM, of the database and uploads, kept 30 days, with a
   restore script. The server can make backups but can't read them; the key lives in the team's
   password manager. Each deploy that changes the database takes a backup first.
