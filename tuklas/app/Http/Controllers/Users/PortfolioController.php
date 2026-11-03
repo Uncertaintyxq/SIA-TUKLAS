@@ -66,6 +66,9 @@ class PortfolioController extends Controller
                 'publications' => $publications->count(),
                 'verifiedHonors' => $user->honors->where('verified', true)->count(),
                 'degrees' => $user->backgrounds->count(),
+                // Reach of their own works and research on this page (not the works they advised)
+                'views' => (int) ($works->sum('view_count') + $publications->sum('view_count')),
+                'downloads' => (int) ($works->sum('download_count') + $publications->sum('download_count')),
             ],
             'isOwner' => $isOwner,
         ]);

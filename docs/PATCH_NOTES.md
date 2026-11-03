@@ -1,5 +1,22 @@
 # Tuklas patch notes
 
+## Next update (not on staging yet)
+
+Merged into `main` but not on <https://tuklas-sia-jm.japaneast.cloudapp.azure.com> until the next
+`deploy.sh`.
+
+### New for everyone
+
+**How often research is read**
+- Each public work and publication shows how many times it was **viewed** and its PDF
+  **downloaded**: on the work page (under the reactions) and on the publication page.
+- Portfolios show the total views and downloads of the person's own works and research.
+- **My research** has a **Reach** panel: your totals and your most-read works.
+- Each reader counts once a day, and your own visits don't count. The PDF shown inside the work
+  page doesn't count as a download; opening or downloading the PDF does.
+- Privacy: Tuklas doesn't keep who viewed what. To count each reader once a day it keeps a scrambled
+  code for the day, never your IP address or browser, and deletes it the next day.
+
 ## Staging update 1 (November 2026)
 
 Everything added since staging first went live at

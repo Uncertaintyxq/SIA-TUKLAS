@@ -71,6 +71,7 @@ export interface Portfolio {
   mentored: WorkCard[];
   /** Research this educator published: Public for everyone, Internal too for signed-in viewers */
   publications: PublicationCard[];
-  stats: { published: number; mentored: number; publications: number; verifiedHonors: number; degrees: number };
+  /** views and downloads: the reach of their own works and research on the page */
+  stats: { published: number; mentored: number; publications: number; verifiedHonors: number; degrees: number; views: number; downloads: number };
   isOwner: boolean;
 }

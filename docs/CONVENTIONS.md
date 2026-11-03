@@ -16,7 +16,10 @@ what a formatter can't. When this file and the existing code disagree, follow th
   database defaults (strict mode is on outside production). Attributes added by `withCount` /
   `withExists` get a `@property-read` line on the model.
 - Larastan (level 5, `phpstan.neon`) runs in CI: `vendor/bin/phpstan analyse`. Fix what it reports;
-  an ignore needs a comment saying why.
+  an ignore needs a comment saying why. After a migration adds columns, run
+  `vendor/bin/phpstan clear-result-cache` first: cached results don't know a model gained columns,
+  so files you didn't touch still report them as missing. Name each table in its own
+  `Schema::table('works', …)` call; Larastan can't follow a loop over table names.
 - Event listeners never return `false`: it stops the remaining listeners (`fn ($e) => $x && Audit::log(...)`
   returns false). Use a block closure.
 - Validation: `$request->validate([...], [messages])` for small endpoints, a Form Request in

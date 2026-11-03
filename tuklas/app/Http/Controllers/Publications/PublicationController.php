@@ -10,6 +10,7 @@ use App\Http\Resources\PublicationCardResource;
 use App\Models\Publication;
 use App\Models\User;
 use App\Support\Cards;
+use App\Support\Reach;
 use App\Support\Uploads;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -61,6 +62,7 @@ class PublicationController extends Controller
     {
         $viewer = $request->user();
         $p = $this->visible($id);
+        Reach::view($p, $request);
 
         return response()->json([
             ...(new PublicationCardResource($p))->resolve($request),
@@ -75,10 +77,13 @@ class PublicationController extends Controller
         ]);
     }
 
-    /** GET /api/publications/{id}/pdf[?download=1] */
+    /** GET /api/publications/{id}/pdf[?download=1] — opening it in a browser counts as a download (Reach) */
     public function pdf(Request $request, int $id): StreamedResponse
     {
         $p = $this->visible($id);
+        if ($p->pdf_file !== null) {
+            Reach::download($p, $request);
+        }
 
         return Uploads::serve($p->pdf_file, 'application/pdf', $p->pdf_name ?? 'research.pdf', $request->query('download') === '1');
     }
