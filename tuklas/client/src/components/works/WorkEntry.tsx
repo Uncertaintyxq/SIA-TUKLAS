@@ -53,7 +53,7 @@ export function WorkEntry({ work: w, compact = false }: { work: WorkCard; compac
         <ul className={styles.tags} aria-label="Keywords">
           {w.tags.map((t) => (
             <li key={t}>
-              <Link to={`/feed?q=${encodeURIComponent(t)}`} className={styles.tag}>
+              <Link to={`/feed?tag=${encodeURIComponent(t)}`} className={styles.tag}>
                 #{t}
               </Link>
             </li>

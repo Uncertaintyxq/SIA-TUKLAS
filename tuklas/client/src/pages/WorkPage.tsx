@@ -94,7 +94,7 @@ export function WorkPage() {
               <ul className={styles.tags} aria-label="Keywords">
                 {work.tags.map((t) => (
                   <li key={t}>
-                    <Link to={`/feed?q=${encodeURIComponent(t)}`} className={styles.tag}>
+                    <Link to={`/feed?tag=${encodeURIComponent(t)}`} className={styles.tag}>
                       #{t}
                     </Link>
                   </li>
