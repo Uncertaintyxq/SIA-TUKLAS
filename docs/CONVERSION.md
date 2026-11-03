@@ -367,6 +367,12 @@ branch rule; the deployment plan is in [DEPLOYMENT.md](DEPLOYMENT.md).
   Counting writes straight to the table, so `updated_at` doesn't move. Shown on the work page
   ("Readers"), the publication page, the portfolio's stats and a Reach panel on My research.
 
+- 2026-11-04: `feat/research-story`. Works have an optional "How we made this" (`works.story`, up to
+  3,000 characters): the researchers' own words on how the work was made or conceived (client Q&A 2a).
+  Written in the entry form with the draft, kept in each submitted version like the abstract
+  (`work_versions.story`), read by the panel during review and shown to everyone once the work is
+  public. It's in the data export; demo work 1 has one.
+
 ## How the code is laid out (for the next modules)
 
 - **Routes:** `routes/modules/<module>.php`, required from `routes/api.php`. Signed-in groups use

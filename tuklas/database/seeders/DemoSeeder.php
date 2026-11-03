@@ -209,6 +209,11 @@ class DemoSeeder extends Seeder
         }
         DB::table('work_authors')->insert(['work_id' => 7, 'user_id' => self::ANDREA, 'order' => 1]);
 
+        // "How we made this" (client Q&A 2a) on the flood mesh, so the demo shows the section
+        $story = "It started during a typhoon in my second year, when our barangay hall lost cell signal for two days and the tanods relayed river levels by motorbike.\n\nThe first gateway we built drowned in a rain gutter. The version in this paper sits in a recycled cooler box on the hall's roof, and the barangay captain still calls it \"the cooler\".";
+        Work::whereKey(1)->update(['story' => $story]);
+        WorkVersion::where('work_id', 1)->update(['story' => $story]);
+
         foreach ([
             [1, 1, self::SANTOS, 'start_review', null, 38],
             [2, 1, self::SANTOS, 'approve', 'Excellent field work. Approved for publication.', 12],

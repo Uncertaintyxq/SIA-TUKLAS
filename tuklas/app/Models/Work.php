@@ -18,7 +18,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property-read int|null $public_comments_count Public discussion comments (Cards::works)
  * @property-read int|null $reactions_total All reactions (Cards::works)
  */
-#[Fillable(['type', 'title', 'abstract', 'tags', 'adviser_id'])]
+#[Fillable(['type', 'title', 'abstract', 'story', 'tags', 'adviser_id'])]
 class Work extends Model
 {
     /** Column defaults, so a new model has them before it's reloaded. */

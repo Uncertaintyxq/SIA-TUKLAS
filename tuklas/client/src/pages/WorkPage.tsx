@@ -101,6 +101,12 @@ export function WorkPage() {
             )}
           </Sheet>
 
+          {work.story && (
+            <Sheet title="How we made this">
+              <p className={styles.story}>{work.story}</p>
+            </Sheet>
+          )}
+
           {work.pdfName && (
             <Sheet
               title="Full text"
