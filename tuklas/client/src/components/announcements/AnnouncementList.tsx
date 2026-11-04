@@ -55,5 +55,5 @@ export function AnnouncementList({
 export function canPostTo(audiences: AnnouncementsResponse['audiences'] | undefined, groupId?: number) {
   if (!audiences) return false;
   if (groupId) return audiences.groups.some((g) => g.id === groupId);
-  return audiences.system || audiences.departments.length > 0 || audiences.groups.length > 0;
+  return audiences.system || audiences.schools.length > 0 || audiences.departments.length > 0 || audiences.groups.length > 0;
 }

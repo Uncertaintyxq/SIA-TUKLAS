@@ -42,7 +42,9 @@ class OpportunityController extends Controller
     public function store(OpportunityRequest $request): JsonResponse
     {
         Gate::authorize('organize');
-        $o = new Opportunity($request->validated());
+        $o = new Opportunity([...$request->validated(), 'audience' => $request->validated('audience') ?? 'school']);
+        // The poster's school (docs/decisions/0002)
+        $o->institution_id = $request->user()->institution_id;
         $o->adviser()->associate($request->user())->save();
 
         return response()->json(['id' => $o->id], 201);
@@ -72,7 +74,10 @@ class OpportunityController extends Controller
         if ($me->isAdmin()) {
             throw new HttpException(403, 'You don’t have access to this.');
         }
-        $o = Opportunity::find($id) ?? throw new HttpException(404, 'That opportunity is no longer posted.');
+        $o = Opportunity::find($id);
+        if ($o === null || ! $o->canBeSeenBy($me)) {
+            throw new HttpException(404, 'That opportunity is no longer posted.');
+        }
         if ($o->adviser_id === $me->id) {
             throw new HttpException(409, 'You can’t apply to your own posting.');
         }

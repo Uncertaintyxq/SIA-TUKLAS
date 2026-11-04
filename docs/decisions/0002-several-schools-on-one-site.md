@@ -1,6 +1,6 @@
 # 0002. Hold several schools on one Tuklas site, with published research open across them
 
-- Status: accepted (the client's answers are in, 2026-11-04)
+- Status: accepted and built (the client's answers are in; all four rows merged 2026-11-04)
 - Date: 2026-11-04
 - Deciders: Jun Mari Manla
 

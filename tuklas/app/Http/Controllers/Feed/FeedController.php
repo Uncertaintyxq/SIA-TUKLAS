@@ -26,7 +26,8 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 /**
- * The community feed: approved works, open opportunities and approved academic events only.
+ * The community feed: approved works, open opportunities and approved academic events only, each
+ * as far as the viewer's school may see it (docs/decisions/0002).
  * Every query filters on approval in SQL, so nothing private can slip into a page.
  */
 class FeedController extends Controller
@@ -77,7 +78,7 @@ class FeedController extends Controller
 
         // Opportunities and events have no school, department, year, adviser or keyword: those filters show works only.
         if (($type === 'all' && ! $worksOnly) || $type === 'opportunities') {
-            $opportunities = Cards::opportunities(Opportunity::query(), $me->id)
+            $opportunities = Cards::opportunities(Opportunity::visibleTo($me), $me->id)
                 ->where('deadline', '>=', now()->subDay())
                 ->when($q !== '', fn ($query) => $query->where(fn ($o) => $o
                     ->where('title', 'like', $like)->orWhere('description', 'like', $like)
@@ -91,7 +92,7 @@ class FeedController extends Controller
         }
 
         if (($type === 'all' && ! $worksOnly) || $type === 'events') {
-            $events = Cards::events(Event::query(), $me->id)
+            $events = Cards::events(Event::visibleTo($me), $me->id)
                 ->where('status', ApprovalStatus::Approved)
                 ->where('date', '>=', now()->subDay())
                 ->when($q !== '', fn ($query) => $query->where(fn ($e) => $e
@@ -167,11 +168,11 @@ class FeedController extends Controller
             ->where('status', ApprovalStatus::Approved)
             ->where('starts_at', '<=', $now)
             ->where('ends_at', '>=', $now)
-            ->whereHas('event', fn ($e) => $e->where('status', ApprovalStatus::Approved)->where('date', '>=', $now))
+            ->whereHas('event', fn ($e) => $e->visibleTo($request->user())->where('status', ApprovalStatus::Approved)->where('date', '>=', $now))
             ->orderBy('starts_at')
             ->limit(3)
             ->get();
-        $upcoming = Cards::events(Event::query(), $request->user()->id)
+        $upcoming = Cards::events(Event::visibleTo($request->user()), $request->user()->id)
             ->where('status', ApprovalStatus::Approved)
             ->where('date', '>=', $now)
             ->orderBy('date')

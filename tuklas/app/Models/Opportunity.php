@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use App\Enums\Audience;
 use App\Enums\OpportunityKind;
+use App\Models\Concerns\HasAudience;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -13,12 +15,15 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  *
  * @property-read bool|null $applied Whether the viewer applied (Cards::opportunities)
  */
-#[Fillable(['kind', 'title', 'description', 'deadline', 'slots'])]
+#[Fillable(['kind', 'title', 'description', 'deadline', 'slots', 'audience'])]
 class Opportunity extends Model
 {
+    use HasAudience;
+
     public const UPDATED_AT = null;
 
     protected $casts = [
+        'audience' => Audience::class,
         'kind' => OpportunityKind::class,
         'deadline' => 'datetime',
     ];
@@ -33,5 +38,10 @@ class Opportunity extends Model
     public function applications(): HasMany
     {
         return $this->hasMany(OpportunityApplication::class);
+    }
+
+    protected function posterKey(): string
+    {
+        return 'adviser_id';
     }
 }

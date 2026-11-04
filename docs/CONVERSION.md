@@ -430,6 +430,12 @@ branch rule; the deployment plan is in [DEPLOYMENT.md](DEPLOYMENT.md).
   AdminScope::school($request), through: 'postedBy')` and actions through `AdminScope::check()`.
   `notifyAdmins()` takes the school as its last argument. A new admin check should do the same:
   never a bare `isAdmin()` for anything that belongs to a school.
+- 2026-11-04: `feat/institution-audiences` (docs/decisions/0002). Opportunities and events carry
+  `institution_id` and `audience` (school|all, default school) through `HasAudience`: list with
+  `Event::visibleTo($user)` / `Opportunity::visibleTo($user)`, check one with `canBeSeenBy()`; ads
+  follow their event. Announcements have a `school` scope (`institution_id`), and `system` (every
+  school) is super-admins only. This finishes the institution rows; the next step before real
+  student data is `chore/deploy-production`.
 
 ## How the code is laid out (for the next modules)
 

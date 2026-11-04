@@ -100,6 +100,9 @@ class DemoSeeder extends Seeder
                 $this->people();
                 $this->works();
                 $this->feedAndEvents();
+                // Tuklas University's postings, open to every school (docs/decisions/0002)
+                Event::query()->update(['institution_id' => self::TUKLAS_U, 'audience' => 'all']);
+                Opportunity::query()->update(['institution_id' => self::TUKLAS_U, 'audience' => 'all']);
                 $this->groups();
                 $this->portfolios();
                 $this->notifications();

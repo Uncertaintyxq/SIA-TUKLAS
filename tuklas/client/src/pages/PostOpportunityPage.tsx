@@ -3,6 +3,7 @@
  * Educators must be verified by an admin before they can post; they can also delete their own postings here.
  */
 import { useState, type FormEvent } from 'react';
+import type { Audience } from '../types/common';
 import { ShieldAlert, Trash2 } from 'lucide-react';
 import type { OpportunityKind } from '../types/feed';
 import { useMe } from '../api/auth';
@@ -12,6 +13,7 @@ import { Person } from '../components/people/Person';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
 import { SelectField, TextAreaField, TextField } from '../components/ui/Field';
+import { AudienceField } from '../components/feed/AudienceField';
 import { Notice } from '../components/ui/Notice';
 import { Sheet, SheetEmpty } from '../components/ui/Sheet';
 import { useToast } from '../components/ui/Toast';
@@ -32,12 +34,13 @@ export function PostOpportunityPage() {
   const [description, setDescription] = useState('');
   const [deadline, setDeadline] = useState(inThreeWeeks);
   const [slots, setSlots] = useState('');
+  const [audience, setAudience] = useState<Audience>('school');
   const unverified = me?.role === 'educator' && !me.verified;
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
     create.mutate(
-      { kind, title, description, deadline: `${deadline}T23:59:00`, slots: slots ? Number(slots) : null },
+      { kind, title, description, deadline: `${deadline}T23:59:00`, slots: slots ? Number(slots) : null, audience },
       {
         onSuccess: () => {
           toast('Opportunity published to the feed.', 'success');
@@ -81,6 +84,7 @@ export function PostOpportunityPage() {
               <TextField label="Application deadline" type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} required />
               <TextField label="Slots (optional)" type="number" min={1} max={99} value={slots} onChange={(e) => setSlots(e.target.value)} />
             </div>
+            <AudienceField value={audience} onChange={setAudience} />
             {create.error && (
               <p className={styles.error} role="alert">
                 {create.error.message}
