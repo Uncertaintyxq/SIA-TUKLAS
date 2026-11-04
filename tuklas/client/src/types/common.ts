@@ -14,5 +14,15 @@ export interface UserCard {
   verified: boolean;
   program: string;
   department: string;
+  /** Their school (docs/decisions/0002); null only on a site without schools */
+  institution: InstitutionCard | null;
   photoUrl: string | null;
+}
+
+/** A school on this Tuklas site, as person cards show it. */
+export interface InstitutionCard {
+  id: number;
+  name: string;
+  /** May be empty; show the name then */
+  shortName: string;
 }

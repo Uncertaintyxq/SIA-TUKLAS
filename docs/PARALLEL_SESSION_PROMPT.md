@@ -62,12 +62,13 @@ rules, hooks, and the `/start-task` and `/finish-task` commands). Also read:
 
 **Yours, in this order** (scheduled 2026-11-04; the plan and the client's answers are in
 `docs/decisions/0002-several-schools-on-one-site.md`, read it first):
-1. `feat/institutions`: schools, a school on every account, signup by email domain or admin
-   confirmation, super-admins, a second school in `DemoSeeder`.
-2. `feat/institution-scoping`: department lists per school, a school on every piece of content,
+1. `feat/institution-scoping`: department lists per school, a school on every piece of content,
    Public or School only for educators' research and student works, and the rest of the
    visibility table.
-3. `feat/institution-admins`: admins per school, super-admins over all, admin queues per school.
+2. `feat/institution-admins`: admins per school, super-admins over all, admin queues per school.
+
+(`feat/institutions` is merged: schools, `users.institution_id`, signup by domain or admin
+confirmation, super-admins, `User::school()`, and Bayan State College in `DemoSeeder`. Build on it.)
 
 Each row adds cross-school tests: someone at school B sees school A's Public research and nothing
 else of school A's. **Not yours:** `chore/deploy-production`. It comes after all three, and it's

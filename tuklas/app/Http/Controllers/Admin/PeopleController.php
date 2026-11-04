@@ -8,6 +8,7 @@ use App\Enums\Role;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserCardResource;
 use App\Models\Announcement;
+use App\Models\Institution;
 use App\Models\Publication;
 use App\Models\ResearchGroup;
 use App\Models\Review;
@@ -27,13 +28,14 @@ class PeopleController extends Controller
 {
     private const RIGHTS = ['canPublish' => ['can_publish', 'research publishing'], 'canModerateGroups' => ['can_moderate_groups', 'group moderation'], 'canBroadcast' => ['can_broadcast', 'announcement']];
 
-    /** GET /api/admin/users?q=&role= */
+    /** GET /api/admin/users?q=&role=&institution= */
     public function index(Request $request): JsonResponse
     {
         $q = mb_substr(trim((string) $request->query('q', '')), 0, 80);
         $like = '%'.addcslashes($q, '%_\\').'%';
         $users = User::with('profile')->active()->withCount('works')
             ->when(Role::tryFrom((string) $request->query('role')), fn ($query, $role) => $query->where('role', $role))
+            ->when((int) $request->query('institution') > 0, fn ($query) => $query->where('institution_id', (int) $request->query('institution')))
             ->when($q !== '', fn ($query) => $query->where(fn ($w) => $w->where('name', 'like', $like)->orWhere('email', 'like', $like)->orWhere('username', 'like', $like)))
             ->orderBy('role')->orderBy('name')
             ->limit(200)
@@ -41,10 +43,16 @@ class PeopleController extends Controller
 
         return response()->json($users->map(fn (User $u) => [
             ...(new UserCardResource($u))->resolve($request), 'email' => $u->email, 'createdAt' => $u->created_at->toISOString(), 'works' => (int) $u->works_count,
+            'schoolConfirmed' => ! $u->awaitsSchoolConfirmation(), 'superAdmin' => $u->isSuperAdmin(),
         ]));
     }
 
-    /** PATCH /api/admin/users/{id} {role?, verified?, canPublish?, canModerateGroups?, canBroadcast?} — making someone an educator vouches for them. */
+    /**
+     * PATCH /api/admin/users/{id} {role?, verified?, canPublish?, canModerateGroups?, canBroadcast?,
+     * schoolConfirmed?, institutionId?} — making someone an educator vouches for them. Confirming
+     * someone's school lets them in (docs/decisions/0002); only super-admins move someone to
+     * another school, which confirms them there.
+     */
     public function update(Request $request, int $id): Response
     {
         $patch = $request->validate([
@@ -53,6 +61,8 @@ class PeopleController extends Controller
             'canPublish' => ['sometimes', 'boolean'],
             'canModerateGroups' => ['sometimes', 'boolean'],
             'canBroadcast' => ['sometimes', 'boolean'],
+            'schoolConfirmed' => ['sometimes', 'accepted'],
+            'institutionId' => ['sometimes', 'integer'],
         ]);
         /** @var User $me */
         $me = $request->user();
@@ -61,7 +71,16 @@ class PeopleController extends Controller
             throw new HttpException(409, 'You can’t remove your own admin role.');
         }
         $user = User::find($id) ?? throw new HttpException(404, 'That account no longer exists.');
-        $before = $user->only(['role', 'verified', 'can_publish', 'can_moderate_groups', 'can_broadcast']);
+        if (array_key_exists('institutionId', $patch)) {
+            if (! $me->isSuperAdmin()) {
+                throw new HttpException(403, 'Only super-admins move people to another school.');
+            }
+            if (! Institution::whereKey($patch['institutionId'])->exists()) {
+                throw new HttpException(404, 'That school isn’t on Tuklas.');
+            }
+        }
+        $before = $user->only(['role', 'verified', 'can_publish', 'can_moderate_groups', 'can_broadcast', 'institution_id']);
+        $awaited = $user->awaitsSchoolConfirmation();
 
         if ($role !== null) {
             $user->role = $role;
@@ -76,6 +95,11 @@ class PeopleController extends Controller
                 $user->{$column} = (bool) $patch[$key];
             }
         }
+        if (array_key_exists('institutionId', $patch)) {
+            $user->forceFill(['institution_id' => (int) $patch['institutionId'], 'institution_confirmed_at' => now()]);
+        } elseif (array_key_exists('schoolConfirmed', $patch) && $user->institution_confirmed_at === null) {
+            $user->forceFill(['institution_confirmed_at' => now()]);
+        }
         $user->save();
 
         $changes = array_diff_assoc(
@@ -84,6 +108,12 @@ class PeopleController extends Controller
         );
         if ($changes !== []) {
             Audit::log('account_changed', $me, $user, ['changes' => $changes]);
+        }
+        if ($awaited && ! $user->awaitsSchoolConfirmation()) {
+            Audit::log('school_confirmed', $me, $user);
+            Notifier::notify($id, 'school_confirmed', "{$user->school()?->name} confirmed your account. Welcome to Tuklas.", '/portfolio', $me->id);
+        } elseif ($before['institution_id'] !== null && $before['institution_id'] !== $user->institution_id) {
+            Notifier::notify($id, 'school_changed', "An admin moved your account to {$user->school()?->name}.", '/portfolio', $me->id);
         }
 
         if ($user->isEducator() && $user->verified && ! ($before['role'] === Role::Educator && $before['verified'])) {

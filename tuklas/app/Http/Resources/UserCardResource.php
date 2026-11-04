@@ -27,6 +27,7 @@ class UserCardResource extends JsonResource
             'verified' => $this->verified,
             'program' => $this->program,
             'department' => $profile->department ?? '',
+            'institution' => $this->school()?->card(),
             // The version query busts the browser cache when the photo changes
             'photoUrl' => $profile?->photo_file
                 ? "/api/users/{$this->username}/photo?v=".($profile->updated_at?->getTimestampMs() ?? 0)

@@ -40,6 +40,11 @@ Merged into `main` but not on <https://tuklas-sia-jm.japaneast.cloudapp.azure.co
   department** list: each department with how many publications and student works it has.
 - Clicking a keyword on a work or a publication shows everything with that keyword.
 
+**Schools**
+- Tuklas can hold several schools. Everyone belongs to one, and it shows on their portfolio.
+- Signing up with your school email puts you in your school straight away. Without one, pick your
+  school: its admins confirm your account before you can use Tuklas.
+
 **Follow people and topics**
 - **Follow** a person from their portfolio, or a department or keyword from the feed's filters
   (and a department from the research library's).
