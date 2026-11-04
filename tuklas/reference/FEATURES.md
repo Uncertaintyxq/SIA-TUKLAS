@@ -125,3 +125,7 @@ each server sets `TUKLAS_INSTITUTION`.
 **2026-11-04:** these come before real student data goes on any server (launch order in
 `docs/TODO.md`, "Before real student data"): every account then carries its school from the start,
 instead of real accounts being moved and re-checked afterwards.
+
+**2026-11-04, answered:** several schools on one site, and research a school publishes can be read
+from the others. The plan, who sees what, and the questions still open for the client are in
+`docs/decisions/0002-several-schools-on-one-site.md`.
