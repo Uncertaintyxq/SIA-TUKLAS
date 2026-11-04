@@ -22,7 +22,7 @@ HERE = Path(__file__).resolve().parent
 SOURCE = HERE / "checklist.md"
 OUTPUT = HERE.parent / "Tuklas QA Checklist.docx"
 
-SITE = "https://tuklas-sia-jm.japaneast.cloudapp.azure.com"
+SITE = "https://junmm.me"
 FONT = "Calibri"
 BOX_FONT = "Segoe UI Symbol"
 HEADER_FILL = "1F3864"
@@ -30,33 +30,37 @@ DEV_COLOR = RGBColor(0x8A, 0x4B, 0x08)
 DEV_FILL = "FBE9D0"
 
 ACCOUNTS = [
-    ("Andrea Villanueva", "Student", "Tuklas University", "Author of works; leader in a group"),
-    ("Paolo Reyes", "Student", "Tuklas University", "Reader, reporter, second chat person"),
-    ("Kim Dela Cruz", "Student", "Tuklas University", "Group member"),
-    ("Dr. Maria Santos", "Educator", "Tuklas University", "Research adviser; all three rights"),
-    ("Prof. Ramon Aquino", "Educator", "Tuklas University", "Another adviser (not Andrea's)"),
-    ("Prof. Carla Javier", "Educator", "Tuklas University", "Not verified yet"),
-    ("Lea Mercado", "Super-admin", "Tuklas University", "Acts for every school"),
-    ("Miguel Torres", "Student", "Bayan State College", "The other school's student"),
-    ("Dr. Ana Lim", "Educator", "Bayan State College", "The other school's adviser"),
-    ("Rina Cruz", "Student", "Bayan State College", "Waiting for Bayan to confirm her"),
-    ("Jose Ramos", "Admin", "Bayan State College", "Bayan's own Admin"),
+    ("Andrea Villanueva", "andrea@tu.junmm.me", "Student", "Tuklas University", "Author of works; leader in a group"),
+    ("Paolo Reyes", "paolo@tu.junmm.me", "Student", "Tuklas University", "Reader, reporter, second chat person"),
+    ("Kim Dela Cruz", "kim@tu.junmm.me", "Student", "Tuklas University", "Group member"),
+    ("Dr. Maria Santos", "msantos@tu.junmm.me", "Educator", "Tuklas University", "Research adviser; all three rights"),
+    ("Prof. Ramon Aquino", "raquino@tu.junmm.me", "Educator", "Tuklas University", "Another adviser (not Andrea's)"),
+    ("Prof. Carla Javier", "cjavier@tu.junmm.me", "Educator", "Tuklas University", "Not verified yet"),
+    ("Lea Mercado", "admin@tu.junmm.me", "Super-admin", "Tuklas University", "Acts for every school"),
+    ("Miguel Torres", "mtorres@bsc.junmm.me", "Student", "Bayan State College", "The other school's student"),
+    ("Dr. Ana Lim", "alim@bsc.junmm.me", "Educator", "Bayan State College", "The other school's adviser"),
+    ("Rina Cruz", "rina.cruz.demo@junmm.me", "Student", "Bayan State College", "Waiting for Bayan to confirm her"),
+    ("Jose Ramos", "jramos@bsc.junmm.me", "Admin", "Bayan State College", "Bayan's own Admin"),
 ]
 
 HOW_TO = [
-    f"Test on the staging site, {SITE}. It turns itself off at 11:00 PM Philippine time.",
-    'Sign in with the one-click demo logins on the sign-in page. The password for every demo account is tuklas123. '
-    "If Tuklas asks you to set up two-factor sign-in, scan the code with an authenticator app on your phone "
-    "(for example, Google Authenticator or Microsoft Authenticator).",
+    f"Test on the live site, {SITE}. It holds the showcase made for the client presentation, so treat its "
+    "content with care. If it doesn't load, tell Jun Mari.",
+    "Sign in with the email addresses in the table below. They share one password: ask Jun Mari for it, "
+    "and never write it in this checklist, a chat or a screenshot.",
+    "Admins and educators sign in with a two-factor code. When Jun Mari sets up each of these accounts, "
+    "the testers who need it scan the same QR code with their own authenticator app (for example, "
+    "Google Authenticator or Microsoft Authenticator), so each tester's phone shows the codes. Students "
+    "don't need a code.",
     'Many checks need two people at once. Use a second browser, or a private window, signed in as the other person.',
-    '"Reset demo data" in the user menu puts the site back as it started, for every tester at once. '
-    "Agree with the other testers before you use it, and use it after checks that can't be undone "
-    "(approving, rejecting, deleting an account, changing roles).",
+    'The live site has no "Reset demo data". Checks that can\'t be undone (approving, rejecting, '
+    "deleting an account, changing roles) wait until after the client presentation; Jun Mari then "
+    "reloads the showcase for everyone. Agree with the other testers before you do one.",
     "For each check, tick Pass or Fail. If you couldn't test it, leave both empty and write why in Notes.",
     "For every Fail, add a line to the Issue log at the end, with a screenshot named after the check "
     '(for example, "5.11.png").',
-    'Checks labelled DEV need server access (for example, the emails, which staging writes to the server\'s log). '
-    "Leave them to a developer.",
+    "Checks labelled DEV need server access, or an email that arrives in Jun Mari's inbox. "
+    "Leave them to a developer, or ask Jun Mari for the link.",
 ]
 
 
@@ -185,15 +189,15 @@ def front(doc: Document, total: int) -> None:
     for item in HOW_TO:
         doc.add_paragraph(item, style="List Bullet")
 
-    doc.add_paragraph("Demo accounts", style="Heading 1")
-    keep_with_next(doc.add_paragraph("The checks name the account to sign in as. All use the password tuklas123."))
-    table = doc.add_table(rows=1 + len(ACCOUNTS), cols=4, style="Table Grid")
-    header_row(table, ["Name", "Role", "School", "Used for"])
+    doc.add_paragraph("Accounts", style="Heading 1")
+    keep_with_next(doc.add_paragraph("The checks name the account to sign in as. All share one password: ask Jun Mari."))
+    table = doc.add_table(rows=1 + len(ACCOUNTS), cols=5, style="Table Grid")
+    header_row(table, ["Name", "Email", "Role", "School", "Used for"])
     for row, account in zip(table.rows[1:], ACCOUNTS):
         keep_row_whole(row)
         for cell, value in zip(row.cells, account):
             write(cell, value)
-    set_widths(table, [1.8, 1.1, 1.7, 2.4])
+    set_widths(table, [1.4, 1.9, 0.9, 1.2, 1.6])
 
 
 def checklist(doc: Document, parsed: list[tuple[str, str, list[str]]]) -> None:

@@ -22,9 +22,9 @@ Use: a private (incognito) window, not signed in.
 
 ## 2. Sign-up and sign-in
 
-Use: a private window. Staging writes emails to the server's log instead of sending them, so a check that needs an email link is labelled DEV: ask a developer for the link.
+Use: a private window. Tuklas sends real emails: those to a @tu.junmm.me or @bsc.junmm.me address arrive in Jun Mari's inbox, so a check that needs an email link is labelled DEV: ask Jun Mari for the link.
 
-- Sign up as a Student with an address ending in @tuklas.edu. The account is placed in Tuklas University.
+- Sign up as a Student with an address ending in @tu.junmm.me (any name before the @). The account is placed in Tuklas University.
 - The sign-up form can't be sent without ticking the privacy notice.
 - The sign-up form offers Student and Educator only. There is no way to sign up as an Admin.
 - A password of 11 characters is refused, and so is a common one such as password12345.
@@ -48,7 +48,7 @@ Use: Andrea Villanueva (Student), in two browsers.
 - "Download my data" gives a file (JSON) with your profile, works, messages and settings.
 - [Dev] After the privacy notice's version is raised, every member is asked to accept it again.
 - Delete the test Student account from check 2.1: Tuklas asks for its password, and afterwards that account can't sign in.
-- Delete Paolo Reyes's account. His approved works now show "Former member" as an author. (Reset the demo data afterwards.)
+- Delete Paolo Reyes's account. His approved works now show "Former member" as an author. (Can't be undone: only after the client presentation; Jun Mari then reloads the showcase.)
 - Signed in as Lea Mercado (Admin), the Account page has no "Delete account" option.
 
 ## 4. Portfolio
@@ -169,7 +169,7 @@ Use: Lea Mercado (Super-admin), Jose Ramos (Bayan Admin), Dr. Maria Santos (Educ
 - A pinned announcement stays at the top.
 - Everyone in the audience is notified in the app.
 - The author sees who in the audience has read it.
-- [Dev] The announcement email is sent to the audience (in the server's log on staging).
+- [Dev] The announcement email is sent to the audience.
 
 ## 12. Notifications and installing the app
 
@@ -180,7 +180,7 @@ Use: any member, in two browsers, and a phone.
 - Turn push off for one kind of notification. That kind no longer arrives as push.
 - Install Tuklas from the browser (Install app, or Add to Home Screen on a phone). It opens like an app.
 - With the connection off, the installed app shows an offline page.
-- [Dev] The email switches for each kind are obeyed (emails appear in the server's log only when switched on).
+- [Dev] The email switches for each kind are obeyed (the emails arrive only when switched on).
 - [Dev] The weekly digest (php artisan tuklas:weekly-digest) has unread updates, the week's deadlines and events, and new research in the member's department.
 
 ## 13. Reports and moderation
@@ -195,7 +195,7 @@ Use: Paolo Reyes (reporter), Lea Mercado (Admin), and the owner of the reported 
 
 ## 14. Admins and schools
 
-Use: Lea Mercado (Super-admin, Tuklas University) and Jose Ramos (Admin, Bayan State College). Reset the demo data afterwards.
+Use: Lea Mercado (Super-admin, Tuklas University) and Jose Ramos (Admin, Bayan State College). Some of these can't be undone: do this area after the client presentation; Jun Mari then reloads the showcase.
 
 - Lea verifies Prof. Carla Javier. She can now review and approve works.
 - Lea makes an Educator's account a Student account.
@@ -235,7 +235,7 @@ Use: any account, on a computer and a phone.
 
 ## 17. Production server (team, after it is set up)
 
-Use: server access. Not for staging.
+Use: server access (a developer). The launch check fails while the showcase is loaded: run it once the showcase is emptied, before real data.
 
 - [Dev] php artisan tuklas:launch-check passes.
 - [Dev] SSL Labs and securityheaders.com both give the site an A.
