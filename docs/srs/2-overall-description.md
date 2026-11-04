@@ -103,7 +103,7 @@ The guides for server operators and developers are Markdown files in the source 
 **Dependencies.** The project depends on:
 
 - **Third-party software:** the Laravel framework with Fortify, Sanctum and Reverb; the minishlink/web-push library for push notifications; React, TanStack Query and Vite for the user interface.
-- **An email provider** that relays email over SMTP (TBD-3).
+- **An email provider** that relays email over SMTP: Brevo, on its free plan (up to 300 emails a day).
 - **The Have I Been Pwned password service**, which tells the server whether a new password has appeared in a known data breach. Only the first five characters of the password's hash leave the server. If the service can't be reached, the check is skipped.
 - **The browsers' push services** (from Google, Apple and Mozilla), which deliver push notifications.
 - **Let's Encrypt** for the HTTPS certificate, and **GitHub** for the source code and the automated tests.
