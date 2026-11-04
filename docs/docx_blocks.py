@@ -67,12 +67,12 @@ def blocks(lines: list[str]) -> list[tuple[str, list[str]]]:
     return out
 
 
-def run_props(bold=False, italic=False, size=22, font=BODY_FONT):
+def run_props(bold=False, italic=False, size=22, font=BODY_FONT, color="000000"):
     rpr = OxmlElement("w:rPr")
     rpr.append(_el("w:rFonts", ascii=font, hAnsi=font, cs=font, eastAsia=font))
     rpr.append(_el("w:b", val=1 if bold else 0))
     rpr.append(_el("w:i", val=1 if italic else 0))
-    rpr.append(_el("w:color", val="000000"))
+    rpr.append(_el("w:color", val=color))
     rpr.append(_el("w:sz", val=size))
     rpr.append(_el("w:szCs", val=size))
     return rpr
@@ -169,7 +169,8 @@ def figure(doc, line: str, base: Path) -> list:
     caption, src = re.fullmatch(r"!\[(.*)\]\((.*)\)", line).groups()
     with Image.open(base / src) as img:
         ratio = img.height / img.width
-    width = min(Inches(6.5), int(Inches(7.5) / ratio))  # tall pictures fit the page height instead
+    # At most 5 inches tall, so the steps above a picture fit on the same page with it
+    width = min(Inches(6.5), int(Inches(5) / ratio))
     holder = doc.add_paragraph()  # python-docx adds pictures to a paragraph at the end; it's moved below
     holder.add_run().add_picture(str(base / src), width=width)
     picture = holder._p
@@ -183,24 +184,30 @@ def figure(doc, line: str, base: Path) -> list:
 
 
 class Lists:
-    """Bullet and numbered list definitions added to a document. The template only numbers its headings."""
+    """Bullet and numbered list definitions added to a document. The template only numbers its headings.
 
-    def __init__(self, doc):
+    With circled_steps, numbered lists count in red circled numbers (①, ②, …), the same numbers as
+    the red markers in the screenshot below them (the user manual)."""
+
+    def __init__(self, doc, circled_steps=False):
         self.numbering = doc.part.numbering_part.element
-        self._abstract(BULLET_ID, "bullet", "•")
-        self._abstract(STEPS_ID, "decimal", "%1.")
+        self._abstract(BULLET_ID, "bullet", "•", run_props())
+        if circled_steps:
+            self._abstract(STEPS_ID, "decimalEnclosedCircle", "%1", run_props(bold=True, size=30, font="Segoe UI Symbol", color="D62828"), indent=480)
+        else:
+            self._abstract(STEPS_ID, "decimal", "%1.", run_props())
         self._num(BULLET_ID, BULLET_ID)
         self.next_id = STEPS_ID + 1
 
-    def _abstract(self, abstract_id, fmt, text):
+    def _abstract(self, abstract_id, fmt, text, rpr, indent=360):
         abstract = _el("w:abstractNum", abstractNumId=abstract_id)
         lvl = _el("w:lvl", ilvl=0)
         for tag, val in (("w:start", 1), ("w:numFmt", fmt), ("w:lvlText", text), ("w:lvlJc", "left")):
             lvl.append(_el(tag, val=val))
         ppr = OxmlElement("w:pPr")
-        ppr.append(_el("w:ind", left=360, hanging=360))
+        ppr.append(_el("w:ind", left=indent, hanging=indent))
         lvl.append(ppr)
-        lvl.append(run_props())
+        lvl.append(rpr)
         abstract.append(lvl)
         first_num = self.numbering.find(qn("w:num"))
         if first_num is not None:
@@ -228,7 +235,9 @@ class Lists:
 def render(doc, lists: Lists, lines: list[str], base: Path) -> list:
     """The Word elements for these Markdown lines, in order."""
     out = []
-    for kind, items in blocks(lines):
+    found = blocks(lines)
+    for at, (kind, items) in enumerate(found):
+        following = found[at + 1][0] if at + 1 < len(found) else None
         if kind == "img":
             out += figure(doc, items[0], base)
         elif kind == "table":
@@ -238,9 +247,11 @@ def render(doc, lists: Lists, lines: list[str], base: Path) -> list:
         elif kind in ("ul", "ol"):
             num_id = BULLET_ID if kind == "ul" else lists.new_steps()
             for i, text in enumerate(items):
-                out.append(paragraph(text, num_id=num_id, after=120 if i == len(items) - 1 else 60))
+                # Numbered steps stay on one page with each other and with the picture after them
+                out.append(paragraph(text, num_id=num_id, after=120 if i == len(items) - 1 else 60, keep_next=kind == "ol"))
         else:
-            out.append(paragraph(items[0]))
+            # A sentence that leads into steps stays with them
+            out.append(paragraph(items[0], keep_next=following == "ol"))
     return out
 
 
