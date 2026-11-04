@@ -6,7 +6,7 @@ Tuklas is a new, self-contained product. It is not part of a larger system and r
 
 Release 1.0 does not connect to a university's existing systems, such as student records, a learning management system or single sign-on. People sign up with their school email address, and its domain places them in their school. People without a school address choose their school and wait for its administrators to confirm them.
 
-Figure 1 shows the major components of Tuklas and the outside systems it works with. Everything inside the box runs on one server:
+Figure 1 shows the major components of Tuklas and the outside systems it works with, as a UML deployment diagram. Everything inside the Tuklas server node runs on one server:
 
 - **Web application.** The user interface, written in React. The server sends it to the browser, where it runs. It can be installed on a phone or computer as a progressive web app.
 - **Web server (Nginx).** It accepts every connection over HTTPS and passes each request to the right part of the system.
@@ -17,7 +17,7 @@ Figure 1 shows the major components of Tuklas and the outside systems it works w
 
 Outside the server, Tuklas uses an email provider to deliver its emails, the browsers' push services to deliver phone notifications, and a breached-password service to check new passwords. It sends nightly backups, encrypted first, to storage on another site. Search engines such as Google Scholar read its public pages. A certificate authority issues its HTTPS certificate. Educators and administrators also use an authenticator app on their phones for two-factor sign-in; the app has no connection to Tuklas.
 
-![Figure 1. Tuklas, its components and the outside systems it works with](diagrams/context.png)
+![Figure 1. Deployment of Tuklas: its components and the outside systems it works with (UML deployment diagram)](diagrams/deployment.png)
 
 ## Product Functions
 

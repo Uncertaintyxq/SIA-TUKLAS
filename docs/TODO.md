@@ -144,6 +144,16 @@ of school A's).
 |---|---|---|---|
 | `docs/srs` | The project manuscript: the Software Requirements Specification, written section by section into a copy of the course template (`docs/SRS Template.docx`, committed as given). `docs/Tuklas SRS.docx` (front matter filled in by the team), diagrams for Appendix B with their sources in `docs/srs/`. A slide presentation follows from it, on a template still to come. | | In progress (Jun Mari) |
 
+**Open items in the SRS (TBD-n, Appendix C).** Each one is marked in the text where it applies. When one
+is settled, update that text, delete its line here and in Appendix C, and keep the other numbers as they are.
+
+- [ ] **TBD-1, production host:** where production runs for good. For now it's the Azure for Students VM (2.4; docs/PRODUCTION_SERVER.md).
+- [ ] **TBD-2, domain:** the site's address (Section 3, communications). Planned: a free `.me` domain from the GitHub Student Pack.
+- [ ] **TBD-3, email provider:** who sends the site's email (2.7). Planned: Brevo's free SMTP plan.
+- [ ] **TBD-4, user manual:** a manual for Students, Educators and Admins, with screenshots (2.6). Being planned.
+- [ ] **TBD-5, approved privacy notice:** the client's final text replaces the draft (2.7; runbook step 8).
+- [ ] **TBD-6, data protection paperwork:** a Data Protection Officer and a signed data processing agreement per school (2.5, 2.7).
+
 ## Not tied to a branch
 
 - [ ] **Local MySQL 8 on the Windows machine** (now SQLite; XAMPP's MariaDB 10.4 is end-of-life).
