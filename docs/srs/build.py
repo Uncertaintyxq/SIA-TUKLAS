@@ -22,7 +22,7 @@ from docx.oxml.ns import qn
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent))
-from docx_blocks import Lists, refresh_fields_on_open, render  # noqa: E402
+from docx_blocks import Lists, fill_front_matter, refresh_fields_on_open, render  # noqa: E402
 
 TEMPLATE = HERE.parent / "SRS Template.docx"
 OUTPUT = HERE.parent / "Tuklas SRS.docx"
@@ -169,6 +169,7 @@ def main() -> int:
         numbering.append(num_id)
         style.addnext(numbering)
 
+    fill_front_matter(doc)
     refresh_fields_on_open(doc)
     doc.save(str(OUTPUT))
     print(f"Wrote {OUTPUT.name}: {len(filled)} sections filled ({', '.join(filled)})")

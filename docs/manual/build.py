@@ -21,7 +21,7 @@ from docx.oxml.ns import qn
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent))
-from docx_blocks import Lists, refresh_fields_on_open, render  # noqa: E402
+from docx_blocks import Lists, fill_front_matter, refresh_fields_on_open, render  # noqa: E402
 
 TEMPLATE = HERE.parent / "SRS Template.docx"
 OUTPUT = HERE.parent / "Tuklas User Manual.docx"
@@ -174,6 +174,7 @@ def main() -> int:
             final_section.addprevious(el)
         count += level == 1
 
+    fill_front_matter(doc)
     refresh_fields_on_open(doc)
     doc.save(str(OUTPUT))
     print(f"Wrote {OUTPUT.name}: {count} chapters")
