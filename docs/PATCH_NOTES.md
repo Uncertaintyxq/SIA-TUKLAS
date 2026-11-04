@@ -2,7 +2,7 @@
 
 ## Next update (not on staging yet)
 
-Merged into `main` but not on <https://tuklas-sia-jm.japaneast.cloudapp.azure.com> until the next
+Merged into `main` but not on <https://junmm.me> until the next
 `deploy.sh`.
 
 ### New for everyone
@@ -70,7 +70,7 @@ Merged into `main` but not on <https://tuklas-sia-jm.japaneast.cloudapp.azure.co
 ## Staging update 1 (November 2026)
 
 Everything added since staging first went live at
-<https://tuklas-sia-jm.japaneast.cloudapp.azure.com>. It reaches the site with the next server
+<https://junmm.me>. It reaches the site with the next server
 update (`docs/STAGING_SERVER.md`, "One-time steps"); until then, staging runs the first version.
 
 ### New for everyone

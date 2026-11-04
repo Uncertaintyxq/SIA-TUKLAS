@@ -4,15 +4,22 @@ How to use and look after Tuklas's public test server. It's for the team: you do
 know Linux, just copy the commands. How it was built: [`tuklas/deploy/README.md`](../tuklas/deploy/README.md)
 and [`tuklas/deploy/azure/README.md`](../tuklas/deploy/azure/README.md).
 
+> **Since 2026-11-04 this VM is the production server, at <https://junmm.me>** (domain on
+> Cloudflare, email through Brevo; [PRODUCTION_SERVER.md](PRODUCTION_SERVER.md), "For now").
+> There's no staging site any more: try branches on your own PC. It holds the client
+> **showcase** data (`tuklas:showcase`), under production rules: no one-click logins, no
+> `tuklas123`, no "Reset demo data", and two-factor sign-in for admins and educators. The
+> starting, logging in, deploying, health and rollback steps below still apply.
+
 ## What it is
 
 | | |
 |---|---|
-| Purpose | Public testing and client reviews, with **demo data only** (never real students' data) |
+| Purpose | Production for now, holding the client showcase data (never real students' data until the launch steps in PRODUCTION_SERVER.md are done) |
 | Where | Azure for Students, region **Japan East**, resource group `tuklas-staging`, VM `tuklas-vm` (`Standard_B2ats_v2`: 2 vCPU, 1 GB, free student hours) |
 | Login user on the server | `tuklas` |
-| Site address | <https://tuklas-sia-jm.japaneast.cloudapp.azure.com> |
-| Demo accounts | One-click logins on the login page; the password for all of them is `tuklas123` |
+| Site address | <https://junmm.me> (the old `tuklas-sia-jm.japaneast.cloudapp.azure.com` no longer serves the site; SSH still works by either name) |
+| Accounts | The showcase personas (`…@tu.junmm.me`, `…@bsc.junmm.me`); one password for all, in the team's password manager |
 | Turns itself off | Every day at **11:00 PM Philippine time**, with an email 30 minutes before |
 | Updates | **Manual, for now:** someone runs `deploy.sh` on the server after changes reach `main` ([below](#put-a-new-version-live)). Automatic deploys from GitHub are built but not set up (paused 2026-11-04) |
 
@@ -35,8 +42,9 @@ In Cloud Shell:
 ```bash
 az network public-ip show -g tuklas-staging -n tuklas-ip --query "{address:dnsSettings.fqdn, ip:ipAddress}" -o table
 ```
-The address is **`tuklas-sia-jm.japaneast.cloudapp.azure.com`**; the commands below already use it.
-If the server is ever rebuilt with a different name, update this page.
+That shows the VM's IP (`20.44.158.67`) and its Azure name. The site's address is **`junmm.me`**:
+its `A` record in Cloudflare (DNS only, grey cloud) points at that IP, and the commands below use it.
+If the server is ever rebuilt with a new IP, update the `A` record and this page.
 
 ## Start, stop, check
 
@@ -58,7 +66,7 @@ bash ~/SIA-TUKLAS/tuklas/deploy/azure/vm.sh status   # running or stopped, addre
 
 In PowerShell on your PC:
 ```powershell
-ssh -i $HOME\.ssh\id_ed25519 tuklas@tuklas-sia-jm.japaneast.cloudapp.azure.com
+ssh -i $HOME\.ssh\id_ed25519 tuklas@junmm.me
 ```
 The prompt changes to `tuklas@tuklas-vm:~$`. Type `exit` to leave.
 
