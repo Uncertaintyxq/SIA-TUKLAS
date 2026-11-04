@@ -126,8 +126,10 @@ php artisan tuklas:showcase --domain=<the team's domain>
 - The personas get addresses on the team's domain: `andrea@tu.<domain>`, `msantos@tu.<domain>`,
   `alim@bsc.<domain>`, … Tuklas University takes `tu.<domain>` signups and Bayan State College
   `bsc.<domain>`, so signing up by school email can be shown live. In Cloudflare, Email Routing
-  → Settings → add the subdomains `tu` and `bsc`, and make a catch-all rule for each that forwards
-  to the presenter's inbox, so password resets and notifications arrive.
+  → Settings → add the subdomains `tu` and `bsc`, then set the domain's one catch-all (it covers the
+  subdomains too) to forward to the presenter's inbox, so password resets and notifications arrive.
+  Keep a `no-reply@<domain>` rule set to Drop. One persona, Rina Cruz, gets an address on the
+  domain itself (`rina.cruz.demo@<domain>`).
 - One password for every persona is asked for (12+ characters, not in a known breach). Keep it
   in the password manager. There are no one-click logins in production.
 - Before the presentation, sign in once as each admin and educator (Lea, Dr. Santos, Prof.

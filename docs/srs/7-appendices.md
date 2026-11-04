@@ -74,8 +74,6 @@ This appendix holds the analysis models of Tuklas, each in a standard notation t
 | No. | What is to be determined | Where it appears |
 |---|---|---|
 | TBD-1 | The production host: where Tuklas runs for good. Release 1.0 runs on an Azure for Students virtual machine in Japan East. | 2.4, 5.4 (availability), 6 (LEG-4) |
-| TBD-2 | The site's domain name. | 3.4 |
-| TBD-3 | The email provider that relays Tuklas's email. | 2.7, 3.3 |
 | TBD-5 | The client's approved privacy notice, with the Data Protection Officer's contact details. | 2.7, 6 (LEG-3) |
 | TBD-6 | Each school's Data Protection Officer and signed data processing agreement, whether registration with the National Privacy Commission is needed, and a breach plan. | 2.5, 2.7, 5.3 (SEC-15), 6 (LEG-1, LEG-2) |
 | TBD-7 | The support contact that the user manual refers members to. | User manual, 1.5 and 8.3 |

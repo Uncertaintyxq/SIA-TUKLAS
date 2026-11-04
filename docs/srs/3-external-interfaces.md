@@ -51,7 +51,7 @@ Table 1 lists the software that Tuklas works with, and what passes between them.
 | Queue and scheduler | Laravel queue worker (database queue) and scheduler | Send emails and push notifications in the background, the weekly digest on Monday mornings, and the nightly backup. |
 | Push library | minishlink/web-push 11 | Encrypts each push notification and sends it to the browser's push service. |
 | Web application | React 19, TypeScript 5.9, Vite 7, TanStack Query 5, React Router 7, Laravel Echo 2 | Runs in the browser. Reads and writes data only through the JSON API, and listens for real-time events. |
-| Email provider | An SMTP relay (TBD-3) | Receives the emails to deliver: email confirmation, password reset, school confirmation, notification emails, announcements and the weekly digest. |
+| Email provider | Brevo's SMTP relay (smtp-relay.brevo.com) | Receives the emails to deliver: email confirmation, password reset, school confirmation, notification emails, announcements and the weekly digest. |
 | Breached-password service | Have I Been Pwned, Pwned Passwords range API | Receives the first five characters of a new password's SHA-1 hash, and returns the matching hashes, so the password never leaves the server. If the service can't be reached, the check is skipped. |
 | Browser push services | Those of Google, Apple and Mozilla, by the Web Push standard | Receive encrypted notifications and deliver them to members' devices. |
 | Search engines | Google Scholar and others | Read the public pages of works and publications, which carry Google Scholar's citation tags and Open Graph tags, and the sitemap at /sitemap.xml. |
@@ -69,11 +69,11 @@ The routes and their rules are in the source code (tuklas/routes/modules/, one f
 
 ## Communications Interfaces
 
-- **Web traffic.** All traffic between browsers and Tuklas uses HTTPS with TLS 1.2 or later, at one address (TBD-2). Plain HTTP only redirects to HTTPS. The server sends HTTP Strict Transport Security for one year, a Content Security Policy, and headers that forbid framing, content sniffing and the camera, microphone and location.
+- **Web traffic.** All traffic between browsers and Tuklas uses HTTPS with TLS 1.2 or later, at one address, https://junmm.me. Plain HTTP only redirects to HTTPS. The server sends HTTP Strict Transport Security for one year, a Content Security Policy, and headers that forbid framing, content sniffing and the camera, microphone and location.
 - **Real-time updates.** Browsers keep one WebSocket connection (WSS) to the same address, under /app/. Each member listens on a private channel of their own, which the server opens only to that member. One shared channel tells signed-in members who is online, with each person's name only.
 - **Sessions and forms.** Signing in sets a session cookie that is encrypted, Secure, HttpOnly and SameSite=Lax. Every request that changes something carries a CSRF token. Sessions end after 120 minutes without activity.
 - **Rate limits.** To slow down abuse, the server limits each member to 120 API requests a minute, 20 posts and 20 uploads a minute, and 40 chat messages a minute. Sign-in and two-factor codes have tighter limits of their own. A member who goes over the limit is asked to wait.
 - **File transfers.** Uploads are limited to 20 MB for a work's PDF, 15 MB for deliverables and attachments, and 5 MB for a photo. The server checks each file's real type, not only its name. Files are downloaded only through the API, after the member's access is checked.
-- **Email.** Tuklas sends email over SMTP with STARTTLS (port 587), from an address on its own domain (TBD-2). The domain publishes SPF, DKIM and DMARC records, so that the emails aren't taken for spam. Emails hold a short message and a link back to Tuklas; they never carry the text of chat messages or reviews.
+- **Email.** Tuklas sends email over SMTP with STARTTLS (port 587), from no-reply@junmm.me, an address on its own domain. The domain publishes SPF, DKIM and DMARC records, so that the emails aren't taken for spam. Emails hold a short message and a link back to Tuklas; they never carry the text of chat messages or reviews.
 - **Push notifications.** Push messages follow the Web Push standard: they are encrypted for the member's device and signed with the server's VAPID key.
 - **Synchronization.** The web application doesn't store the site's data on the device. After a real-time event, or when the member returns to the tab, it reads the current data from the API again.
