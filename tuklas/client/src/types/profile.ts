@@ -10,7 +10,8 @@ export interface ProfileInput {
   name: string;
   titles?: string;
   program: string;
-  department?: string;
+  /** One of their own school's departments */
+  departmentId?: number | null;
   headline?: string;
   bioLong?: string;
 }
@@ -69,7 +70,7 @@ export interface Portfolio {
   works: WorkCard[];
   /** Approved works this educator advised */
   mentored: WorkCard[];
-  /** Research this educator published: Public for everyone, Internal too for signed-in viewers */
+  /** Research this educator published: Public for everyone, School only too for viewers from their school */
   publications: PublicationCard[];
   /** views and downloads: the reach of their own works and research on the page */
   stats: { published: number; mentored: number; publications: number; verifiedHonors: number; degrees: number; views: number; downloads: number };

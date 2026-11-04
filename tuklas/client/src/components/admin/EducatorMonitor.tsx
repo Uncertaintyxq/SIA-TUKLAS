@@ -18,7 +18,7 @@ import { useToast } from '../ui/Toast';
 import styles from './EducatorMonitor.module.css';
 
 const rights = [
-  { key: 'publish', field: 'canPublish', label: 'Publish research', hint: 'Internal and Public' },
+  { key: 'publish', field: 'canPublish', label: 'Publish research', hint: 'School only and Public' },
   { key: 'moderateGroups', field: 'canModerateGroups', label: 'Moderate groups', hint: 'Members, roles, chat' },
   { key: 'broadcast', field: 'canBroadcast', label: 'Post announcements', hint: 'Department and group' },
 ] as const;
@@ -85,7 +85,7 @@ function EducatorRow({ educator: e }: { educator: EducatorOverview }) {
         <div>
           <dt>Research</dt>
           <dd>
-            {p.public} public · {p.internal} internal · {p.draft} {p.draft === 1 ? 'draft' : 'drafts'}
+            {p.public} public · {p.internal} school only · {p.draft} {p.draft === 1 ? 'draft' : 'drafts'}
           </dd>
         </div>
         <div>

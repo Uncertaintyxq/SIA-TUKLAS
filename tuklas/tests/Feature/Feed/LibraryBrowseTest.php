@@ -70,24 +70,24 @@ class LibraryBrowseTest extends TestCase
     {
         $public = Publication::where('visibility', PublicationVisibility::Public)->with('author.profile')->first();
         $public->forceFill(['published_at' => '2024-06-01 09:00:00', 'keywords' => ['Flood mapping']])->save();
-        $department = $public->author->profile->department;
+        $department = $public->author->profile->department_id;
 
         $ids = fn (array $q) => array_column($this->actingAs(User::find(2))->getJson('/api/publications?'.http_build_query($q))->assertOk()->json(), 'id');
         $this->assertSame([$public->id], $ids(['year' => 2024]));
         $this->assertSame([$public->id], $ids(['keyword' => 'Flood mapping']));
         $this->assertContains($public->id, $ids(['dept' => $department]));
-        $this->assertSame([], $ids(['dept' => 'No Such Department']));
+        $this->assertSame([], $ids(['dept' => 999]));
     }
 
     public function test_browse_by_department_counts_what_the_viewer_may_read(): void
     {
         $signedIn = $this->actingAs(User::find(2))->getJson('/api/publications/browse')->assertOk();
-        $readable = Publication::whereIn('visibility', [PublicationVisibility::Public, PublicationVisibility::Internal])->with('author.profile')->get();
-        $works = Work::public()->with('author.profile')->get();
+        $readable = Publication::readableBy(User::find(2))->with('author.profile')->get();
+        $works = Work::readableBy(User::find(2))->with('author.profile')->get();
 
         foreach ($signedIn->json('departments') as $d) {
-            $this->assertSame($readable->filter(fn ($p) => $p->author->profile?->department === $d['name'])->count(), $d['research'], $d['name']);
-            $this->assertSame($works->filter(fn ($w) => $w->author->profile?->department === $d['name'])->count(), $d['works'], $d['name']);
+            $this->assertSame($readable->filter(fn ($p) => $p->author->profile?->department_id === $d['id'])->count(), $d['research'], $d['name']);
+            $this->assertSame($works->filter(fn ($w) => $w->author->profile?->department_id === $d['id'])->count(), $d['works'], $d['name']);
         }
         $this->assertSame($readable->count(), array_sum(array_column($signedIn->json('departments'), 'research')));
 

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Users;
 
 use App\Enums\FollowKind;
-use App\Enums\PublicationVisibility;
 use App\Enums\Role;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\PublicationCardResource;
@@ -38,12 +37,11 @@ class PortfolioController extends Controller
         $seeAll = $isOwner || $viewer?->isAdmin();
         $authoredBy = fn (Builder $q) => $q->where('author_id', $user->id)->orWhereHas('coAuthors', fn ($c) => $c->where('users.id', $user->id));
 
-        $works = Cards::works(Work::public()->where($authoredBy), $viewer?->id)->orderByDesc('approved_at')->get();
+        $works = Cards::works(Work::readableBy($viewer)->where($authoredBy), $viewer?->id)->orderByDesc('approved_at')->get();
         $mentored = $user->role === Role::Educator
-            ? Cards::works(Work::public()->where('adviser_id', $user->id), $viewer?->id)->orderByDesc('approved_at')->get()
+            ? Cards::works(Work::readableBy($viewer)->where('adviser_id', $user->id), $viewer?->id)->orderByDesc('approved_at')->get()
             : collect();
-        $publications = Cards::publications(Publication::query())
-            ->whereIn('visibility', $viewer ? [PublicationVisibility::Internal, PublicationVisibility::Public] : [PublicationVisibility::Public])
+        $publications = Cards::publications(Publication::readableBy($viewer))
             ->where($authoredBy)
             ->orderByDesc('published_at')
             ->get();

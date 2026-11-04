@@ -1,18 +1,28 @@
 /**
  * Schools — the admins' Schools tab (docs/decisions/0002): people who signed up without their
- * school's email domain, waiting to be confirmed, and for super-admins every school on the site,
- * with adding one and editing its name, email domains and whether it takes signups.
+ * school's email domain, waiting to be confirmed; each school's list of departments; and for
+ * super-admins every school on the site, with adding one and editing its name, email domains and
+ * whether it takes signups.
  */
 import { useState, type FormEvent } from 'react';
-import { CircleCheck, Pencil, Plus } from 'lucide-react';
+import { CircleCheck, Pencil, Plus, Trash2 } from 'lucide-react';
 import { usePatchUser } from '../../api/admin';
-import { useAdminInstitutions, useSaveInstitution, type AdminInstitution } from '../../api/institutions';
+import {
+  useAdminDepartments,
+  useAdminInstitutions,
+  useDeleteDepartment,
+  useInstitutions,
+  useSaveDepartment,
+  useSaveInstitution,
+  type AdminDepartment,
+  type AdminInstitution,
+} from '../../api/institutions';
 import type { AdminQueue } from '../../types/admin';
 import { relTime } from '../../lib/format';
 import { Person } from '../people/Person';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
-import { TextField } from '../ui/Field';
+import { SelectField, TextField } from '../ui/Field';
 import { Modal } from '../ui/Modal';
 import { Sheet, SheetEmpty } from '../ui/Sheet';
 import { Skeleton } from '../ui/Skeleton';
@@ -167,6 +177,135 @@ function SchoolForm({ school, onClose }: { school: AdminInstitution | null; onCl
             Takes new signups (turn off instead of deleting: its people and work stay)
           </label>
         )}
+        {save.error && (
+          <p className={styles.error} role="alert">
+            {save.error.message}
+          </p>
+        )}
+      </form>
+    </Modal>
+  );
+}
+
+/** Each school's departments: people pick theirs on their portfolio; feeds, follows and announcements use them. */
+export function DepartmentManager() {
+  const { data: schools } = useInstitutions();
+  const [picked, setPicked] = useState('');
+  const school = Number(picked || schools?.[0]?.id || 0);
+  const { data, isPending } = useAdminDepartments(school);
+  const [editing, setEditing] = useState<AdminDepartment | 'new' | null>(null);
+  const remove = useDeleteDepartment();
+  const toast = useToast();
+  return (
+    <Sheet
+      title="Departments"
+      aside={data ? String(data.length) : undefined}
+      flush
+      actions={
+        school > 0 && (
+          <Button icon={<Plus size={16} aria-hidden="true" />} onClick={() => setEditing('new')}>
+            Add a department
+          </Button>
+        )
+      }
+    >
+      {(schools?.length ?? 0) > 1 && (
+        <div className={styles.filters}>
+          <SelectField label="School" value={String(school || '')} onChange={(e) => setPicked(e.target.value)}>
+            {schools!.map((s) => (
+              <option key={s.id} value={String(s.id)}>
+                {s.name}
+              </option>
+            ))}
+          </SelectField>
+        </div>
+      )}
+      {school === 0 ? (
+        <SheetEmpty>Add a school first.</SheetEmpty>
+      ) : isPending || !data ? (
+        <Skeleton className={styles.skeleton} />
+      ) : data.length === 0 ? (
+        <SheetEmpty>No departments yet. Add them so people can pick theirs.</SheetEmpty>
+      ) : (
+        <ul className={styles.list}>
+          {data.map((d) => (
+            <li key={d.id} className={styles.row}>
+              <div className={styles.body}>
+                <span className={styles.name}>{d.name}</span>
+                <span className={styles.meta}>{d.people === 1 ? '1 person' : `${d.people} people`}</span>
+              </div>
+              <Button variant="ghost" icon={<Pencil size={16} aria-hidden="true" />} onClick={() => setEditing(d)}>
+                Rename
+              </Button>
+              {d.people === 0 && (
+                <Button
+                  variant="ghost"
+                  icon={<Trash2 size={16} aria-hidden="true" />}
+                  disabled={remove.isPending}
+                  onClick={() =>
+                    window.confirm(`Remove ${d.name}?`) &&
+                    remove.mutate(d.id, { onSuccess: () => toast(`${d.name} removed.`), onError: (e) => toast(e.message, 'error') })
+                  }
+                >
+                  Remove
+                </Button>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+      {editing && (
+        <DepartmentForm
+          key={editing === 'new' ? 'new' : editing.id}
+          school={school}
+          department={editing === 'new' ? null : editing}
+          onClose={() => setEditing(null)}
+        />
+      )}
+    </Sheet>
+  );
+}
+
+function DepartmentForm({ school, department, onClose }: { school: number; department: AdminDepartment | null; onClose: () => void }) {
+  const save = useSaveDepartment();
+  const toast = useToast();
+  const [name, setName] = useState(department?.name ?? '');
+  const submit = (e: FormEvent) => {
+    e.preventDefault();
+    save.mutate(
+      { id: department?.id, institutionId: school, name },
+      {
+        onSuccess: () => {
+          toast(department ? 'Department renamed.' : `${name} added.`, 'success');
+          onClose();
+        },
+      },
+    );
+  };
+  return (
+    <Modal
+      open
+      onClose={onClose}
+      title={department ? `Rename ${department.name}` : 'Add a department'}
+      footer={
+        <>
+          <Button onClick={onClose}>Cancel</Button>
+          <Button type="submit" form="department-form" variant="primary" loading={save.isPending}>
+            {department ? 'Save' : 'Add department'}
+          </Button>
+        </>
+      }
+    >
+      <form id="department-form" className={styles.form} onSubmit={submit}>
+        <TextField
+          label="Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+          minLength={2}
+          maxLength={160}
+          placeholder="e.g. College of Computing"
+        />
         {save.error && (
           <p className={styles.error} role="alert">
             {save.error.message}

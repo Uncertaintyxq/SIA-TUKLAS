@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  *
  * @property-read bool|null $read_by_me Whether the viewer has read it (AnnouncementController)
  */
-#[Fillable(['scope', 'department', 'research_group_id', 'title', 'body', 'pinned'])]
+#[Fillable(['scope', 'department_id', 'research_group_id', 'title', 'body', 'pinned'])]
 class Announcement extends Model
 {
     /** Column defaults, so a new model has them before it's reloaded. */
@@ -32,12 +32,12 @@ class Announcement extends Model
         if ($user->isAdmin()) {
             return;
         }
-        $department = trim((string) $user->profile?->department);
+        $department = $user->profile?->department_id;
         $groupIds = ResearchGroup::where('adviser_id', $user->id)->orWhereHas('members', fn ($m) => $m->where('user_id', $user->id))->pluck('id');
 
         $query->where(fn ($q) => $q
             ->where('scope', AnnouncementScope::System)
-            ->when($department !== '', fn ($w) => $w->orWhere(fn ($d) => $d->where('scope', AnnouncementScope::Department)->where('department', $department)))
+            ->when($department !== null, fn ($w) => $w->orWhere(fn ($d) => $d->where('scope', AnnouncementScope::Department)->where('department_id', $department)))
             ->orWhere(fn ($g) => $g->where('scope', AnnouncementScope::Group)->whereIn('research_group_id', $groupIds))
             ->orWhere('author_id', $user->id));
     }
@@ -47,7 +47,7 @@ class Announcement extends Model
     {
         return match ($this->scope) {
             AnnouncementScope::System => User::active()->pluck('id')->all(),
-            AnnouncementScope::Department => Profile::where('department', $this->department ?? '')->pluck('user_id')->all(),
+            AnnouncementScope::Department => $this->department_id === null ? [] : Profile::where('department_id', $this->department_id)->pluck('user_id')->all(),
             AnnouncementScope::Group => ResearchGroup::with('members')->find($this->research_group_id)?->participantIds() ?? [],
         };
     }
@@ -57,7 +57,7 @@ class Announcement extends Model
     {
         return match ($this->scope) {
             AnnouncementScope::System => 'Everyone',
-            AnnouncementScope::Department => $this->department ?? 'Department',
+            AnnouncementScope::Department => $this->department_id !== null ? (string) Department::byId()->get($this->department_id)?->name : 'Department',
             AnnouncementScope::Group => $this->group->name ?? 'Research group',
         };
     }

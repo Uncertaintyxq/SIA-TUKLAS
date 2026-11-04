@@ -24,7 +24,7 @@ import { useReportQueue } from '../api/reports';
 import { useDecision, useDeleteDiscussion } from '../api/works';
 import { EducatorMonitor } from '../components/admin/EducatorMonitor';
 import { ReportQueue } from '../components/admin/ReportQueue';
-import { SchoolManager, SchoolQueue } from '../components/admin/Schools';
+import { DepartmentManager, SchoolManager, SchoolQueue } from '../components/admin/Schools';
 import { CalendarLeaf, categoryTone } from '../components/events/EventBits';
 import { PageHeader } from '../components/layout/PageHeader';
 import { Person } from '../components/people/Person';
@@ -102,6 +102,7 @@ export function AdminPage() {
           {tab === 'schools' && (
             <div className={styles.stack}>
               <SchoolQueue people={queue!.schools} />
+              <DepartmentManager />
               {me?.superAdmin && <SchoolManager />}
             </div>
           )}

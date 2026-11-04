@@ -5,6 +5,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import type { AcademicLinkView, BackgroundView, HonorKind, HonorView, LinkType } from '../../types/profile';
+import { useDepartments } from '../../api/institutions';
 import { useRemovePhoto, useSaveBackground, useSaveHonor, useSaveLinks, useUpdateProfile, useUploadPhoto, type Portfolio } from '../../api/portfolio';
 import { honorLabel, linkLabel } from '../../lib/labels';
 import { Avatar } from '../ui/Avatar';
@@ -43,7 +44,8 @@ export function ProfileForm({ open, onClose, portfolio: p }: { open: boolean; on
   const [name, setName] = useState(p.user.name);
   const [titles, setTitles] = useState(p.titles);
   const [program, setProgram] = useState(p.user.program);
-  const [department, setDepartment] = useState(p.user.department);
+  const [departmentId, setDepartmentId] = useState(p.user.departmentId ? String(p.user.departmentId) : '');
+  const { data: departments } = useDepartments(open);
   const [headline, setHeadline] = useState(p.user.headline);
   const [bioLong, setBioLong] = useState(p.bioLong);
   const [photo, setPhoto] = useState<File | null>(null);
@@ -61,7 +63,7 @@ export function ProfileForm({ open, onClose, portfolio: p }: { open: boolean; on
     setError(null);
     setPending(true);
     try {
-      await update.mutateAsync({ name, titles, program, department, headline, bioLong });
+      await update.mutateAsync({ name, titles, program, departmentId: departmentId ? Number(departmentId) : null, headline, bioLong });
       if (photo) await uploadPhoto.mutateAsync(photo);
       toast('Portfolio saved.', 'success');
       onClose();
@@ -92,7 +94,19 @@ export function ProfileForm({ open, onClose, portfolio: p }: { open: boolean; on
         </div>
         <div className={styles.row}>
           <TextField label="Program or position" value={program} onChange={(e) => setProgram(e.target.value)} required placeholder="e.g. BS Biology · 4th year" />
-          <TextField label="Department" value={department} onChange={(e) => setDepartment(e.target.value)} placeholder="e.g. College of Computing" />
+          <SelectField
+            label="Department"
+            value={departmentId}
+            onChange={(e) => setDepartmentId(e.target.value)}
+            hint={departments && departments.length === 0 ? 'Your school hasn’t listed its departments yet. An admin adds them.' : undefined}
+          >
+            <option value="">No department</option>
+            {departments?.map((d) => (
+              <option key={d.id} value={String(d.id)}>
+                {d.name}
+              </option>
+            ))}
+          </SelectField>
         </div>
         <TextField label="Short bio" value={headline} onChange={(e) => setHeadline(e.target.value)} maxLength={160} hint={`One line under your name. ${headline.length}/160`} />
         <TextAreaField label="Extended bio" value={bioLong} onChange={(e) => setBioLong(e.target.value)} rows={7} maxLength={5000} hint="Research interests, projects and goals. Leave a blank line between paragraphs." />

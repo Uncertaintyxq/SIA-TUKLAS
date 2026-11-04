@@ -145,7 +145,7 @@ class PeopleController extends Controller
         $recent = collect()
             ->concat(Publication::with(Cards::user('author'))->whereIn('author_id', $ids)->where('visibility', '!=', PublicationVisibility::Draft)->orderByDesc('published_at')->limit(15)->get()
                 ->map(fn ($p) => ['key' => "p{$p->id}", 'kind' => 'publication', 'educator' => $card($p->author),
-                    'text' => "published “{$p->title}” (".($p->visibility === PublicationVisibility::Public ? 'Public' : 'Internal').')',
+                    'text' => "published “{$p->title}” (".($p->visibility === PublicationVisibility::Public ? 'Public' : 'School only').')',
                     'link' => "/publications/{$p->id}", 'at' => ($p->published_at ?? now()->setTimestamp(0))->toISOString()]))
             ->concat(Announcement::with(Cards::user('author'))->whereIn('author_id', $ids)->latest('created_at')->limit(15)->get()
                 ->map(fn ($a) => ['key' => "a{$a->id}", 'kind' => 'announcement', 'educator' => $card($a->author),

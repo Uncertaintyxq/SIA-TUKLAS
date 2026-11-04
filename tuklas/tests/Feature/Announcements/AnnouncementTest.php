@@ -45,7 +45,7 @@ class AnnouncementTest extends TestCase
         Notification::fake();
 
         $id = $this->actingAs(User::find(4))->postJson('/api/announcements', [
-            'scope' => 'department', 'department' => 'Department of Literature', 'title' => 'Colloquium rooms', 'body' => 'Rooms 301–304.',
+            'scope' => 'department', 'departmentId' => 999, 'title' => 'Colloquium rooms', 'body' => 'Rooms 301–304.',
         ])->assertCreated()->json('id');
 
         $this->assertNotContains($id, array_column($this->actingAs(User::find(2))->getJson('/api/announcements')->json('items'), 'id'));

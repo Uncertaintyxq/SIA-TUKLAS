@@ -1,7 +1,7 @@
 /**
  * PublicationEditorPage — /publications/new and /publications/:id/edit. Educators draft and publish
  * their research: title, abstract, keywords, co-authors, methodology, full text and a PDF, then choose
- * Draft, Internal (institution only) or Public. Publishing needs the right an admin grants.
+ * Draft, School only (stored as "internal": the author's school) or Public. Publishing needs the right an admin grants.
  */
 import { useState, type FormEvent } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -45,7 +45,7 @@ export function PublicationEditorPage() {
 
 const visibilityChoices: { value: PublicationVisibility; label: string; note: string; icon: typeof Lock }[] = [
   { value: 'draft', label: 'Draft', note: 'Only you and your co-authors can see it.', icon: Lock },
-  { value: 'internal', label: 'Internal', note: 'Everyone signed in to Tuklas: students, educators, admins.', icon: School },
+  { value: 'internal', label: 'School only', note: 'People signed in from your school, and your co-authors. It stays off Google Scholar.', icon: School },
   { value: 'public', label: 'Public', note: 'Anyone with the link, and your public portfolio.', icon: Globe },
 ];
 

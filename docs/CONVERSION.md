@@ -413,6 +413,17 @@ branch rule; the deployment plan is in [DEPLOYMENT.md](DEPLOYMENT.md).
   (once per request; saving a school flushes it). `PageMeta` gives Google Scholar the author's
   school. A site with no schools behaves as before. Nothing is scoped by school yet: that's
   `feat/institution-scoping`.
+- 2026-11-04: `feat/institution-scoping` (docs/decisions/0002). Departments are rows per school
+  (`departments`; `profiles.department_id`, `announcements.department_id`), so the same name at two
+  schools stays apart; cards still send `department` as a name, read through
+  `Profile::departmentName()` from `Department::byId()` (once per request). Works and publications
+  carry `institution_id`; works have `visibility` public|school, and publications' `internal` now
+  means School only. Three scopes on `Work`: `published()` (approved, not removed), `public()`
+  (published and Public: what Google Scholar, link previews and the sitemap get) and
+  `readableBy($user)` (what a person may list), with `canBeReadBy()` for one work (WorkPolicy::view);
+  `Publication` has `readableBy` / `canBeReadBy` too. Use `readableBy` for anything a signed-in
+  person browses. The adviser must be from the student's school (`CheckWorkPeople`, the adviser
+  picker); co-authors from any school. Opportunities, events and ads are `feat/institution-audiences`.
 
 ## How the code is laid out (for the next modules)
 

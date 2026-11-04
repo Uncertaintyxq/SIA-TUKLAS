@@ -16,6 +16,6 @@ export const useUnfollow = () => useAction((t: FollowTarget) => api('/follows', 
 export function isFollowing(f: Follows | undefined, { kind, target }: FollowTarget): boolean {
   if (!f) return false;
   if (kind === 'person') return f.people.some((u) => String(u.id) === target);
-  if (kind === 'department') return f.departments.includes(target);
+  if (kind === 'department') return f.departments.some((d) => String(d.id) === target);
   return f.tags.some((t) => t.toLowerCase() === target.toLowerCase());
 }

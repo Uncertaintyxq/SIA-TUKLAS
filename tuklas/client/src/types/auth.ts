@@ -53,7 +53,7 @@ export interface PublicUser {
 }
 
 export interface EducatorRights {
-  /** Publish research as Internal or Public */
+  /** Publish research as School only or Public */
   publish: boolean;
   /** Create research groups, manage members and roles, moderate group chat */
   moderateGroups: boolean;

@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use App\Enums\WorkStatus;
+use App\Models\Institution;
 use App\Models\Work;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -17,7 +18,7 @@ class WorkCardResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
-        $isPublic = $this->isPublic();
+        $isPublic = $this->isPublished();
         $approved = $this->status === WorkStatus::Approved && $this->approved_at !== null;
 
         return [
@@ -29,7 +30,10 @@ class WorkCardResource extends JsonResource
             'status' => $this->status->value,
             'authors' => UserCardResource::collection(collect([$this->author])->concat($this->coAuthors)),
             'adviser' => new UserCardResource($this->adviser),
-            'department' => $this->author->profile->department ?? '',
+            'department' => $this->author->profile?->departmentName() ?? '',
+            // Public, or School only: signed-in members of its school (docs/decisions/0002)
+            'visibility' => $this->visibility->value,
+            'institution' => $this->institution_id !== null ? Institution::byId()->get($this->institution_id)?->card() : null,
             'approvedAt' => $this->approved_at?->toISOString(),
             'approval' => $approved ? [
                 'approvedAt' => $this->approved_at->toISOString(),

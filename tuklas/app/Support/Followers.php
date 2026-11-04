@@ -19,7 +19,7 @@ class Followers
     /**
      * What this person follows.
      *
-     * @return array{people: list<int>, departments: list<string>, tags: list<string>}
+     * @return array{people: list<int>, departments: list<int>, tags: list<string>}
      */
     public static function of(User $user): array
     {
@@ -28,27 +28,29 @@ class Followers
 
         return [
             'people' => $targets(FollowKind::Person)->map(fn ($id) => (int) $id)->all(),
-            'departments' => $targets(FollowKind::Department)->all(),
+            'departments' => $targets(FollowKind::Department)->map(fn ($id) => (int) $id)->all(),
             'tags' => $targets(FollowKind::Tag)->all(),
         ];
     }
 
-    /** A work just went public: its authors' followers, its department's and its keywords'. */
-    public static function tellAboutWork(Work $work): void
+    /** A work just went public: its authors' followers, its department's and its keywords' (only its school's, when it's School only), not the approver. */
+    public static function tellAboutWork(Work $work, ?int $approverId = null): void
     {
         $work->loadMissing(['author.profile', 'coAuthors']);
         $people = $work->authorIds();
-        $ids = self::following($people, $work->author->profile?->department, $work->tags ?? []);
-        Notifier::notify(array_values(array_diff($ids, $people)), 'follow_work', "New on Tuklas: “{$work->title}” by {$work->author->name}.", "/works/{$work->id}");
+        $ids = self::following($people, $work->author->profile?->department_id, $work->tags ?? []);
+        $ids = User::whereIn('id', array_diff($ids, $people))->get()->filter(fn (User $u) => $work->canBeReadBy($u))->pluck('id')->all();
+        Notifier::notify(array_values($ids), 'follow_work', "New on Tuklas: “{$work->title}” by {$work->author->name}.", "/works/{$work->id}", $approverId);
     }
 
-    /** Research just left Draft: its authors' followers, its department's and its keywords'. */
+    /** Research just left Draft: its authors' followers, its department's and its keywords' (only its school's, when it's School only). */
     public static function tellAboutPublication(Publication $p): void
     {
         $p->loadMissing(['author.profile', 'coAuthors']);
         $people = [$p->author_id, ...$p->coAuthors->pluck('id')->all()];
-        $ids = self::following($people, $p->author->profile?->department, $p->keywords ?? []);
-        Notifier::notify(array_values(array_diff($ids, $people)), 'follow_research', "{$p->author->name} published “{$p->title}”.", "/publications/{$p->id}");
+        $ids = self::following($people, $p->author->profile?->department_id, $p->keywords ?? []);
+        $ids = User::whereIn('id', array_diff($ids, $people))->get()->filter(fn (User $u) => $p->canBeReadBy($u))->pluck('id')->all();
+        Notifier::notify(array_values($ids), 'follow_research', "{$p->author->name} published “{$p->title}”.", "/publications/{$p->id}");
     }
 
     /**
@@ -58,7 +60,7 @@ class Followers
      * @param  array<mixed>  $tags
      * @return list<int>
      */
-    private static function following(array $people, ?string $department, array $tags): array
+    private static function following(array $people, ?int $department, array $tags): array
     {
         $tags = array_values(array_unique(array_map(fn ($t) => mb_strtolower(trim($t)), array_filter($tags, fn ($t) => is_string($t) && trim($t) !== ''))));
 
@@ -66,7 +68,7 @@ class Followers
             ->where(function (Builder $q) use ($people, $department, $tags) {
                 $q->where(fn ($f) => $f->where('kind', FollowKind::Person)->whereIn('target', array_map('strval', $people)));
                 if ($department) {
-                    $q->orWhere(fn ($f) => $f->where('kind', FollowKind::Department)->where('target', $department));
+                    $q->orWhere(fn ($f) => $f->where('kind', FollowKind::Department)->where('target', (string) $department));
                 }
                 if ($tags !== []) {
                     $q->orWhere(fn ($f) => $f->where('kind', FollowKind::Tag)->whereIn(DB::raw('LOWER(target)'), $tags));

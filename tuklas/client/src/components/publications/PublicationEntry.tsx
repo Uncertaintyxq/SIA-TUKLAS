@@ -13,7 +13,7 @@ import styles from './PublicationEntry.module.css';
 
 const visibility: Record<PublicationVisibility, { label: string; tone: BadgeTone }> = {
   draft: { label: 'Draft', tone: 'neutral' },
-  internal: { label: 'Institutional only', tone: 'blue' },
+  internal: { label: 'School only', tone: 'blue' },
   public: { label: 'Public', tone: 'ok' },
 };
 

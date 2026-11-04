@@ -107,7 +107,7 @@ function PortfolioView({ username, editMode }: { username: string | undefined; e
             <Sheet title="Published research" aside={String(p.publications.length)}>
               {p.publications.length === 0 ? (
                 <p className={styles.quiet}>
-                  Research you publish as Internal or Public appears here. Write it in <Link to="/research">My research</Link>.
+                  Research you publish as School only or Public appears here. Write it in <Link to="/research">My research</Link>.
                 </p>
               ) : (
                 <div className={styles.works}>

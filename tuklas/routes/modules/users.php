@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Users\DepartmentController;
 use App\Http\Controllers\Users\FollowController;
 use App\Http\Controllers\Users\InstitutionController;
 use App\Http\Controllers\Users\PeopleController;
@@ -43,6 +44,9 @@ Route::middleware(['auth:sanctum', 'account.ready'])->prefix('follows')->group(f
     Route::post('/', [FollowController::class, 'store'])->middleware('throttle:posting')->name('follows.store');
     Route::delete('/', [FollowController::class, 'destroy'])->name('follows.destroy');
 });
+
+// A school's departments, for the portfolio's department picker
+Route::middleware(['auth:sanctum', 'account.ready'])->get('/departments', [DepartmentController::class, 'index'])->name('departments.index');
 
 // Pickers
 Route::middleware(['auth:sanctum', 'account.ready'])->prefix('people')->group(function () {
