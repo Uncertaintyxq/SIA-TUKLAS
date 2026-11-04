@@ -97,10 +97,25 @@ def heading_models(body) -> dict[int, OxmlElement]:
 
 def heading(models, level: int, text: str):
     p = copy.deepcopy(models[min(level, 2)])
+    # Each paragraph's Word id must be unique; a copy drops it and Word makes a new one
+    for name in list(p.attrib):
+        if name.endswith("}paraId") or name.endswith("}textId"):
+            del p.attrib[name]
     run = copy.deepcopy(next(r for r in p.iter(qn("w:r")) if r.find(qn("w:t")) is not None))
     for child in list(p):
         if child.tag != qn("w:pPr"):
             p.remove(child)
+    # The template turns "keep with next" off; a heading should never end a page
+    ppr = p.find(qn("w:pPr"))
+    keep = ppr.find(qn("w:keepNext"))
+    if keep is None:
+        keep = OxmlElement("w:keepNext")
+        style = ppr.find(qn("w:pStyle"))
+        if style is not None:
+            style.addnext(keep)  # the schema wants it right after the style
+        else:
+            ppr.insert(0, keep)
+    keep.set(qn("w:val"), "1")
     if level == 3:
         # A third level of the same numbering (1.1.1), in the Heading 3 style
         ppr = p.find(qn("w:pPr"))
@@ -151,7 +166,7 @@ def main() -> int:
     rename_in_headers(doc)
     empty_table_of_contents(doc)
 
-    lists = Lists(doc)
+    lists = Lists(doc, circled_steps=True)
     count = 0
     for level, title, lines in chapters():
         final_section.addprevious(heading(models, level, title))

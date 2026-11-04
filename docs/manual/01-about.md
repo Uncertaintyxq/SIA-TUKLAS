@@ -28,7 +28,7 @@ Educators can do everything students can, so Chapter 5 covers only what educator
 
 - Text that appears on the screen is written in double quotes, for example "Log in".
 - **Select** means click with a mouse, or tap on a phone.
-- In the pictures, numbered red boxes mark what to select or fill in. The numbers match the numbered steps next to the picture.
+- Each set of steps has one picture, right below it. The red circled step numbers, ①, ②, ③, are the same as the numbered red boxes in that picture: step ② is what box 2 marks.
 - Boxed notes, like the one below, give a rule or a tip.
 
 > **Note:** Tuklas looks the same on a computer and a phone, except for where its menu is (section 2.10). The pictures in this manual are from a computer unless they say otherwise.

@@ -54,11 +54,16 @@ async function freshCode(page, secret, used) {
   return code;
 }
 
-/** Numbered red boxes. A target is a locator, or [locator, side] to put its number 'right', 'above',
- * 'below' or 'inside' (at the box's right end) instead of on the left. */
+/** Numbered red boxes, numbered like the manual's steps: the nth target is box n. A target is a
+ * locator, [locator, side] to put its number 'right', 'above', 'below' or 'inside' (at the box's
+ * right end) instead of on the left, or null for a step that has nothing to mark. */
 async function mark(page, targets) {
   const boxes = [];
   for (const t of targets) {
+    if (t === null) {
+      boxes.push(null);
+      continue;
+    }
     const [locator, side] = Array.isArray(t) ? t : [t, 'left'];
     const box = await locator.boundingBox();
     boxes.push(box && { ...box, side });
@@ -89,16 +94,37 @@ async function blur(page, selectors) {
   await page.evaluate((list) => list.forEach((s) => document.querySelectorAll(s).forEach((el) => (el.style.filter = 'blur(6px)'))), selectors);
 }
 
-async function shot(page, name, targets = [], { blurred = [], clip, toasts = false } = {}) {
+/**
+ * Saves a screenshot with its markers. `tall` takes the whole page; `clip` (a locator, or several)
+ * takes only the area around them, with room left for the markers' numbers.
+ */
+async function shot(page, name, targets = [], { blurred = [], clip, tall = false, toasts = false } = {}) {
+  const viewport = page.viewportSize();
+  if (tall || clip) {
+    // The whole page in one viewport, so the markers and the clip share one set of coordinates
+    const height = await page.evaluate(() => document.documentElement.scrollHeight);
+    await page.setViewportSize({ width: viewport.width, height: Math.max(height, viewport.height) });
+    await page.evaluate(() => window.scrollTo(0, 0));
+  }
   await page.waitForTimeout(700); // let entrance animations finish
   // Pop-up messages ("Welcome back") hide parts of the screen; shown only where the manual is about one
   await page.evaluate((show) => document.querySelectorAll('[aria-live="polite"]').forEach((el) => (el.style.visibility = show ? '' : 'hidden')), toasts);
   if (blurred.length) await blur(page, blurred);
   if (targets.length) await mark(page, targets);
   const file = path.join(OUT, `${name}.png`);
-  if (clip) await clip.screenshot({ path: file });
-  else await page.screenshot({ path: file });
+  if (clip) {
+    const boxes = await Promise.all([].concat(clip).map((l) => l.boundingBox()));
+    const size = page.viewportSize();
+    const x = Math.max(Math.min(...boxes.map((b) => b.x)) - 48, 0);
+    const y = Math.max(Math.min(...boxes.map((b) => b.y)) - 20, 0);
+    const right = Math.min(Math.max(...boxes.map((b) => b.x + b.width)) + 48, size.width);
+    const bottom = Math.min(Math.max(...boxes.map((b) => b.y + b.height)) + 20, size.height);
+    await page.screenshot({ path: file, clip: { x, y, width: right - x, height: bottom - y } });
+  } else {
+    await page.screenshot({ path: file });
+  }
   await page.evaluate(() => document.getElementById('manual-marks')?.remove());
+  if (tall || clip) await page.setViewportSize(viewport);
   console.log('  ' + name + '.png');
 }
 
@@ -129,10 +155,7 @@ const chapters = {
 
     // Logging in, and where to create an account
     await page.goto(BASE + '/login');
-    await shot(page, 'login', [
-      page.getByLabel('Email address'), page.getByLabel('Password', { exact: true }), page.getByRole('link', { name: 'Forgot your password?' }),
-      page.getByRole('button', { name: 'Log in', exact: true }), [page.getByRole('button', { name: 'Create your account' }), 'right'],
-    ]);
+    await shot(page, 'login', [page.getByLabel('Email address'), page.getByLabel('Password', { exact: true }), page.getByRole('button', { name: 'Log in', exact: true })]);
 
     // Signing up with a school email
     await page.getByRole('button', { name: 'Create your account' }).click();
@@ -144,16 +167,15 @@ const chapters = {
     await dialog.getByRole('checkbox').check();
     await shot(page, 'signup', [
       dialog.getByLabel('Full name'), dialog.getByLabel('School email'), dialog.getByLabel('Password'), dialog.getByLabel('School', { exact: true }),
-      dialog.getByLabel('I am a'), dialog.getByLabel('Program or department'), dialog.getByRole('checkbox'), dialog.getByRole('button', { name: 'Create account' }),
+      dialog.getByLabel('I am a'), dialog.getByLabel('Program or department'), dialog.getByRole('checkbox'), [dialog.getByRole('button', { name: 'Create account' }), 'above'],
     ], { clip: dialog });
     await dialog.getByRole('button', { name: 'Create account' }).click();
 
     // Confirming the email
     await page.getByRole('heading', { name: 'Confirm your email' }).waitFor();
-    await shot(page, 'confirm-email', [page.getByRole('button', { name: 'I’ve confirmed it' }), page.getByRole('button', { name: 'Send a new link' })]);
+    await shot(page, 'confirm-email', [page.getByRole('button', { name: 'Send a new link' }), page.getByRole('button', { name: 'I’ve confirmed it' })]);
     await page.goto(lastMailedLink('verify'));
     await page.getByText('Email confirmed. Welcome to Tuklas.').waitFor();
-    await shot(page, 'email-confirmed', [page.getByText('Email confirmed. Welcome to Tuklas.')], { toasts: true });
 
     // Signing up without a school email: the school's admins confirm the account
     const other = await newPage(browser);
@@ -166,7 +188,7 @@ const chapters = {
     await d2.getByLabel('School', { exact: true }).selectOption({ label: 'Bayan State College' });
     await d2.getByLabel('Program or department').fill('BS Agriculture');
     await d2.getByRole('checkbox').check();
-    await shot(other, 'signup-choose-school', [d2.getByLabel('School', { exact: true })], { clip: d2 });
+    await shot(other, 'signup-choose-school', [d2.getByLabel('School', { exact: true }), [d2.getByRole('button', { name: 'Create account' }), 'above']], { clip: d2 });
     await d2.getByRole('button', { name: 'Create account' }).click();
     await other.getByRole('heading', { name: 'Confirm your email' }).waitFor();
     await other.goto(lastMailedLink('verify'));
@@ -211,7 +233,7 @@ const chapters = {
     await logIn(edu, `msantos@tu.${DOMAIN}`);
     await edu.getByRole('heading', { name: 'Two-factor sign-in' }).waitFor();
     const codeField = edu.getByLabel('6-digit code');
-    await shot(edu, '2fa-challenge', [codeField, edu.getByRole('button', { name: 'Lost your phone? Use a recovery code' })]);
+    await shot(edu, '2fa-challenge', [codeField, edu.getByRole('button', { name: 'Log in', exact: true }), [edu.getByRole('button', { name: 'Lost your phone? Use a recovery code' }), 'below']]);
     await codeField.fill(await freshCode(edu, secret, used));
     await codeField.press('Enter');
     await edu.waitForURL(/\/feed/);
@@ -221,7 +243,7 @@ const chapters = {
     // A forgotten password
     await page.context().clearCookies();
     await page.goto(BASE + '/forgot-password');
-    await shot(page, 'forgot-password');
+    await shot(page, 'forgot-password', [page.getByLabel('School email'), page.getByRole('button', { name: 'Send reset link' })]);
 
     // Finding your way around, as a student
     await logIn(page, `andrea@tu.${DOMAIN}`);
@@ -238,7 +260,7 @@ const chapters = {
     ]);
     await userMenu.click();
     await page.getByText('Look', { exact: true }).waitFor();
-    await shot(page, 'user-menu', [page.getByRole('radiogroup', { name: 'Theme' }).or(page.getByLabel('Theme')).first(), page.getByRole('radiogroup', { name: 'Look' }).or(page.getByLabel('Look')).first()]);
+    await shot(page, 'user-menu', [[userMenu, 'right'], page.getByRole('radiogroup', { name: 'Theme' }).or(page.getByLabel('Theme')).first(), page.getByRole('radiogroup', { name: 'Look' }).or(page.getByLabel('Look')).first()]);
     await page.keyboard.press('Escape');
 
     await page.goto(BASE + '/account');
@@ -263,6 +285,39 @@ const chapters = {
       [bar.getByRole('link', { name: 'Feed' }), 'above'], [bar.getByRole('button', { name: 'More' }), 'above'],
     ]);
     await phone.context().close();
+    await page.context().close();
+  },
+
+  async visitors(browser) {
+    const page = await newPage(browser);
+    const heading = (name) => page.getByRole('heading', { name });
+
+    // A public portfolio
+    await page.goto(BASE + '/u/andrea');
+    await heading('Andrea Villanueva').waitFor();
+    await shot(page, 'visitor-portfolio', [
+      page.getByRole('button', { name: 'Share' }), page.getByText('Published works', { exact: true }).locator('..'), heading(/^Published research/),
+      heading(/^Research & literary works/), heading('Academic links'), heading('Academic background'), heading(/^Honors/),
+    ], { tall: true });
+
+    // A work, from the top
+    await page.goto(BASE + '/works/1');
+    await heading('Abstract').waitFor();
+    await shot(page, 'visitor-work', [
+      page.getByText('Research adviser:'), heading('Abstract'), heading('How we made this'), heading('Approval'), heading('Readers'),
+    ]);
+    // A card is the section whose header holds the heading
+    const card = (name) => heading(name).locator('xpath=ancestor::header[1]/..');
+    const joinIn = page.getByRole('main').getByRole('link', { name: 'Log in' });
+    await shot(page, 'visitor-work-stages', [heading(/^Defense to Discovery/), heading(/^Discussion/), joinIn], { clip: [card(/^Defense to Discovery/), card(/^Discussion/)] });
+    await shot(page, 'visitor-cite', [page.getByText('APA 7', { exact: true }), page.getByRole('button', { name: 'Copy citation' })], { clip: card('Cite this work') });
+    await shot(page, 'visitor-share', [page.getByRole('button', { name: 'Share link' }), page.getByRole('link', { name: 'Download PNG' }).or(page.getByRole('button', { name: 'Download PNG' })).first()],
+      { clip: [card('Readers'), card('QR code for posters')] });
+
+    // An educator's publication
+    await page.goto(BASE + '/publications/4');
+    await heading('Abstract').waitFor();
+    await shot(page, 'visitor-publication', [heading('Abstract'), heading('Methodology'), heading('Full text'), heading('Cite this research'), page.getByRole('button', { name: 'Copy link' })], { tall: true });
     await page.context().close();
   },
 };
