@@ -22,14 +22,14 @@ class NotificationPrefs
         'announcements' => ['Announcements', 'Announcements for your department, your groups or everyone.', true, false, null],
         'events' => ['Events and opportunities', 'Your events and ads approved or cancelled, applications to your opportunities.', false, false, null],
         'account' => ['Your account', 'Verification, rights, honors, and moderation outcomes such as reports you made.', true, true, null],
-        'queue' => ['Approval queue', 'New educators, events, ads, honors and reports waiting for an admin.', false, false, [Role::Admin]],
+        'queue' => ['Approval queue', 'New educators, people to confirm for a school, events, ads, honors and reports waiting for an admin.', false, false, [Role::Admin]],
     ];
 
     /** The category a notification type belongs to (Notifier's types). */
     public static function categoryOf(string $type): string
     {
         return match (true) {
-            in_array($type, ['educator_signup', 'event_proposed', 'ad_requested', 'honor_claimed', 'report_new'], true) => 'queue',
+            in_array($type, ['educator_signup', 'school_signup', 'event_proposed', 'ad_requested', 'honor_claimed', 'report_new'], true) => 'queue',
             str_starts_with($type, 'work_'), $type === 'adviser_left' => 'research',
             str_starts_with($type, 'group_') => 'groups',
             $type === 'mention' => 'mentions',

@@ -121,6 +121,7 @@ class PortfolioTest extends TestCase
     {
         $response = $this->actingAs(User::find(1))->getJson('/api/people/advisers')->assertOk();
 
-        $this->assertEqualsCanonicalizing(['msantos', 'raquino'], array_column($response->json(), 'username'));
+        // Every school's for now; feat/institution-scoping limits it to the student's own school (alim is at Bayan)
+        $this->assertEqualsCanonicalizing(['msantos', 'raquino', 'alim'], array_column($response->json(), 'username'));
     }
 }

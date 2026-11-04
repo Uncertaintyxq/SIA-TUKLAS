@@ -72,14 +72,15 @@ class PageMeta
 
     private static function work(int $id): ?array
     {
-        $work = Work::public()->with(['author:id,name', 'coAuthors:id,name'])->find($id);
+        $work = Work::public()->with(['author:id,name,institution_id', 'coAuthors:id,name'])->find($id);
         if ($work === null) {
             return null;
         }
         $authors = collect([$work->author, ...$work->coAuthors])->filter()->pluck('name');
         $url = self::url("/works/{$work->id}");
         $pdf = $work->pdf_file ? self::url("/api/works/{$work->id}/pdf") : null;
-        $institution = (string) config('tuklas.institution');
+        // The author's own school; TUKLAS_INSTITUTION only on a site without schools
+        $institution = $work->author?->school()->name ?? (string) config('tuklas.institution');
 
         return [
             'title' => $work->title,

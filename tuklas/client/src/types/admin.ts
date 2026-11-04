@@ -12,11 +12,16 @@ export interface UserPatch {
   canPublish?: boolean;
   canModerateGroups?: boolean;
   canBroadcast?: boolean;
+  /** Let in someone who signed up without their school's email domain */
+  schoolConfirmed?: true;
+  /** Super-admins only: move them to another school (confirms them there) */
+  institutionId?: number;
 }
 
 export interface AdminStats {
   users: Record<Role, number>;
   unverifiedEducators: number;
+  unconfirmedSchools: number;
   works: { published: number; inReview: number; drafts: number; rejected: number; removed: number };
   events: { approved: number; pending: number; registrations: number };
   ads: { live: number; pending: number };
@@ -29,6 +34,8 @@ export interface AdminStats {
 export interface AdminQueue {
   works: MyWork[];
   educators: (UserCard & { email: string; createdAt: string })[];
+  /** Signed up without their school's email domain, waiting to be confirmed */
+  schools: (UserCard & { email: string; createdAt: string })[];
   events: EventCard[];
   ads: AdCard[];
   honors: (HonorView & { owner: UserCard })[];
@@ -38,6 +45,25 @@ export interface AdminUser extends UserCard {
   email: string;
   createdAt: string;
   works: number;
+  schoolConfirmed: boolean;
+  superAdmin: boolean;
+}
+
+/** A school as super-admins manage it (/api/admin/institutions). */
+export interface AdminInstitution {
+  id: number;
+  name: string;
+  shortName: string;
+  emailDomains: string[];
+  active: boolean;
+  people: number;
+}
+
+export interface InstitutionInput {
+  name: string;
+  shortName: string;
+  emailDomains: string[];
+  active: boolean;
 }
 
 /** One educator on the admin's monitoring dashboard. */

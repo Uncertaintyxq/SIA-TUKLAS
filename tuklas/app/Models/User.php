@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -33,7 +34,7 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $attributes = [
         'headline' => '', 'verified' => true, 'can_publish' => true, 'can_moderate_groups' => true, 'can_broadcast' => true,
         'last_seen_at' => null, 'two_factor_secret' => null, 'two_factor_recovery_codes' => null, 'two_factor_confirmed_at' => null,
-        'account_deleted_at' => null,
+        'account_deleted_at' => null, 'institution_id' => null, 'institution_confirmed_at' => null, 'is_super_admin' => false,
     ];
 
     protected $casts = [
@@ -49,6 +50,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'two_factor_confirmed_at' => 'datetime',
         'account_deleted_at' => 'datetime',
         'notification_settings' => 'array',
+        'institution_confirmed_at' => 'datetime',
+        'is_super_admin' => 'boolean',
     ];
 
     /** Accounts that weren't deleted. Deleted ones stay as "Former member" rows (DeleteAccount) and are left out of every people list. */
@@ -65,6 +68,30 @@ class User extends Authenticatable implements MustVerifyEmail
     public function isAdmin(): bool
     {
         return $this->role === Role::Admin;
+    }
+
+    /** Super-admins manage the schools on the site (docs/decisions/0002). Only admins can be one. */
+    public function isSuperAdmin(): bool
+    {
+        return $this->isAdmin() && $this->is_super_admin;
+    }
+
+    /** Signed up without the school's email domain and not confirmed by its admins yet. Admins never wait. */
+    public function awaitsSchoolConfirmation(): bool
+    {
+        return $this->institution_id !== null && $this->institution_confirmed_at === null && ! $this->isAdmin();
+    }
+
+    /** The person's school (read from the request's school list, so person cards don't query it each). */
+    public function school(): ?Institution
+    {
+        return $this->institution_id !== null ? Institution::byId()->get($this->institution_id) : null;
+    }
+
+    /** @return BelongsTo<Institution, $this> */
+    public function institution(): BelongsTo
+    {
+        return $this->belongsTo(Institution::class);
     }
 
     public function isEducator(): bool

@@ -20,6 +20,7 @@ use App\Models\ResearchGroup;
 use App\Models\User;
 use App\Models\Work;
 use App\Support\Cards;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -40,6 +41,7 @@ class DashboardController extends Controller
         return response()->json([
             'users' => collect(Role::cases())->mapWithKeys(fn (Role $r) => [$r->value => (int) ($roles[$r->value] ?? 0)]),
             'unverifiedEducators' => User::active()->where('role', Role::Educator)->where('verified', false)->count(),
+            'unconfirmedSchools' => self::awaitingSchool()->count(),
             'works' => [
                 'published' => $works(WorkStatus::Approved),
                 'inReview' => $works(WorkStatus::Submitted, WorkStatus::UnderReview, WorkStatus::Revision),
@@ -66,6 +68,12 @@ class DashboardController extends Controller
         ]);
     }
 
+    /** @return Builder<User> People waiting for their school's admins to confirm them */
+    private static function awaitingSchool(): Builder
+    {
+        return User::active()->whereNotNull('institution_id')->whereNull('institution_confirmed_at')->where('role', '!=', Role::Admin);
+    }
+
     /** GET /api/admin/queue — everything waiting for an admin */
     public function queue(Request $request): JsonResponse
     {
@@ -74,6 +82,9 @@ class DashboardController extends Controller
         return response()->json([
             'works' => MyWorkResource::collection(Cards::myWorks(Work::whereIn('status', [WorkStatus::Submitted, WorkStatus::UnderReview, WorkStatus::Revision])->whereNull('removed_at'), $me->id)->orderBy('submitted_at')->get()),
             'educators' => User::with('profile')->active()->where('role', Role::Educator)->where('verified', false)->orderBy('created_at')->get()
+                ->map(fn (User $u) => [...(new UserCardResource($u))->resolve($request), 'email' => $u->email, 'createdAt' => $u->created_at->toISOString()]),
+            // Signed up without their school's email domain (docs/decisions/0002)
+            'schools' => self::awaitingSchool()->with('profile')->orderBy('created_at')->get()
                 ->map(fn (User $u) => [...(new UserCardResource($u))->resolve($request), 'email' => $u->email, 'createdAt' => $u->created_at->toISOString()]),
             'events' => EventCardResource::collection(Cards::events(Event::where('status', ApprovalStatus::Pending), $me->id)->orderBy('date')->get()),
             'ads' => AdCardResource::collection(Cards::ads(Ad::where('status', ApprovalStatus::Pending))->orderBy('created_at')->get()),
