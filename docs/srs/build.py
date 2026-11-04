@@ -26,6 +26,8 @@ from docx_blocks import Lists, refresh_fields_on_open, render  # noqa: E402
 
 TEMPLATE = HERE.parent / "SRS Template.docx"
 OUTPUT = HERE.parent / "Tuklas SRS.docx"
+# Diagrams may fill most of a page: the SRS has no steps to keep beside them
+FIGURE_HEIGHT = 8.0
 
 
 def sections() -> dict[str, list[str]]:
@@ -96,7 +98,7 @@ def system_features(doc, lists, heading, lines: list[str]) -> None:
 
     def flush():
         nonlocal anchor
-        for new in render(doc, lists, chunk, HERE):
+        for new in render(doc, lists, chunk, HERE, FIGURE_HEIGHT):
             anchor.addnext(new)
             anchor = new
         chunk.clear()
@@ -142,7 +144,7 @@ def main() -> int:
             sibling.getparent().remove(sibling)
             sibling = nxt
         anchor = heading._p
-        for el in render(doc, lists, wanted[name], HERE):
+        for el in render(doc, lists, wanted[name], HERE, FIGURE_HEIGHT):
             anchor.addnext(el)
             anchor = el
         filled.append(name)
@@ -151,6 +153,21 @@ def main() -> int:
     if missing:
         print("No template heading matches: " + ", ".join(missing), file=sys.stderr)
         return 1
+
+    # The appendix titles are plain paragraphs in the template, so the table of contents misses them.
+    # Heading 1 with its numbering switched off puts them in it; their own formatting keeps their look.
+    for p in doc.paragraphs:
+        ppr = p._p.find(qn("w:pPr"))
+        if not p.text.strip().startswith("Appendix ") or ppr is None or ppr.find(qn("w:pStyle")) is not None:
+            continue
+        style = OxmlElement("w:pStyle")
+        style.set(qn("w:val"), "Heading1")
+        ppr.insert(0, style)
+        numbering = OxmlElement("w:numPr")
+        num_id = OxmlElement("w:numId")
+        num_id.set(qn("w:val"), "0")
+        numbering.append(num_id)
+        style.addnext(numbering)
 
     refresh_fields_on_open(doc)
     doc.save(str(OUTPUT))
