@@ -103,7 +103,8 @@ App
 - [ ] HTTPS works and HTTP redirects to it; the response has `Strict-Transport-Security`.
 - [ ] securityheaders.com and SSL Labs both grade A or better.
 - [ ] Signing up, email verification, password reset and 2FA work with the real mail provider.
-- [ ] The first admin account is created on the server (`php artisan tinker`), with 2FA set up straight away.
+- [ ] The schools and first admins are created on the server (`php artisan tuklas:school`, `php artisan tuklas:admin … --super`; [PRODUCTION_SERVER.md](PRODUCTION_SERVER.md), step 4), with 2FA set up straight away.
+- [ ] `php artisan tuklas:launch-check` shows no `fix` lines.
 - [ ] `composer audit` and `npm audit` are clean.
 - [ ] Mail domain has SPF, DKIM and DMARC records, so emails don't land in spam.
 
