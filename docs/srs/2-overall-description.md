@@ -85,9 +85,10 @@ The following documentation is delivered with release 1.0:
 - **In the application:** the privacy notice, and step-by-step guidance on the screens that need it, such as setting up two-factor sign-in.
 - **For the people who run the server:** the staging server guide (docs/STAGING_SERVER.md), the production runbook (docs/PRODUCTION_SERVER.md), and the server setup, release, backup and restore guide (tuklas/deploy/README.md).
 - **For developers:** the setup guide (docs/GETTING_STARTED.md), the architecture (docs/ARCHITECTURE.md), the coding conventions (docs/CONVENTIONS.md) and the team workflow (docs/COLLABORATION.md).
+- **The user manual** (docs/Tuklas User Manual.docx), for Visitors, Students, Educators, Admins and Super-admins: step-by-step tasks with a screenshot for each, troubleshooting, frequently asked questions and a glossary.
 - **This SRS**, in Microsoft Word format.
 
-All the guides above are Markdown files in the source code repository. A user manual for Students, Educators and Admins is TBD-4.
+The guides for server operators and developers are Markdown files in the source code repository.
 
 ## Assumptions and Dependencies
 
