@@ -50,7 +50,7 @@ Outside the scope of release 1.0 are general-purpose social posts, commercial ad
 
 | No. | Title | Author or source | Version or date | Location |
 |---|---|---|---|---|
-| 1 | Kickoff meeting notes and written Q&A | The client, J. M. Manla, T. A. V. Rollon | 31 August 2026 | tuklas/reference/August_31_2026.pdf |
+| 1 | Kickoff meeting notes and written Q&A | The client, Dumangas, B. A. Limbadan, J. M. Manla, T. A. V. Rollon | 31 August 2026 | tuklas/reference/August_31_2026.pdf |
 | 2 | System UI design progress: login screen and color palette | Project team | 1 October 2026 | tuklas/reference/October_1_2026.pdf |
 | 3 | Feature review: features by role, comparison with similar sites | Project team | 2 November 2026 | tuklas/reference/FEATURES.md |
 | 4 | Working prototype: feature specification, copy and demo data | Project team | Before the Laravel conversion | tuklas/reference/prototype.html |

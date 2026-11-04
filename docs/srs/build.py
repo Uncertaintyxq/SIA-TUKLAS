@@ -5,7 +5,8 @@ of each section in docs/srs/*.md. Sections that aren't written yet keep the temp
 
 Each .md file holds one template section. A "## <heading>" line names the template heading whose
 prompt it replaces, spelled as in the template. Under it: paragraphs, "- " bullets, "| tables |",
-**bold** and *italic*. The template's styles, numbering and table of contents are kept; Word
+**bold**, *italic*, and figures as "![Figure 1. Caption](diagrams/name.png)" (the diagrams are
+drawn in Mermaid; diagrams/render.cjs turns them into the .png files). The template's styles, numbering and table of contents are kept; Word
 refreshes the page numbers in the table of contents when the file is opened.
 """
 
@@ -16,6 +17,8 @@ from pathlib import Path
 from docx import Document
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
+from docx.shared import Inches
+from PIL import Image
 
 HERE = Path(__file__).resolve().parent
 TEMPLATE = HERE.parent / "SRS Template.docx"
@@ -47,6 +50,10 @@ def blocks(lines: list[str]) -> list[tuple[str, list[str]]]:
     previous_blank = True
     for line in lines + [""]:
         if not line.strip():
+            previous_blank = True
+            continue
+        if line.startswith("!["):
+            merged.append(("img", [line]))
             previous_blank = True
             continue
         kind = "ul" if line.startswith("- ") else "table" if line.startswith("|") else "p"
@@ -196,6 +203,30 @@ def table(rows: list[str]):
     return tbl
 
 
+def figure(doc, line: str) -> list:
+    """'![Figure 1. Caption](diagrams/x.png)' => the picture, as wide as the text allows, and its caption."""
+    caption, src = re.fullmatch(r"!\[(.*)\]\((.*)\)", line.strip()).groups()
+    with Image.open(HERE / src) as img:
+        ratio = img.height / img.width
+    width = min(Inches(6.5), int(Inches(8) / ratio))  # tall diagrams fit the page height instead
+    holder = doc.add_paragraph()  # python-docx adds pictures to a paragraph at the end; it's moved below
+    holder.add_run().add_picture(str(HERE / src), width=width)
+    picture = holder._p
+    picture.getparent().remove(picture)
+    ppr = OxmlElement("w:pPr")
+    keep = OxmlElement("w:keepNext")
+    ppr.append(keep)
+    spacing = OxmlElement("w:spacing")
+    spacing.set(qn("w:before"), "120")
+    spacing.set(qn("w:after"), "60")
+    ppr.append(spacing)
+    jc = OxmlElement("w:jc")
+    jc.set(qn("w:val"), "center")
+    ppr.append(jc)
+    picture.insert(0, ppr)
+    return [picture, paragraph(f"*{caption}*", after=200, align="center", size=20)]
+
+
 def add_bullet_numbering(doc):
     """A plain bullet list definition: the template has numbering only for its headings."""
     numbering = doc.part.numbering_part.element
@@ -249,7 +280,12 @@ def main() -> int:
             sibling = nxt
         anchor = heading._p
         for kind, items in blocks(wanted[name]):
-            new = [table(items)] if kind == "table" else [paragraph(t, bullet=kind == "ul", after=60 if kind == "ul" else 120) for t in items]
+            if kind == "img":
+                new = figure(doc, items[0])
+            elif kind == "table":
+                new = [table(items)]
+            else:
+                new = [paragraph(t, bullet=kind == "ul", after=60 if kind == "ul" else 120) for t in items]
             if kind == "ul":
                 new[-1].find(qn("w:pPr")).find(qn("w:spacing")).set(qn("w:after"), "120")
             if kind == "table":
