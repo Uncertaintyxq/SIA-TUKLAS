@@ -169,3 +169,7 @@ is settled, update that text, delete its line here and in Appendix C, and keep t
   `gh auth login` (PR titles in the session snapshot); consider branch protection on `main` once `chore/ci` lands
   (see `docs/COLLABORATION.md`).
 - [ ] **Later, optional:** passkeys sign-in (Fortify supports it; needs client screens).
+- [ ] **Later, enhancement: blind review** (decided 2026-11-04, not in release 1.0). Today a work is
+  reviewed by the adviser the student picks, both sides see each other's names, and the approver is
+  shown on the published work. Blind review would add independent reviewers, for example from another
+  school on the site, with names hidden both ways. Needs a new row, and an SRS change (Section 4.3).
