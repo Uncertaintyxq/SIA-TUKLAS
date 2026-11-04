@@ -6,6 +6,7 @@ use App\Models\Department;
 use App\Models\Institution;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 /** The commands that set up a fresh production server (docs/PRODUCTION_SERVER.md): schools, the first admins, the launch check. */
@@ -68,5 +69,66 @@ class ServerCommandsTest extends TestCase
             ->expectsOutputToContain('APP_ENV is production')
             ->expectsOutputToContain('No demo accounts')
             ->assertFailed();
+    }
+
+    private const SHOWCASE_PASSWORD_PROMPT = 'Password for every persona (12 characters or more, not in a known breach)';
+
+    public function test_the_showcase_loads_the_demo_under_production_rules(): void
+    {
+        config(['tuklas.demo_mode' => false]);
+        $this->artisan('tuklas:showcase', ['--domain' => 'Tuklas-UIC.me'])
+            ->expectsQuestion(self::SHOWCASE_PASSWORD_PROMPT, 'a presentation passphrase')
+            ->expectsConfirmation('This replaces everything on the site with the showcase. Continue?', 'yes')
+            ->expectsOutputToContain('Showcase loaded')
+            ->assertSuccessful();
+
+        // Addresses on the team's domain, and each school takes its own subdomain's signups
+        $andrea = User::where('email', 'andrea@tu.tuklas-uic.me')->firstOrFail();
+        $this->assertTrue(User::where('email', 'alim@bsc.tuklas-uic.me')->exists());
+        $this->assertTrue(User::where('email', 'rina.cruz.demo@tuklas-uic.me')->exists());
+        $this->assertSame(0, User::where('email', 'like', '%@tuklas.edu')->count());
+        $this->assertSame('Tuklas University', Institution::forEmail('new@tu.tuklas-uic.me')?->name);
+        $this->assertSame('Bayan State College', Institution::forEmail('new@bsc.tuklas-uic.me')?->name);
+        $this->assertNull(Institution::forEmail('admin@tuklas-uic.me'));
+        $this->assertTrue(Hash::check('a presentation passphrase', $andrea->password));
+
+        // Privacy notice and two-factor set-up wait for the first sign-in, as on a real site
+        $this->assertNull($andrea->privacy_accepted_at);
+        $santos = User::where('email', 'msantos@tu.tuklas-uic.me')->firstOrFail();
+        $this->assertTrue($santos->mustUseTwoFactor() && ! $santos->hasTwoFactorEnabled());
+
+        // The launch check still blocks real data going in while the showcase is loaded
+        $this->artisan('tuklas:launch-check')->expectsOutputToContain('No showcase data is left')->assertFailed();
+
+        // Loading it again replaces it: only its own personas exist
+        $this->artisan('tuklas:showcase', ['--domain' => 'tuklas-uic.me'])
+            ->expectsQuestion(self::SHOWCASE_PASSWORD_PROMPT, 'another presentation passphrase')
+            ->expectsConfirmation('This replaces everything on the site with the showcase. Continue?', 'yes')
+            ->assertSuccessful();
+        $this->assertTrue(Hash::check('another presentation passphrase', $andrea->fresh()->password));
+    }
+
+    public function test_the_showcase_never_replaces_other_accounts(): void
+    {
+        config(['tuklas.demo_mode' => false]);
+        User::factory()->create(['email' => 'office@uic.edu.ph']);
+        $this->artisan('tuklas:showcase', ['--domain' => 'tuklas-uic.me'])
+            ->expectsOutputToContain('1 other account on this site would be deleted')
+            ->assertFailed();
+        $this->assertTrue(User::where('email', 'office@uic.edu.ph')->exists());
+        $this->assertFalse(Institution::where('name', 'Tuklas University')->exists());
+    }
+
+    public function test_the_showcase_refuses_a_weak_password_a_missing_domain_and_demo_mode(): void
+    {
+        config(['tuklas.demo_mode' => false]);
+        $this->artisan('tuklas:showcase')->expectsOutputToContain('Give the team\'s own domain')->assertFailed();
+        $this->artisan('tuklas:showcase', ['--domain' => 'tuklas-uic.me'])
+            ->expectsQuestion(self::SHOWCASE_PASSWORD_PROMPT, 'tuklas123')
+            ->assertFailed();
+        $this->assertSame(0, User::count());
+
+        config(['tuklas.demo_mode' => true]);
+        $this->artisan('tuklas:showcase', ['--domain' => 'tuklas-uic.me'])->expectsOutputToContain('DEMO_MODE is on')->assertFailed();
     }
 }

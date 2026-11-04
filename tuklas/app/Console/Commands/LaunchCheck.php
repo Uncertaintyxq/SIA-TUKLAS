@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Enums\Role;
 use App\Models\Institution;
 use App\Models\User;
+use Database\Seeders\DemoSeeder;
 use Dotenv\Dotenv;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
@@ -54,6 +55,7 @@ class LaunchCheck extends Command
             $this->check(User::active()->where('role', Role::Admin)->where('institution_id', $school->id)->exists(), "{$school->name} has its own admin (php artisan tuklas:admin <email> --school={$school->id})", warn: true);
         }
         $this->check(! User::where('email', 'like', '%@tuklas.edu')->exists(), 'No demo accounts (@tuklas.edu) are left');
+        $this->check(! Institution::whereIn('name', DemoSeeder::SCHOOLS)->exists(), 'No showcase data is left (tuklas:showcase; empty it with php artisan migrate:fresh --force)');
 
         $this->line('');
         $this->line('<options=bold>By hand</> (the app can\'t see these; tick them in docs/DEPLOYMENT.md)');
