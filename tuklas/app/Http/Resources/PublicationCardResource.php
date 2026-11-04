@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Institution;
 use App\Models\Publication;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -22,7 +23,8 @@ class PublicationCardResource extends JsonResource
             'keywords' => array_values(array_filter($this->keywords ?? [], 'is_string')),
             'visibility' => $this->visibility->value,
             'authors' => UserCardResource::collection(collect([$this->author])->concat($this->coAuthors)),
-            'department' => $this->author->profile->department ?? '',
+            'department' => $this->author->profile?->departmentName() ?? '',
+            'institution' => $this->institution_id !== null ? Institution::byId()->get($this->institution_id)?->card() : null,
             'hasPdf' => $this->pdf_file !== null,
             // Reach: these only grow once it's published (App\Support\Reach)
             'views' => (int) $this->view_count,

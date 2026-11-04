@@ -1,12 +1,12 @@
 /** Announcements and read receipts (/api/announcements). */
-import type { UserCard } from './common';
+import type { DepartmentCard, UserCard } from './common';
 
 export type AnnouncementScope = 'system' | 'department' | 'group';
 
 export interface AnnouncementInput {
   scope: AnnouncementScope;
   /** department scope: which department (admins pick; educators always post to their own) */
-  department?: string;
+  departmentId?: number;
   /** group scope */
   groupId?: number;
   title: string;
@@ -45,7 +45,7 @@ export interface AnnouncementsResponse {
   items: AnnouncementView[];
   unread: number;
   /** Where I may post */
-  audiences: { system: boolean; departments: string[]; groups: { id: number; name: string }[] };
+  audiences: { system: boolean; departments: DepartmentCard[]; groups: { id: number; name: string }[] };
 }
 
 export interface ReceiptsView {

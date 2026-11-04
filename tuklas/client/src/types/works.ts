@@ -1,6 +1,6 @@
 /** Student works, from draft to the public library (/api/works). */
 import type { Role } from './auth';
-import type { UserCard } from './common';
+import type { InstitutionCard, UserCard } from './common';
 
 export type WorkType = 'research' | 'literary' | 'innovation';
 export type WorkStatus = 'draft' | 'submitted' | 'under_review' | 'revision' | 'approved' | 'rejected';
@@ -22,7 +22,11 @@ export interface WorkInput {
   adviserId: number;
   /** At most 10 */
   coAuthorIds?: number[];
+  visibility?: WorkVisibility;
 }
+
+/** public: everyone, signed out too. school: signed-in members of the work's school, its authors and adviser. */
+export type WorkVisibility = 'public' | 'school';
 
 export interface CreateWorkInput extends WorkInput {
   /** false saves a draft; true submits it to the adviser straight away */
@@ -65,6 +69,9 @@ export interface WorkCard {
   authors: UserCard[];
   adviser: UserCard;
   department: string;
+  /** Who may read it once approved: everyone, or signed-in members of its school */
+  visibility: WorkVisibility;
+  institution: InstitutionCard | null;
   approvedAt: string | null;
   approval: Approval | null;
   removed: boolean;
@@ -145,6 +152,8 @@ export interface WorkDetail extends WorkCard {
     tickItems: boolean;
     confirmItems: boolean;
     discuss: boolean;
+    /** Its authors choose Public or School only, at any time */
+    visibility: boolean;
   };
 }
 

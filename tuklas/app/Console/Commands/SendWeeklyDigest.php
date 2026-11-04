@@ -26,7 +26,7 @@ class SendWeeklyDigest extends Command
     public function handle(): int
     {
         $sent = 0;
-        User::active()->whereNotNull('email_verified_at')->whereNotNull('notification_settings')->with('profile:user_id,department')
+        User::active()->whereNotNull('email_verified_at')->whereNotNull('notification_settings')->with('profile:user_id,department_id')
             ->lazyById()
             ->filter(fn (User $u) => NotificationPrefs::for($u)['digest'])
             ->each(function (User $u) use (&$sent) {
@@ -63,9 +63,9 @@ class SendWeeklyDigest extends Command
             ->orderBy('date')->limit(10)->get()
             ->map(fn ($e) => "{$e->title}, ".$e->date->timezone(self::TZ)->format('D, M j, g:i A')." at {$e->venue}")->all();
 
-        $department = (string) $u->profile?->department;
-        $works = $department === '' ? [] : Work::public()->where('approved_at', '>=', now()->subWeek())->where('author_id', '!=', $u->id)
-            ->whereHas('author.profile', fn ($p) => $p->where('department', $department))
+        $department = (string) $u->profile?->departmentName();
+        $works = $department === '' ? [] : Work::readableBy($u)->where('approved_at', '>=', now()->subWeek())->where('author_id', '!=', $u->id)
+            ->whereHas('author.profile', fn ($p) => $p->where('department_id', $u->profile->department_id))
             ->latest('approved_at')->limit(5)->pluck('title')->all();
 
         return [

@@ -66,10 +66,10 @@ class Reach
         }
     }
 
-    /** Only what the public can read counts, and never the authors' own visits. */
+    /** Only published work counts (Public or School only), and never the authors' own visits. */
     private static function counts(Work|Publication $subject, ?User $viewer): bool
     {
-        $readable = $subject instanceof Work ? $subject->isPublic() : $subject->visibility !== PublicationVisibility::Draft;
+        $readable = $subject instanceof Work ? $subject->isPublished() : $subject->visibility !== PublicationVisibility::Draft;
 
         return $readable && ($viewer === null || ! $subject->isAuthor($viewer));
     }

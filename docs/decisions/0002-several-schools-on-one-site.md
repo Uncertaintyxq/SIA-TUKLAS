@@ -102,6 +102,8 @@ exactly ("College of Computing" at two schools stays two departments).
      - feed, library and people-search filters
      - opportunity and event audiences
      - follows of a department
+   - Opportunity, event and ad audiences and the school announcement scope were split off into
+     **`feat/institution-audiences`** (2026-11-04), to keep each branch reviewable.
 3. **`feat/institution-admins`**: admins per school.
    - Policies and gates check the school; admin screens and queues show one school (a school switcher for super-admins).
    - `Notifier::notifyAdmins` takes the school, and reports go to the content owner's school.

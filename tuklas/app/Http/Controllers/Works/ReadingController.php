@@ -89,7 +89,7 @@ class ReadingController extends Controller
     private function publicWork(int $id): Work
     {
         $work = Work::forAccess($id);
-        if ($work === null || ! $work->isPublic()) {
+        if ($work === null || ! $work->canBeReadBy(request()->user())) {
             throw new HttpException(404, WorkController::NOT_FOUND);
         }
 

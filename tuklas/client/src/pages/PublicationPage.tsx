@@ -1,7 +1,7 @@
 /**
  * PublicationPage — /publications/:id. Reading view for an educator's research: abstract, methodology,
  * full text and PDF, with APA/MLA citation and a share link. Public research opens without logging in;
- * Internal research needs a Tuklas account; drafts are visible to their authors only.
+ * School only research is for its school's signed-in members; drafts are visible to their authors only.
  */
 import { useNavigate, useParams } from 'react-router-dom';
 import { Download, ExternalLink, Link2, PenLine, Trash2 } from 'lucide-react';
@@ -67,7 +67,7 @@ export function PublicationPage() {
 
       <div className={styles.layout}>
         <div className={styles.main}>
-          {!published && <Notice>This is a draft. Only its authors can see it until it’s published as Internal or Public.</Notice>}
+          {!published && <Notice>This is a draft. Only its authors can see it until it’s published as School only or Public.</Notice>}
           {(p.can.edit || p.can.delete) && (
             <div className={styles.tools}>
               {p.can.edit && (

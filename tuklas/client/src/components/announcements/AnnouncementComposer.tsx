@@ -5,6 +5,7 @@
 import { useState, type FormEvent } from 'react';
 import { Paperclip, Send, X } from 'lucide-react';
 import { useCreateAnnouncement, useUploadAttachment, type AnnouncementsResponse } from '../../api/announcements';
+import { departmentLabel } from '../../api/institutions';
 import { fileSize } from '../../lib/format';
 import { Button } from '../ui/Button';
 import { SelectField, TextField } from '../ui/Field';
@@ -16,11 +17,11 @@ import styles from './AnnouncementComposer.module.css';
 
 const MAX_FILES = 5;
 
-/** Audience options as select values: "system", "department:<name>", "group:<id>". */
+/** Audience options as select values: "system", "department:<id>", "group:<id>". */
 function audienceOptions(a: AnnouncementsResponse['audiences']) {
   return [
     ...(a.system ? [{ value: 'system', label: 'Everyone on Tuklas' }] : []),
-    ...a.departments.map((d) => ({ value: `department:${d}`, label: `Department · ${d}` })),
+    ...a.departments.map((d) => ({ value: `department:${d.id}`, label: `Department · ${departmentLabel(d)}` })),
     ...a.groups.map((g) => ({ value: `group:${g.id}`, label: `Research group · ${g.name}` })),
   ];
 }
@@ -57,7 +58,7 @@ export function AnnouncementComposer({
     try {
       ({ id } = await create.mutateAsync({
         scope,
-        department: scope === 'department' ? target : undefined,
+        departmentId: scope === 'department' ? Number(target) : undefined,
         groupId: scope === 'group' ? Number(target) : undefined,
         title,
         body,

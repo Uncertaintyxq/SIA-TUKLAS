@@ -32,7 +32,7 @@ class ProfileController extends Controller
             $me->update(['name' => $request->string('name'), 'program' => $request->string('program'), 'headline' => $request->string('headline')->toString()]);
             $me->profile()->updateOrCreate([], [
                 'titles' => $request->string('titles')->toString(),
-                'department' => $request->string('department')->toString(),
+                'department_id' => $request->filled('departmentId') ? $request->integer('departmentId') : null,
                 'bio_long' => $request->string('bioLong')->toString(),
             ]);
         });

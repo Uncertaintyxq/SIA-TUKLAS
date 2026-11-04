@@ -20,6 +20,7 @@ Route::prefix('works')->name('works.')->group(function () {
         Route::post('/', [WorkController::class, 'store'])->middleware('throttle:posting')->name('store');
         Route::put('/{id}', [WorkController::class, 'update'])->whereNumber('id')->name('update');
         Route::delete('/{id}', [WorkController::class, 'destroy'])->whereNumber('id')->name('destroy');
+        Route::put('/{id}/visibility', [WorkController::class, 'visibility'])->whereNumber('id')->name('visibility');
 
         Route::put('/{id}/pdf', [WorkFileController::class, 'upload'])->whereNumber('id')->middleware('throttle:uploads')->name('pdf.store');
         Route::delete('/{id}/pdf', [WorkFileController::class, 'remove'])->whereNumber('id')->name('pdf.destroy');

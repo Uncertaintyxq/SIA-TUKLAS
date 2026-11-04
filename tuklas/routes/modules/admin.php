@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\DepartmentController;
 use App\Http\Controllers\Admin\InstitutionController;
 use App\Http\Controllers\Admin\ModerationController;
 use App\Http\Controllers\Admin\PeopleController;
@@ -23,6 +24,12 @@ Route::middleware(['auth:sanctum', 'account.ready', 'can:admin'])->prefix('admin
     Route::get('/posts', [ModerationController::class, 'posts'])->name('posts');
     Route::post('/works/{id}/remove', [ModerationController::class, 'removeWork'])->whereNumber('id')->name('works.remove');
     Route::post('/works/{id}/restore', [ModerationController::class, 'restoreWork'])->whereNumber('id')->name('works.restore');
+
+    // Each school's departments (docs/decisions/0002)
+    Route::get('/departments', [DepartmentController::class, 'index'])->name('departments.index');
+    Route::post('/departments', [DepartmentController::class, 'store'])->name('departments.store');
+    Route::put('/departments/{id}', [DepartmentController::class, 'update'])->whereNumber('id')->name('departments.update');
+    Route::delete('/departments/{id}', [DepartmentController::class, 'destroy'])->whereNumber('id')->name('departments.destroy');
 
     // The schools on the site: super-admins only (docs/decisions/0002)
     Route::middleware('can:super-admin')->prefix('institutions')->name('institutions.')->group(function () {

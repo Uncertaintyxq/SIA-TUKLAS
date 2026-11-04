@@ -3,17 +3,7 @@
  * Covers the author's works, the adviser review queue, stages, PDFs, reactions and discussion.
  */
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import type {
-  CreateWorkInput,
-  DecisionInput,
-  MyWork,
-  ReactionKind,
-  SimilarWork,
-  StageInput,
-  WorkCard,
-  WorkDetail,
-  WorkInput,
-} from '../types/works';
+import type { CreateWorkInput, DecisionInput, MyWork, ReactionKind, SimilarWork, StageInput, WorkCard, WorkDetail, WorkInput, WorkVisibility } from '../types/works';
 import { api, upload } from './client';
 import { useAction } from './mutate';
 
@@ -41,6 +31,8 @@ export function useSimilar(title: string, keywords: string, exclude?: number) {
 
 export const useCreateWork = () => useAction((input: CreateWorkInput) => api<{ id: number }>('/works', { body: input }));
 export const useUpdateWork = () => useAction(({ id, ...input }: WorkInput & { id: number }) => api(`/works/${id}`, { method: 'PUT', body: input }));
+export const useSetVisibility = () =>
+  useAction(({ id, visibility }: { id: number; visibility: WorkVisibility }) => api(`/works/${id}/visibility`, { method: 'PUT', body: { visibility } }));
 export const useDeleteWork = () => useAction((id: number) => api(`/works/${id}`, { method: 'DELETE' }));
 export const useUploadWorkPdf = () => useAction(({ id, file }: { id: number; file: File }) => upload(`/works/${id}/pdf`, file));
 export const useRemoveWorkPdf = () => useAction((id: number) => api(`/works/${id}/pdf`, { method: 'DELETE' }));

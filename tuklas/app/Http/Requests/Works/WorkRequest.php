@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Works;
 
 use App\Enums\WorkType;
+use App\Enums\WorkVisibility;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -20,6 +21,8 @@ class WorkRequest extends FormRequest
             'tags' => ['array', 'max:10'],
             'tags.*' => ['required', 'string', 'min:1', 'max:40'],
             'adviserId' => ['required', 'integer', 'min:1'],
+            // Who may read it once approved: everyone (the default), or its school (docs/decisions/0002)
+            'visibility' => ['nullable', Rule::enum(WorkVisibility::class)],
             'coAuthorIds' => ['array', 'max:10'],
             'coAuthorIds.*' => ['integer', 'min:1', 'distinct'],
             // Creating only: false saves a draft; true submits it to the adviser straight away
@@ -45,6 +48,11 @@ class WorkRequest extends FormRequest
         $story = trim((string) $this->validated('story', ''));
 
         return $story === '' ? null : $story;
+    }
+
+    public function visibility(): WorkVisibility
+    {
+        return WorkVisibility::tryFrom((string) $this->validated('visibility', '')) ?? WorkVisibility::Public;
     }
 
     /** @return list<string> */

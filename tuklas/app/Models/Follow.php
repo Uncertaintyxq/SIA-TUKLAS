@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Someone following a person, a department or a keyword. `target` is the person's user id, the
- * department's name or the keyword as first followed (keywords match ignoring case).
+ * department's id or the keyword as first followed (keywords match ignoring case).
  */
 #[Fillable(['user_id', 'kind', 'target'])]
 class Follow extends Model
