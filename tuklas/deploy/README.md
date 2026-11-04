@@ -162,5 +162,7 @@ nightly runs: `/var/backups/tuklas/backup.log`.
 
 `setup-server.sh` writes a **staging** `.env`: `APP_ENV=staging`, `DEMO_MODE=true`, emails written
 to the log instead of sent. For production, on its own server: set `APP_ENV=production`,
-`DEMO_MODE=false`, the real mail provider (`MAIL_*`), then deploy without `--seed` and create the
-first admin by hand. The checklist is in [`docs/DEPLOYMENT.md`](../../docs/DEPLOYMENT.md).
+`DEMO_MODE=false`, the real mail provider (`MAIL_*`), then deploy without `--seed`, add the schools
+and first admins (`php artisan tuklas:school`, `tuklas:admin`) and run `php artisan tuklas:launch-check`.
+Step by step: [`docs/PRODUCTION_SERVER.md`](../../docs/PRODUCTION_SERVER.md); the checklist is in
+[`docs/DEPLOYMENT.md`](../../docs/DEPLOYMENT.md).
