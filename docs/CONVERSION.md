@@ -436,6 +436,10 @@ branch rule; the deployment plan is in [DEPLOYMENT.md](DEPLOYMENT.md).
   follow their event. Announcements have a `school` scope (`institution_id`), and `system` (every
   school) is super-admins only. This finishes the institution rows; the next step before real
   student data is `chore/deploy-production`.
+- 2026-11-04: `chore/deploy-production`, the repo half. `docs/PRODUCTION_SERVER.md` is the runbook
+  from an empty server to launch; three commands support it: `tuklas:school`, `tuklas:admin` and
+  `tuklas:launch-check` (app/Console/Commands). The server half (host, domain, mail, backups off the
+  server, the privacy notice) is the user's.
 
 ## How the code is laid out (for the next modules)
 
