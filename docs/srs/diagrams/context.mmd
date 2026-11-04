@@ -1,0 +1,38 @@
+flowchart TB
+  visitor["Visitor<br/>(signed out)"]
+  student["Student"]
+  educator["Educator<br/>(research adviser)"]
+  admin["Admin and<br/>Super-admin"]
+
+  subgraph tuklas[" Tuklas (one server) "]
+    web["Web application<br/>React, installable (PWA)"]
+    nginx["Web server<br/>Nginx, HTTPS"]
+    api["Application server<br/>Laravel API"]
+    live["Real-time server<br/>Laravel Reverb"]
+    db[("Database<br/>MySQL")]
+    files[("Private file storage<br/>PDFs, photos, uploads")]
+    jobs["Background jobs<br/>queue worker, scheduler"]
+  end
+
+  backup["Off-server<br/>backup storage"]
+  mail["Email provider<br/>(SMTP)"]
+  push["Browser push<br/>services"]
+  pwned["Breached-password check<br/>(Have I Been Pwned)"]
+  search["Search engines<br/>(Google Scholar)"]
+  certs["Certificate authority<br/>(Let's Encrypt)"]
+
+  visitor & student --> web
+  educator -- "browser or phone" --> web
+  admin --> web
+  web --> nginx
+  nginx --> api
+  nginx -- "live updates" --> live
+  api --> db
+  api --> files
+  api --> jobs
+  nginx -- "public pages" --> search
+  nginx -- "certificate renewal" --> certs
+  api -- "password check" --> pwned
+  jobs -- "encrypted backups" --> backup
+  jobs -- "emails" --> mail
+  jobs -- "notifications" --> push
