@@ -25,6 +25,16 @@ TEXT_WIDTH = 9360  # 6.5 inches in twentieths of a point: a Letter page less its
 BULLET_ID = 90
 STEPS_ID = 91
 
+# The template's title page placeholders, filled the same way in the SRS and the user manual.
+# Change them here, not in Word: each build overwrites its .docx.
+FRONT_MATTER = {
+    "<Project>": "Tuklas",
+    "<author>": "Manla, Limbadan, Dumangas, Rollon",
+    "<organization>": "the client",
+    "<date created>": "November 4, 2026",
+}
+FIRST_REVISION = ("Manla, Limbadan, Dumangas, Rollon", "November 4, 2026", "First release", "1.0")
+
 
 def _el(tag: str, **attrs) -> OxmlElement:
     el = OxmlElement(tag)
@@ -253,6 +263,29 @@ def render(doc, lists: Lists, lines: list[str], base: Path, max_height: float = 
             # A sentence that leads into steps or a figure stays with them
             out.append(paragraph(items[0], keep_next=following in ("ol", "img")))
     return out
+
+
+def fill_front_matter(doc):
+    """Replaces the template's <Project>, <author>, <organization> and <date created> on the title
+    page and in the page headers, and writes the first row of the Revision History table."""
+    parts = [doc.element.body]
+    for section in doc.sections:
+        parts += [section.header._element, section.first_page_header._element,
+                  section.even_page_header._element]
+    for part in parts:
+        for t in part.iter(qn("w:t")):
+            for placeholder, value in FRONT_MATTER.items():
+                if t.text and placeholder in t.text:
+                    t.text = t.text.replace(placeholder, value)
+    for table in doc.tables:
+        if [c.text.strip() for c in table.rows[0].cells] == ["Name", "Date", "Reason For Changes", "Version"]:
+            for cell, value in zip(table.rows[1].cells, FIRST_REVISION):
+                paragraph = cell.paragraphs[0]
+                if paragraph.runs:
+                    paragraph.runs[0].text = value
+                else:
+                    paragraph.add_run(value)
+            break
 
 
 def refresh_fields_on_open(doc):
