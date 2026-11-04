@@ -424,6 +424,12 @@ branch rule; the deployment plan is in [DEPLOYMENT.md](DEPLOYMENT.md).
   `Publication` has `readableBy` / `canBeReadBy` too. Use `readableBy` for anything a signed-in
   person browses. The adviser must be from the student's school (`CheckWorkPeople`, the adviser
   picker); co-authors from any school. Opportunities, events and ads are `feat/institution-audiences`.
+- 2026-11-04: `feat/institution-admins` (docs/decisions/0002). An admin acts for their own school;
+  super-admins for every school: `User::administers($schoolId)` (anything without a school stays any
+  admin's). Policies and admin controllers use it; lists go through `AdminScope::apply($query,
+  AdminScope::school($request), through: 'postedBy')` and actions through `AdminScope::check()`.
+  `notifyAdmins()` takes the school as its last argument. A new admin check should do the same:
+  never a bare `isAdmin()` for anything that belongs to a school.
 
 ## How the code is laid out (for the next modules)
 

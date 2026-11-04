@@ -13,6 +13,7 @@ use App\Models\Publication;
 use App\Models\ResearchGroup;
 use App\Models\Review;
 use App\Models\User;
+use App\Support\AdminScope;
 use App\Support\Audit;
 use App\Support\Cards;
 use App\Support\Chat;
@@ -23,7 +24,7 @@ use Illuminate\Http\Response;
 use Illuminate\Validation\Rule;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
-/** Accounts: roles, educator verification and rights, and educator monitoring. Admins only. */
+/** Accounts: roles, educator verification and rights, and educator monitoring. A school's admins see and manage its people; super-admins everyone's. */
 class PeopleController extends Controller
 {
     private const RIGHTS = ['canPublish' => ['can_publish', 'research publishing'], 'canModerateGroups' => ['can_moderate_groups', 'group moderation'], 'canBroadcast' => ['can_broadcast', 'announcement']];
@@ -33,9 +34,8 @@ class PeopleController extends Controller
     {
         $q = mb_substr(trim((string) $request->query('q', '')), 0, 80);
         $like = '%'.addcslashes($q, '%_\\').'%';
-        $users = User::with('profile')->active()->withCount('works')
+        $users = AdminScope::apply(User::query(), AdminScope::school($request))->with('profile')->active()->withCount('works')
             ->when(Role::tryFrom((string) $request->query('role')), fn ($query, $role) => $query->where('role', $role))
-            ->when((int) $request->query('institution') > 0, fn ($query) => $query->where('institution_id', (int) $request->query('institution')))
             ->when($q !== '', fn ($query) => $query->where(fn ($w) => $w->where('name', 'like', $like)->orWhere('email', 'like', $like)->orWhere('username', 'like', $like)))
             ->orderBy('role')->orderBy('name')
             ->limit(200)
@@ -62,6 +62,7 @@ class PeopleController extends Controller
             'canModerateGroups' => ['sometimes', 'boolean'],
             'canBroadcast' => ['sometimes', 'boolean'],
             'schoolConfirmed' => ['sometimes', 'accepted'],
+            'superAdmin' => ['sometimes', 'boolean'],
             'institutionId' => ['sometimes', 'integer'],
         ]);
         /** @var User $me */
@@ -71,6 +72,19 @@ class PeopleController extends Controller
             throw new HttpException(409, 'You can’t remove your own admin role.');
         }
         $user = User::find($id) ?? throw new HttpException(404, 'That account no longer exists.');
+        // A school's admins manage their own school's people (docs/decisions/0002)
+        AdminScope::check($me, $user->institution_id);
+        if (array_key_exists('superAdmin', $patch)) {
+            if (! $me->isSuperAdmin()) {
+                throw new HttpException(403, 'Only super-admins appoint super-admins.');
+            }
+            if ($id === $me->id && ! $patch['superAdmin']) {
+                throw new HttpException(409, 'You can’t remove your own super-admin role. Ask another super-admin.');
+            }
+            if ($patch['superAdmin'] && ($role ?? $user->role) !== Role::Admin) {
+                throw new HttpException(409, 'Only admins can be super-admins. Make them an admin first.');
+            }
+        }
         if (array_key_exists('institutionId', $patch)) {
             if (! $me->isSuperAdmin()) {
                 throw new HttpException(403, 'Only super-admins move people to another school.');
@@ -79,7 +93,7 @@ class PeopleController extends Controller
                 throw new HttpException(404, 'That school isn’t on Tuklas.');
             }
         }
-        $before = $user->only(['role', 'verified', 'can_publish', 'can_moderate_groups', 'can_broadcast', 'institution_id']);
+        $before = $user->only(['role', 'verified', 'can_publish', 'can_moderate_groups', 'can_broadcast', 'institution_id', 'is_super_admin']);
         $awaited = $user->awaitsSchoolConfirmation();
 
         if ($role !== null) {
@@ -94,6 +108,12 @@ class PeopleController extends Controller
             if (array_key_exists($key, $patch)) {
                 $user->{$column} = (bool) $patch[$key];
             }
+        }
+        if (array_key_exists('superAdmin', $patch)) {
+            $user->is_super_admin = (bool) $patch['superAdmin'];
+        }
+        if ($user->role !== Role::Admin) {
+            $user->is_super_admin = false;
         }
         if (array_key_exists('institutionId', $patch)) {
             $user->forceFill(['institution_id' => (int) $patch['institutionId'], 'institution_confirmed_at' => now()]);
@@ -131,7 +151,7 @@ class PeopleController extends Controller
     /** GET /api/admin/educators — every educator with their rights and output, plus what educators did lately */
     public function educators(Request $request): JsonResponse
     {
-        $educators = User::with('profile')->active()->where('role', Role::Educator)
+        $educators = AdminScope::apply(User::query(), AdminScope::school($request))->with('profile')->active()->where('role', Role::Educator)
             ->withCount(['advisedGroups', 'announcements', 'reviews'])
             ->orderBy('name')
             ->get();

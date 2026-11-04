@@ -62,14 +62,14 @@ rules, hooks, and the `/start-task` and `/finish-task` commands). Also read:
 
 **Yours, in this order** (scheduled 2026-11-04; the plan and the client's answers are in
 `docs/decisions/0002-several-schools-on-one-site.md`, read it first):
-1. `feat/institution-admins`: admins per school, super-admins over all, admin queues per school.
-2. `feat/institution-audiences`: opportunities, events and ads for the posting school or all
-   schools, and a school announcement scope.
+1. `feat/institution-audiences`: opportunities, events and ads for the posting school or all
+   schools, and a school announcement scope (system announcements become super-admins only).
 
 (Merged: `feat/institutions` (schools, `users.institution_id`, signup by domain or admin
 confirmation, super-admins, `User::school()`, Bayan State College in `DemoSeeder`) and
 `feat/institution-scoping` (departments per school, Public or School only, `Work::readableBy()`,
-`Publication::readableBy()`, School filters). Build on them.)
+`Publication::readableBy()`, School filters) and `feat/institution-admins` (`User::administers()`,
+`AdminScope`, `notifyAdmins(..., $schoolId)`). Build on them.)
 
 Each row adds cross-school tests: someone at school B sees school A's Public research and nothing
 else of school A's. **Not yours:** `chore/deploy-production`. It comes after all of them, and it's

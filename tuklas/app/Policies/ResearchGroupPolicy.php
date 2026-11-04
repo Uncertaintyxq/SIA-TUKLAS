@@ -14,13 +14,13 @@ class ResearchGroupPolicy
     /** The adviser, any member, or an admin. */
     public function open(User $user, ResearchGroup $group): bool
     {
-        return $user->isAdmin() || $group->seatOf($user) !== null;
+        return $user->administers($group->schoolId()) || $group->seatOf($user) !== null;
     }
 
     /** Members, roles, settings, channels and deletion: the adviser while they hold the moderation right, or an admin. */
     public function manage(User $user, ResearchGroup $group): bool
     {
-        return $user->isAdmin() || ($group->adviser_id === $user->id && $user->hasRight('moderateGroups'));
+        return $user->administers($group->schoolId()) || ($group->adviser_id === $user->id && $user->hasRight('moderateGroups'));
     }
 
     /** Removing other people's messages and files: managers, and mentors who hold the moderation right. */
@@ -44,13 +44,13 @@ class ResearchGroupPolicy
     /** Seeing every deliverable submission and giving feedback: the adviser, mentors and admins. */
     public function review(User $user, ResearchGroup $group): bool
     {
-        return $user->isAdmin() || in_array($group->seatOf($user), ['adviser', 'mentor'], true);
+        return $user->administers($group->schoolId()) || in_array($group->seatOf($user), ['adviser', 'mentor'], true);
     }
 
     /** Group announcements: the adviser or a mentor who holds the broadcast right, or an admin. */
     public function announce(User $user, ResearchGroup $group): bool
     {
-        if ($user->isAdmin()) {
+        if ($user->administers($group->schoolId())) {
             return true;
         }
 

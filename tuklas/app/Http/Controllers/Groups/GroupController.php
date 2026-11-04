@@ -12,6 +12,7 @@ use App\Models\GroupDeadline;
 use App\Models\GroupMember;
 use App\Models\ResearchGroup;
 use App\Models\User;
+use App\Support\AdminScope;
 use App\Support\Cards;
 use App\Support\Chat;
 use App\Support\Groups;
@@ -48,13 +49,14 @@ class GroupController extends Controller
         return $group;
     }
 
-    /** GET /api/groups — mine; admins see every group */
+    /** GET /api/groups — mine; admins see their school's groups (super-admins every group) */
     public function index(Request $request): JsonResponse
     {
         /** @var User $me */
         $me = $request->user();
         $groups = $this->summaryQuery()
-            ->when(! $me->isAdmin(), fn ($q) => $q->where(fn ($w) => $w->where('adviser_id', $me->id)->orWhereHas('members', fn ($m) => $m->where('user_id', $me->id))))
+            ->when(! $me->isAdmin(), fn ($q) => $q->where(fn ($w) => $w->where('adviser_id', $me->id)->orWhereHas('members', fn ($m) => $m->where('user_id', $me->id))),
+                fn ($q) => AdminScope::apply($q, $me->adminSchool(), through: 'adviser'))
             ->latest('created_at')
             ->get();
 

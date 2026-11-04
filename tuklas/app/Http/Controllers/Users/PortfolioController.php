@@ -34,7 +34,7 @@ class PortfolioController extends Controller
             ->first() ?? throw new HttpException(404, 'There’s no portfolio at that address.');
 
         $isOwner = $viewer?->id === $user->id;
-        $seeAll = $isOwner || $viewer?->isAdmin();
+        $seeAll = $isOwner || $viewer?->administers($user->institution_id);
         $authoredBy = fn (Builder $q) => $q->where('author_id', $user->id)->orWhereHas('coAuthors', fn ($c) => $c->where('users.id', $user->id));
 
         $works = Cards::works(Work::readableBy($viewer)->where($authoredBy), $viewer?->id)->orderByDesc('approved_at')->get();

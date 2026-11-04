@@ -100,7 +100,7 @@ class SchoolScopingTest extends TestCase
         $form = ['name' => 'Miguel Torres', 'program' => 'BS Information Technology'];
         $this->actingAs(User::find(8))->patchJson('/api/profile', [...$form, 'departmentId' => $tuComputing])->assertUnprocessable();
         $this->actingAs(User::find(8))->patchJson('/api/profile', [...$form, 'departmentId' => $bayanComputing])->assertOk()->assertJsonPath('user.id', 8);
-        $this->assertSame(['College of Agriculture', 'College of Computing', 'College of Information Technology'],
+        $this->assertSame(['College of Agriculture', 'College of Computing', 'College of Information Technology', 'Research Office'],
             array_column($this->actingAs(User::find(8))->getJson('/api/departments')->json(), 'name'));
 
         // A TU College of Computing announcement doesn't reach Bayan's College of Computing

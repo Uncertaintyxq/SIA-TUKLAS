@@ -16,6 +16,8 @@ export interface UserPatch {
   schoolConfirmed?: true;
   /** Super-admins only: move them to another school (confirms them there) */
   institutionId?: number;
+  /** Super-admins only, admins only: manage every school */
+  superAdmin?: boolean;
 }
 
 export interface AdminStats {

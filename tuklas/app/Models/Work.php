@@ -51,7 +51,7 @@ class Work extends Model
 
     /**
      * Published, and this person may read it: everyone for a Public work; for School only, signed-in
-     * members of its school, its authors and adviser, and admins.
+     * members of its school, its authors and adviser, and its school's admins.
      */
     public function canBeReadBy(?User $user): bool
     {
@@ -62,7 +62,7 @@ class Work extends Model
             return true;
         }
 
-        return $user !== null && ($user->isAdmin() || $user->institution_id === $this->institution_id
+        return $user !== null && ($user->administers($this->institution_id) || $user->institution_id === $this->institution_id
             || $this->isAuthor($user) || $this->adviser_id === $user->id);
     }
 
@@ -83,7 +83,7 @@ class Work extends Model
     public function scopeReadableBy(Builder $query, ?User $user): void
     {
         $this->scopePublished($query);
-        if ($user?->isAdmin()) {
+        if ($user?->isSuperAdmin()) {
             return;
         }
         $query->where(fn (Builder $q) => $q

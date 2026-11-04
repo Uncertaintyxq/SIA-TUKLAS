@@ -379,7 +379,8 @@ class ChatController extends Controller
     /** The sender can always remove their message; in a channel, so can the group's moderators. */
     private function mayDelete(Conversation $c, Message $m, User $me): bool
     {
-        return $m->sender_id === $me->id || $me->isAdmin() || ($c->group !== null && Gate::allows('moderate', $c->group));
+        return $m->sender_id === $me->id || ($me->isAdmin() && $me->administers(User::whereKey($m->sender_id)->value('institution_id')))
+            || ($c->group !== null && Gate::allows('moderate', $c->group));
     }
 
     private function withMessageData($query)

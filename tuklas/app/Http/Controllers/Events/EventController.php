@@ -28,10 +28,10 @@ class EventController extends Controller
 {
     private const NOT_FOUND = 'That event doesn’t exist or isn’t approved yet.';
 
-    /** The organizer and admins manage an event, see its attendees and pending state. */
+    /** The organizer and the admins of their school manage an event, see its attendees and pending state. */
     public static function canManage(Event $event, User $user): bool
     {
-        return $user->isAdmin() || $event->posted_by_id === $user->id;
+        return $event->posted_by_id === $user->id || ($user->isAdmin() && $user->administers(User::whereKey($event->posted_by_id)->value('institution_id')));
     }
 
     /** Who registered, earliest first, for the organizer's attendee list. */
@@ -96,7 +96,7 @@ class EventController extends Controller
         $event->postedBy()->associate($me)->save();
 
         if (! $me->isAdmin()) {
-            Notifier::notifyAdmins('event_proposed', "{$me->name} proposed “{$event->title}” and it needs approval.", '/admin?tab=events');
+            Notifier::notifyAdmins('event_proposed', "{$me->name} proposed “{$event->title}” and it needs approval.", '/admin?tab=events', $me->id, $me->institution_id);
         }
 
         return response()->json(['id' => $event->id, 'status' => $event->status->value], 201);
@@ -172,7 +172,7 @@ class EventController extends Controller
         $ad->createdBy()->associate($me)->save();
 
         if (! $me->isAdmin()) {
-            Notifier::notifyAdmins('ad_requested', "{$me->name} requested an ad slot for “{$event->title}”.", '/admin?tab=ads');
+            Notifier::notifyAdmins('ad_requested', "{$me->name} requested an ad slot for “{$event->title}”.", '/admin?tab=ads', $me->id, $me->institution_id);
         }
 
         return response()->json(['id' => $ad->id, 'status' => $ad->status->value], 201);
