@@ -60,18 +60,21 @@ rules, hooks, and the `/start-task` and `/finish-task` commands). Also read:
 
 ## 3. Assignment
 
-**Not yours unless the user says so (don't claim):** the three rows in "Several schools on one site"
-(`feat/institutions`, `feat/institution-scoping`, `feat/institution-admins`). They must be done
-before real student data goes on a server (`docs/TODO.md`, "Before real student data"), but the user
-decides when and who builds them. Several schools on one site is decided (2026-11-04); the plan is
-`docs/decisions/0002-several-schools-on-one-site.md`. If the user assigns them, build in that order:
-`feat/institutions` first, the other two depend on it. `chore/deploy-production` comes after all
-three and is the user's own (it needs the server and accounts).
+**Yours, in this order** (scheduled 2026-11-04; the plan and the client's answers are in
+`docs/decisions/0002-several-schools-on-one-site.md`, read it first):
+1. `feat/institutions`: schools, a school on every account, signup by email domain or admin
+   confirmation, super-admins, a second school in `DemoSeeder`.
+2. `feat/institution-scoping`: department lists per school, a school on every piece of content,
+   Public or School only for educators' research and student works, and the rest of the
+   visibility table.
+3. `feat/institution-admins`: admins per school, super-admins over all, admin queues per school.
 
-**Yours:** every planned feature row is built (`feat/follow` was the last, 2026-11-04). Ask the
-user what to take next: a new row they add to `docs/TODO.md`, or the institution rows above if they
-assign them. Build one at a time: merge each before starting the next, so the next one starts
-from a `main` that already has it and shared files never conflict.
+Each row adds cross-school tests: someone at school B sees school A's Public research and nothing
+else of school A's. **Not yours:** `chore/deploy-production`. It comes after all three, and it's
+the user's own, since it needs the server and accounts.
+
+Build them **one at a time**: merge each before starting the next, so the next one starts from a
+`main` that already has it and shared files never conflict.
 
 Before each one:
 ```bash
