@@ -11,7 +11,9 @@ use App\Models\Comment;
 use App\Models\Event;
 use App\Models\Message;
 use App\Models\Report;
+use App\Models\User;
 use App\Models\Work;
+use App\Support\AdminScope;
 use App\Support\Audit;
 use App\Support\Cards;
 use App\Support\Chat;
@@ -33,11 +35,12 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
  */
 class ReportQueueController extends Controller
 {
-    /** GET /api/admin/reports?status=open|closed */
+    /** GET /api/admin/reports?status=open|closed&institution= — about this admin's school's people (super-admins: every school, or one) */
     public function index(Request $request): JsonResponse
     {
         $closed = $request->query('status') === 'closed';
-        $reports = Report::with([...Cards::user('reporter'), ...Cards::user('owner'), ...Cards::user('resolver')])
+        $school = AdminScope::school($request);
+        $reports = AdminScope::apply(Report::query(), $school, through: 'owner')->with([...Cards::user('reporter'), ...Cards::user('owner'), ...Cards::user('resolver')])
             ->when($closed, fn ($q) => $q->where('status', '!=', ReportStatus::Open), fn ($q) => $q->where('status', ReportStatus::Open))
             ->latest('id')
             ->limit(300)
@@ -51,7 +54,7 @@ class ReportQueueController extends Controller
         return response()->json([
             'items' => $items,
             // Reported things, not reports: distinct (type, id) pairs, counted in SQL (works on SQLite and MySQL)
-            'openCount' => DB::query()->fromSub(Report::where('status', ReportStatus::Open)->select('target_type', 'target_id')->distinct(), 'open_targets')->count(),
+            'openCount' => DB::query()->fromSub(AdminScope::apply(Report::query(), $school, through: 'owner')->where('status', ReportStatus::Open)->select('target_type', 'target_id')->distinct(), 'open_targets')->count(),
         ]);
     }
 
@@ -68,6 +71,8 @@ class ReportQueueController extends Controller
         if ($reports->isEmpty()) {
             throw new HttpException(404, 'Those reports were already handled.');
         }
+        $owner = $reports->first()->target_owner_id;
+        AdminScope::check($me, $owner !== null ? User::whereKey($owner)->value('institution_id') : null);
         $owner = $reports->first()->target_owner_id;
         if ($owner === $me->id) {
             throw new HttpException(403, 'Another admin should handle a report about you.');

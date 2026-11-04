@@ -20,9 +20,9 @@ class PublicationPolicy
         return $publication->author_id === $user->id;
     }
 
-    /** The main author removes their research; an admin can take it down. */
+    /** The main author removes their research; an admin of its school can take it down. */
     public function delete(User $user, Publication $publication): bool
     {
-        return $publication->author_id === $user->id || $user->isAdmin();
+        return $publication->author_id === $user->id || $user->administers($publication->institution_id);
     }
 }

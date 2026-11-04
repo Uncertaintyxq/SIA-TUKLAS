@@ -44,6 +44,12 @@ class ResearchGroup extends Model
         return $this->belongsTo(User::class, 'adviser_id');
     }
 
+    /** The school the group belongs to: its adviser's (docs/decisions/0002); members may come from any school. */
+    public function schoolId(): ?int
+    {
+        return $this->relationLoaded('adviser') ? $this->adviser?->institution_id : User::whereKey($this->adviser_id)->value('institution_id');
+    }
+
     /** @return HasMany<GroupMember, $this> */
     public function members(): HasMany
     {

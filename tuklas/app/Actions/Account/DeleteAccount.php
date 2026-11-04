@@ -123,7 +123,7 @@ class DeleteAccount
 
         // Groups they advised keep their members and work; admins can still manage them
         foreach (ResearchGroup::where('adviser_id', $id)->get(['id', 'name']) as $group) {
-            Notifier::notifyAdmins('group_orphaned', "The adviser of “{$group->name}” deleted their account. The group and its work are kept; admins can still manage it.", "/groups/{$group->id}");
+            Notifier::notifyAdmins('group_orphaned', "The adviser of “{$group->name}” deleted their account. The group and its work are kept; admins can still manage it.", "/groups/{$group->id}", null, $user->institution_id);
         }
         // Students waiting on them as adviser need someone else to review their work
         $waiting = DB::table('works')->where('adviser_id', $id)->whereNotIn('status', ['approved', 'rejected'])->get(['id', 'author_id', 'title']);
@@ -131,7 +131,7 @@ class DeleteAccount
             Notifier::notify((int) $work->author_id, 'adviser_left', "Your adviser for “{$work->title}” deleted their account. The Office of Research can review it, and while it’s a draft or being revised you can choose another adviser.", "/works/{$work->id}");
         }
         if ($waiting->isNotEmpty()) {
-            Notifier::notifyAdmins('adviser_left', "An adviser deleted their account with {$waiting->count()} student work(s) still in review.", '/admin');
+            Notifier::notifyAdmins('adviser_left', "An adviser deleted their account with {$waiting->count()} student work(s) still in review.", '/admin', null, $user->institution_id);
         }
     }
 }

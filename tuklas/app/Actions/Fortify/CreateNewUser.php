@@ -70,11 +70,11 @@ class CreateNewUser implements CreatesNewUsers
             $user->profile()->create();
 
             if ($role === Role::Educator) {
-                Notifier::notifyAdmins('educator_signup', "{$user->name} signed up as an educator and is waiting for verification.", '/admin?tab=educators');
+                Notifier::notifyAdmins('educator_signup', "{$user->name} signed up as an educator and is waiting for verification.", '/admin?tab=educators', null, $school?->id);
             }
 
             if ($school && ! $confirmed) {
-                Notifier::notifyAdmins('school_signup', "{$user->name} signed up to {$school->name} without a school email and is waiting for you to confirm them.", '/admin?tab=schools');
+                Notifier::notifyAdmins('school_signup', "{$user->name} signed up to {$school->name} without a school email and is waiting for you to confirm them.", '/admin?tab=schools', null, $school->id);
             }
 
             return $user;

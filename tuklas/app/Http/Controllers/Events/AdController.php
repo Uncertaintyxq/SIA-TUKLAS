@@ -48,7 +48,7 @@ class AdController extends Controller
         Uploads::delete($old);
 
         if (! $me->isAdmin() && $wasApproved) {
-            Notifier::notifyAdmins('ad_requested', "{$me->name} changed the image on the ad for “{$ad->event->title}”.", '/admin?tab=ads');
+            Notifier::notifyAdmins('ad_requested', "{$me->name} changed the image on the ad for “{$ad->event->title}”.", '/admin?tab=ads', $me->id, $me->institution_id);
         }
 
         return response()->noContent();
@@ -69,6 +69,6 @@ class AdController extends Controller
 
     private function owns(Ad $ad, User $user): bool
     {
-        return $user->isAdmin() || $ad->created_by_id === $user->id;
+        return $ad->created_by_id === $user->id || ($user->isAdmin() && $user->administers(User::whereKey($ad->created_by_id)->value('institution_id')));
     }
 }

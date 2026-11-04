@@ -136,9 +136,12 @@ restore: [`tuklas/deploy/README.md`](../tuklas/deploy/README.md#backups)):
 ## Data Privacy Act (RA 10173)
 
 Before real students' data goes in:
-- [ ] If several schools share the site: the three institution features are built (`docs/TODO.md`),
-      so each school's people, announcements and admins are separate, and it's agreed who controls
-      each school's data.
+- [ ] Several schools share the site (docs/decisions/0002): the institution features are built
+      (`docs/TODO.md`), so each school's people, announcements and admins are separate. Each
+      school is the personal information controller for its own people; whoever runs the site is
+      their processor, with a signed data processing agreement per school and a Data Protection
+      Officer named by each school. Each school's admins act only for it; super-admins (the team
+      plus one university contact) for all.
 - [ ] Final privacy notice text, shown at signup. Changing it means bumping `privacy_version`
       in `config/tuklas.php`, which asks everyone to accept again.
 - [ ] A named Data Protection Officer, with contact details in the privacy notice.

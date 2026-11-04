@@ -119,6 +119,11 @@ update (`docs/STAGING_SERVER.md`, "One-time steps"); until then, staging runs th
 - Portfolios are listed for search engines only for people with public research.
 
 ### New for admins
+- **Admins per school.** Each school's admins see and decide only their school's queue: educators,
+  people to confirm, research, events, ads, honors and reports about their school's people. They
+  get notified only about their school.
+- **Super-admins** act for every school: a School picker at the top of the approval queue, the
+  Schools list, and **Make super-admin** for other admins under Users & roles.
 - A **Reports** tab in the approval queue lists each reported thing once, with every report about
   it, and what was reported as it was at the time (kept even if the author deletes it).
 - For each one, you can **dismiss** it, **warn** the person with a message, or **remove** the content:

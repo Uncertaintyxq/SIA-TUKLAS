@@ -18,7 +18,7 @@ import {
   useRemoveWork,
 } from '../api/admin';
 import { useMe } from '../api/auth';
-import { schoolLabel, useAdminInstitutions } from '../api/institutions';
+import { schoolLabel, useAdminInstitutions, useInstitutions } from '../api/institutions';
 import { useDeleteOpportunity } from '../api/feed';
 import { useReportQueue } from '../api/reports';
 import { useDecision, useDeleteDiscussion } from '../api/works';
@@ -56,6 +56,8 @@ export function AdminPage() {
     <>
       <PageHeader title="Approval queue" description="Verify and monitor educators, confirm people for their school, approve research, events and academic ads, verify honors, handle reports, and moderate the feed." />
 
+      <AdminSchoolBar />
+
       <dl className={styles.kpis}>
         <Kpi label="Research awaiting the panel" value={stats?.works.inReview} />
         <Kpi label="Educators to verify" value={stats?.unverifiedEducators} />
@@ -73,7 +75,17 @@ export function AdminPage() {
         <Chips
           label="Queue"
           value={tab}
-          onChange={(t) => setParams(t === 'research' ? {} : { tab: t }, { replace: true })}
+          onChange={(t) =>
+            setParams(
+              (prev) => {
+                const next = new URLSearchParams(prev);
+                if (t === 'research') next.delete('tab');
+                else next.set('tab', t);
+                return next;
+              },
+              { replace: true },
+            )
+          }
           options={[
             { value: 'research', label: 'Student research', count: queue?.works.length },
             { value: 'educators', label: 'Educators', count: queue?.educators.length },
@@ -115,6 +127,43 @@ export function AdminPage() {
         </>
       )}
     </>
+  );
+}
+
+/** Super-admins pick a school or every school; a school's admins see which school they act for. */
+function AdminSchoolBar() {
+  const { data: me } = useMe();
+  const { data: schools } = useInstitutions(Boolean(me?.superAdmin));
+  const [params, setParams] = useSearchParams();
+  if (!me) return null;
+  if (!me.superAdmin) return me.institution ? <p className={styles.meta}>You’re an admin for {me.institution.name}. Other schools’ admins handle theirs.</p> : null;
+  if ((schools?.length ?? 0) < 2) return null;
+  return (
+    <div className={styles.filters}>
+      <SelectField
+        label="School"
+        value={params.get('school') ?? ''}
+        onChange={(e) =>
+          setParams(
+            (prev) => {
+              const next = new URLSearchParams(prev);
+              if (e.target.value) next.set('school', e.target.value);
+              else next.delete('school');
+              return next;
+            },
+            { replace: true },
+          )
+        }
+        hint="You’re a super-admin: you can act for every school."
+      >
+        <option value="">Every school</option>
+        {schools!.map((s) => (
+          <option key={s.id} value={String(s.id)}>
+            {s.name}
+          </option>
+        ))}
+      </SelectField>
+    </div>
   );
 }
 
@@ -379,7 +428,7 @@ function Users() {
   const patch = usePatchUser();
   const toast = useToast();
   const { data: schools } = useAdminInstitutions(Boolean(me?.superAdmin));
-  const change = (id: number, body: { role?: Role; verified?: boolean; institutionId?: number }, msg: string) =>
+  const change = (id: number, body: { role?: Role; verified?: boolean; institutionId?: number; superAdmin?: boolean }, msg: string) =>
     patch.mutate({ id, ...body }, { onSuccess: () => toast(msg, 'success'), onError: (e) => toast(e.message, 'error') });
 
   return (
@@ -433,6 +482,17 @@ function Users() {
                         </option>
                       ))}
                     </SelectField>
+                  )}
+                  {me?.superAdmin && u.role === 'admin' && u.id !== me.id && (
+                    <Button
+                      disabled={patch.isPending}
+                      onClick={() =>
+                        window.confirm(u.superAdmin ? `Make ${u.name} an admin of their school only?` : `Make ${u.name} a super-admin? They can act for every school.`) &&
+                        change(u.id, { superAdmin: !u.superAdmin }, u.superAdmin ? `${u.name} is an admin of their school only now.` : `${u.name} is a super-admin now.`)
+                      }
+                    >
+                      {u.superAdmin ? 'Remove super-admin' : 'Make super-admin'}
+                    </Button>
                   )}
                   {u.role === 'educator' && (
                     <Button disabled={patch.isPending} onClick={() => change(u.id, { verified: !u.verified }, u.verified ? `${u.name} is no longer verified.` : `${u.name} is verified.`)}>
