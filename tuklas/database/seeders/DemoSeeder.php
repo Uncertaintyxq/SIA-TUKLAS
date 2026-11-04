@@ -78,6 +78,17 @@ class DemoSeeder extends Seeder
 
     private const BAYAN = 2;
 
+    /** The demo's two schools, by name (tuklas:launch-check fails while they're on a site) */
+    public const SCHOOLS = [self::TUKLAS_U => 'Tuklas University', self::BAYAN => 'Bayan State College'];
+
+    /** Demo address domain => the showcase's own (the team's domain, forwarded to its inboxes) */
+    private const SHOWCASE_DOMAINS = ['tuklas.edu' => 'tu.', 'bayan.edu.ph' => 'bsc.', 'gmail.com' => ''];
+
+    /** Set by forShowcase(): the team's domain for a production site shown to the client */
+    private ?string $domain = null;
+
+    private string $password = self::PASSWORD;
+
     /** App tables, emptied before seeding, children before parents. Laravel's own tables (sessions, cache, jobs) are kept. */
     public const TABLES = [
         'announcement_reads', 'announcement_attachments', 'announcements', 'messages', 'conversation_members',
@@ -89,6 +100,35 @@ class DemoSeeder extends Seeder
     ];
 
     private CarbonImmutable $now;
+
+    /**
+     * The same demo under production rules (tuklas:showcase): addresses on the team's domain
+     * (andrea@tu.<domain>, alim@bsc.<domain>) so real emails reach the team, one strong password,
+     * and the privacy notice and two-factor set-up left for each persona's first sign-in.
+     */
+    public function forShowcase(string $domain, string $password): static
+    {
+        $this->domain = $domain;
+        $this->password = $password;
+
+        return $this;
+    }
+
+    /** @return list<string> Every demo person's email address, as the next run() will create them */
+    public function addresses(): array
+    {
+        return array_map(fn (array $person) => $this->address($person[4]), self::PEOPLE);
+    }
+
+    private function address(string $email): string
+    {
+        if ($this->domain === null) {
+            return $email;
+        }
+        [$local, $domain] = explode('@', $email);
+
+        return $local.'@'.self::SHOWCASE_DOMAINS[$domain].$this->domain;
+    }
 
     public function run(): void
     {
@@ -139,33 +179,36 @@ class DemoSeeder extends Seeder
         }
     }
 
+    /** [id, name, username, role, email, program, headline] */
+    private const PEOPLE = [
+        [self::ANDREA, 'Andrea Villanueva', 'andrea', 'student', 'andrea@tuklas.edu', 'BS Computer Science · 4th year', 'Building resilient tech for disaster-prone communities.'],
+        [self::PAOLO, 'Paolo Reyes', 'paolo', 'student', 'paolo@tuklas.edu', 'AB Literature · 3rd year', 'Poet and essayist writing about coastal memory.'],
+        [self::KIM, 'Kim Dela Cruz', 'kim', 'student', 'kim@tuklas.edu', 'BS Biology · 4th year', 'Ethnobotany and natural vector control.'],
+        [self::SANTOS, 'Dr. Maria Santos', 'msantos', 'educator', 'msantos@tuklas.edu', 'Research Adviser · Associate Professor', 'Disaster informatics, applied ML, and mentorship.'],
+        [self::AQUINO, 'Prof. Ramon Aquino', 'raquino', 'educator', 'raquino@tuklas.edu', 'Research Adviser · Assistant Professor', 'Philippine poetics and creative non-fiction.'],
+        [self::LEA, 'Lea Mercado', 'lea', 'admin', 'admin@tuklas.edu', 'Research Publications Officer', 'Keeping Tuklas accurate, fair and academic.'],
+        // Signed up as an educator; waits for an admin before she can approve work.
+        [self::JAVIER, 'Prof. Carla Javier', 'cjavier', 'educator', 'cjavier@tuklas.edu', 'Instructor · Civil Engineering', 'Water resources and community infrastructure.'],
+        [self::TORRES, 'Miguel Torres', 'mtorres', 'student', 'mtorres@bayan.edu.ph', 'BS Information Technology · 3rd year', 'Mobile apps for small farmers.'],
+        [self::LIM, 'Dr. Ana Lim', 'alim', 'educator', 'alim@bayan.edu.ph', 'Research Adviser · Professor', 'Agricultural informatics and rural connectivity.'],
+        // Signed up with a personal email and picked Bayan; waits for its admins to confirm her.
+        [self::CRUZ, 'Rina Cruz', 'rcruz', 'student', 'rina.cruz.demo@gmail.com', 'BS Agriculture · 2nd year', ''],
+        [self::RAMOS, 'Jose Ramos', 'jramos', 'admin', 'jramos@bayan.edu.ph', 'Research Office · Bayan State College', 'Keeping Bayan’s research on Tuklas in order.'],
+    ];
+
     private function people(): void
     {
-        Institution::create(['id' => self::TUKLAS_U, 'name' => 'Tuklas University', 'short_name' => 'TU', 'email_domains' => ['tuklas.edu']]);
-        Institution::create(['id' => self::BAYAN, 'name' => 'Bayan State College', 'short_name' => 'BSC', 'email_domains' => ['bayan.edu.ph']]);
+        Institution::create(['id' => self::TUKLAS_U, 'name' => self::SCHOOLS[self::TUKLAS_U], 'short_name' => 'TU', 'email_domains' => [$this->domain === null ? 'tuklas.edu' : 'tu.'.$this->domain]]);
+        Institution::create(['id' => self::BAYAN, 'name' => self::SCHOOLS[self::BAYAN], 'short_name' => 'BSC', 'email_domains' => [$this->domain === null ? 'bayan.edu.ph' : 'bsc.'.$this->domain]]);
 
-        $password = Hash::make(self::PASSWORD);
-        $people = [
-            [self::ANDREA, 'Andrea Villanueva', 'andrea', 'student', 'andrea@tuklas.edu', 'BS Computer Science · 4th year', 'Building resilient tech for disaster-prone communities.'],
-            [self::PAOLO, 'Paolo Reyes', 'paolo', 'student', 'paolo@tuklas.edu', 'AB Literature · 3rd year', 'Poet and essayist writing about coastal memory.'],
-            [self::KIM, 'Kim Dela Cruz', 'kim', 'student', 'kim@tuklas.edu', 'BS Biology · 4th year', 'Ethnobotany and natural vector control.'],
-            [self::SANTOS, 'Dr. Maria Santos', 'msantos', 'educator', 'msantos@tuklas.edu', 'Research Adviser · Associate Professor', 'Disaster informatics, applied ML, and mentorship.'],
-            [self::AQUINO, 'Prof. Ramon Aquino', 'raquino', 'educator', 'raquino@tuklas.edu', 'Research Adviser · Assistant Professor', 'Philippine poetics and creative non-fiction.'],
-            [self::LEA, 'Lea Mercado', 'lea', 'admin', 'admin@tuklas.edu', 'Research Publications Officer', 'Keeping Tuklas accurate, fair and academic.'],
-            // Signed up as an educator; waits for an admin before she can approve work.
-            [self::JAVIER, 'Prof. Carla Javier', 'cjavier', 'educator', 'cjavier@tuklas.edu', 'Instructor · Civil Engineering', 'Water resources and community infrastructure.'],
-            [self::TORRES, 'Miguel Torres', 'mtorres', 'student', 'mtorres@bayan.edu.ph', 'BS Information Technology · 3rd year', 'Mobile apps for small farmers.'],
-            [self::LIM, 'Dr. Ana Lim', 'alim', 'educator', 'alim@bayan.edu.ph', 'Research Adviser · Professor', 'Agricultural informatics and rural connectivity.'],
-            // Signed up with a personal email and picked Bayan; waits for its admins to confirm her.
-            [self::CRUZ, 'Rina Cruz', 'rcruz', 'student', 'rina.cruz.demo@gmail.com', 'BS Agriculture · 2nd year', ''],
-            [self::RAMOS, 'Jose Ramos', 'jramos', 'admin', 'jramos@bayan.edu.ph', 'Research Office · Bayan State College', 'Keeping Bayan’s research on Tuklas in order.'],
-        ];
-        foreach ($people as [$id, $name, $username, $role, $email, $program, $headline]) {
+        $password = Hash::make($this->password);
+        foreach (self::PEOPLE as [$id, $name, $username, $role, $email, $program, $headline]) {
             User::create([
-                'id' => $id, 'name' => $name, 'username' => $username, 'role' => $role, 'email' => $email,
+                'id' => $id, 'name' => $name, 'username' => $username, 'role' => $role, 'email' => $this->address($email),
                 'program' => $program, 'headline' => $headline, 'password' => $password,
                 'verified' => $id !== self::JAVIER, 'email_verified_at' => $this->now,
-                'privacy_accepted_at' => $this->now, 'privacy_version' => config('tuklas.privacy_version'),
+                // A showcase persona accepts the notice at first sign-in, like everyone on a real site
+                'privacy_accepted_at' => $this->domain === null ? $this->now : null, 'privacy_version' => $this->domain === null ? config('tuklas.privacy_version') : null,
                 'institution_id' => $id >= self::TORRES ? self::BAYAN : self::TUKLAS_U,
                 'institution_confirmed_at' => $id === self::CRUZ ? null : $this->now,
                 'is_super_admin' => $id === self::LEA,
