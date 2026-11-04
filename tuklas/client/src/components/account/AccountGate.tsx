@@ -1,6 +1,7 @@
 /**
  * AccountGate — holds the app back until the signed-in account has finished setup: a confirmed
- * email, two-factor sign-in for educators and admins, and consent to the current privacy notice.
+ * email, two-factor sign-in for educators and admins, a school that has confirmed them (when they
+ * signed up without its email domain), and consent to the current privacy notice.
  * The server enforces the same rules (EnsureAccountReady); this shows the screen that fixes it.
  */
 import { useEffect, useRef, useState, type ReactNode } from 'react';
@@ -17,7 +18,7 @@ import { SetupFrame } from './SetupFrame';
 import { TwoFactorSetup } from './TwoFactorSetup';
 import styles from './Account.module.css';
 
-const SETUP_CODES = ['email_unverified', 'two_factor_required'];
+const SETUP_CODES = ['email_unverified', 'two_factor_required', 'school_unconfirmed'];
 
 export function AccountGate({ me, children }: { me: PublicUser; children: ReactNode }) {
   const qc = useQueryClient();
@@ -55,6 +56,7 @@ export function AccountGate({ me, children }: { me: PublicUser; children: ReactN
         <TwoFactorSetup />
       </SetupFrame>
     );
+  if (me.schoolConfirmationRequired) return <AwaitSchool me={me} />;
   if (!me.privacyAccepted) return <PrivacyConsent me={me} />;
   return children;
 }
@@ -87,6 +89,32 @@ function VerifyEmail({ me, expired }: { me: PublicUser; expired: boolean }) {
         </Button>
         <Button loading={resend.isPending} onClick={() => resend.mutate(undefined, { onSuccess: () => toast(`New link sent to ${me.email}.`, 'success') })}>
           Send a new link
+        </Button>
+      </div>
+    </SetupFrame>
+  );
+}
+
+/** Signed up without the school's email domain: its admins confirm the account first (docs/decisions/0002). */
+function AwaitSchool({ me }: { me: PublicUser }) {
+  const qc = useQueryClient();
+  const toast = useToast();
+  const [checking, setChecking] = useState(false);
+  const school = me.institution?.name ?? 'your school';
+
+  const recheck = async () => {
+    setChecking(true);
+    await qc.invalidateQueries({ queryKey: ['me'] });
+    setChecking(false);
+    if (qc.getQueryData<PublicUser>(['me'])?.schoolConfirmationRequired) toast('Not confirmed yet. You’ll get an email when it is.', 'info');
+  };
+
+  return (
+    <SetupFrame title={`Waiting for ${school}`} sub={<>You signed up without a {school} email address, so its admins confirm your account first.</>} signedInAs={me.email}>
+      <p className={styles.muted}>This usually takes a day or two. We’ll tell you by email when you’re in. Picked the wrong school? Ask your school’s research office, or sign up again with your school email.</p>
+      <div className={styles.actions}>
+        <Button variant="primary" loading={checking} onClick={recheck}>
+          Check again
         </Button>
       </div>
     </SetupFrame>

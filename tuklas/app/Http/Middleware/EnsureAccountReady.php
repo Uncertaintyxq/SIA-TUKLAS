@@ -9,7 +9,8 @@ use Symfony\Component\HttpFoundation\Response;
 
 /**
  * A signed-in account can use Tuklas only once its email is verified and, for admins and
- * educators, two-factor sign-in is set up (docs/CONVERSION.md D6). The `code` tells the React app
+ * educators, two-factor sign-in is set up (docs/CONVERSION.md D6), and, for someone who signed up
+ * without their school's email domain, once the school's admins confirm them (docs/decisions/0002). The `code` tells the React app
  * which setup screen to show. Signed-out requests pass through; routes that need a session add `auth`.
  */
 class EnsureAccountReady
@@ -33,6 +34,13 @@ class EnsureAccountReady
             return response()->json([
                 'error' => 'Set up two-factor sign-in to keep using your account.',
                 'code' => 'two_factor_required',
+            ], 403);
+        }
+
+        if ($user->awaitsSchoolConfirmation()) {
+            return response()->json([
+                'error' => 'Your school’s admins need to confirm your account first.',
+                'code' => 'school_unconfirmed',
             ], 403);
         }
 

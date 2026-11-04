@@ -35,6 +35,7 @@ class PrivacyController extends Controller
         $data = [
             'exportedAt' => now()->toISOString(),
             'account' => $me->only(['id', 'name', 'username', 'email', 'program', 'headline', 'verified', 'created_at', 'email_verified_at', 'privacy_accepted_at', 'privacy_version'])
+                + ['institution' => $me->school()?->name, 'institutionConfirmedAt' => $me->institution_confirmed_at?->toISOString()]
                 + ['role' => $me->role->value, 'twoFactorEnabled' => $me->hasTwoFactorEnabled(), 'notificationSettings' => NotificationPrefs::for($me)],
             'profile' => $me->profile?->only(['titles', 'department', 'bio_long', 'cv_name']),
             'links' => $me->links->map->only(['type', 'url', 'label']),

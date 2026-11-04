@@ -1,4 +1,5 @@
 /** Sign-in and the signed-in account (/api/auth). */
+import type { InstitutionCard } from './common';
 
 export type Role = 'student' | 'educator' | 'admin';
 
@@ -14,6 +15,8 @@ export interface SignupInput {
   password: string;
   role: 'student' | 'educator';
   program: string;
+  /** The school picked by hand: needed without a school email address, and then its admins confirm the account */
+  institutionId?: number | null;
   /** Consent to the privacy notice (Data Privacy Act). The server refuses signup without it. */
   privacy: boolean;
 }
@@ -42,6 +45,11 @@ export interface PublicUser {
   twoFactorRequired: boolean;
   /** Has accepted the current version of the privacy notice. */
   privacyAccepted: boolean;
+  institution: InstitutionCard | null;
+  /** Signed up without the school's email domain: waits for the school's admins (false in demo mode). */
+  schoolConfirmationRequired: boolean;
+  /** Manages the schools on the site (admins only) */
+  superAdmin: boolean;
 }
 
 export interface EducatorRights {

@@ -17,6 +17,7 @@ use App\Models\GroupActivity;
 use App\Models\GroupDeadline;
 use App\Models\GroupMember;
 use App\Models\Honor;
+use App\Models\Institution;
 use App\Models\Message;
 use App\Models\Notification;
 use App\Models\Opportunity;
@@ -62,6 +63,17 @@ class DemoSeeder extends Seeder
 
     private const JAVIER = 7;
 
+    /** A second school (docs/decisions/0002): a student, an educator, and someone waiting to be confirmed */
+    private const TORRES = 8;
+
+    private const LIM = 9;
+
+    private const CRUZ = 10;
+
+    private const TUKLAS_U = 1;
+
+    private const BAYAN = 2;
+
     /** App tables, emptied before seeding, children before parents. Laravel's own tables (sessions, cache, jobs) are kept. */
     public const TABLES = [
         'announcement_reads', 'announcement_attachments', 'announcements', 'messages', 'conversation_members',
@@ -69,7 +81,7 @@ class DemoSeeder extends Seeder
         'group_files', 'group_members', 'research_groups', 'ads', 'event_registrations', 'events',
         'opportunity_applications', 'opportunities', 'saved_works', 'reactions', 'comments', 'revision_items',
         'reviews', 'defense_stages', 'work_versions', 'work_authors', 'works', 'academic_links', 'profiles',
-        'backgrounds', 'honors', 'audit_logs', 'password_reset_tokens', 'users',
+        'backgrounds', 'honors', 'audit_logs', 'password_reset_tokens', 'users', 'institutions',
     ];
 
     private CarbonImmutable $now;
@@ -122,6 +134,9 @@ class DemoSeeder extends Seeder
 
     private function people(): void
     {
+        Institution::create(['id' => self::TUKLAS_U, 'name' => 'Tuklas University', 'short_name' => 'TU', 'email_domains' => ['tuklas.edu']]);
+        Institution::create(['id' => self::BAYAN, 'name' => 'Bayan State College', 'short_name' => 'BSC', 'email_domains' => ['bayan.edu.ph']]);
+
         $password = Hash::make(self::PASSWORD);
         $people = [
             [self::ANDREA, 'Andrea Villanueva', 'andrea', 'student', 'andrea@tuklas.edu', 'BS Computer Science · 4th year', 'Building resilient tech for disaster-prone communities.'],
@@ -132,6 +147,10 @@ class DemoSeeder extends Seeder
             [self::LEA, 'Lea Mercado', 'lea', 'admin', 'admin@tuklas.edu', 'Research Publications Officer', 'Keeping Tuklas accurate, fair and academic.'],
             // Signed up as an educator; waits for an admin before she can approve work.
             [self::JAVIER, 'Prof. Carla Javier', 'cjavier', 'educator', 'cjavier@tuklas.edu', 'Instructor · Civil Engineering', 'Water resources and community infrastructure.'],
+            [self::TORRES, 'Miguel Torres', 'mtorres', 'student', 'mtorres@bayan.edu.ph', 'BS Information Technology · 3rd year', 'Mobile apps for small farmers.'],
+            [self::LIM, 'Dr. Ana Lim', 'alim', 'educator', 'alim@bayan.edu.ph', 'Research Adviser · Professor', 'Agricultural informatics and rural connectivity.'],
+            // Signed up with a personal email and picked Bayan; waits for its admins to confirm her.
+            [self::CRUZ, 'Rina Cruz', 'rcruz', 'student', 'rina.cruz.demo@gmail.com', 'BS Agriculture · 2nd year', ''],
         ];
         foreach ($people as [$id, $name, $username, $role, $email, $program, $headline]) {
             User::create([
@@ -139,6 +158,9 @@ class DemoSeeder extends Seeder
                 'program' => $program, 'headline' => $headline, 'password' => $password,
                 'verified' => $id !== self::JAVIER, 'email_verified_at' => $this->now,
                 'privacy_accepted_at' => $this->now, 'privacy_version' => config('tuklas.privacy_version'),
+                'institution_id' => $id >= self::TORRES ? self::BAYAN : self::TUKLAS_U,
+                'institution_confirmed_at' => $id === self::CRUZ ? null : $this->now,
+                'is_super_admin' => $id === self::LEA,
             ]);
         }
 
@@ -150,6 +172,9 @@ class DemoSeeder extends Seeder
             self::AQUINO => ['MFA', 'Department of Literature', 'Poet and editor of the Tinig student literary folio. I teach creative writing and Philippine poetics.'],
             self::LEA => ['', 'Office of Research & Publications', null],
             self::JAVIER => ['', 'College of Engineering', null],
+            self::TORRES => ['', 'College of Information Technology', null],
+            self::LIM => ['PhD', 'College of Information Technology', 'I lead the Rural Connectivity Lab at Bayan State College.'],
+            self::CRUZ => ['', 'College of Agriculture', null],
         ];
         foreach ($profiles as $userId => [$titles, $department, $bio]) {
             Profile::create(['user_id' => $userId, 'titles' => $titles, 'department' => $department, 'bio_long' => $bio]);

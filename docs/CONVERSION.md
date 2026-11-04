@@ -402,6 +402,17 @@ branch rule; the deployment plan is in [DEPLOYMENT.md](DEPLOYMENT.md).
   approved or research first leaves Draft, never the authors themselves. Portfolios return
   `followers` and `followedByMe`. Follows are in the data export and removed with the account (both
   theirs and others' follows of them).
+- 2026-11-04: `feat/institutions` (docs/decisions/0002). `institutions` (name, short name, email
+  domains, active) and on `users`: `institution_id`, `institution_confirmed_at`, `is_super_admin`.
+  Signup (`CreateNewUser`) matches the school by email domain (subdomains too) and confirms it;
+  otherwise the person picks one and waits: `EnsureAccountReady` answers `403 school_unconfirmed`
+  until an admin confirms them (`PATCH /api/admin/users/{id}` `{schoolConfirmed: true}`; the admin
+  queue's `schools`). Only super-admins move people (`institutionId`) and manage schools
+  (`/api/admin/institutions`, gate `super-admin`). `UserCardResource` and `AccountResource` carry
+  `institution` ({id, name, shortName}), read through `User::school()` from `Institution::byId()`
+  (once per request; saving a school flushes it). `PageMeta` gives Google Scholar the author's
+  school. A site with no schools behaves as before. Nothing is scoped by school yet: that's
+  `feat/institution-scoping`.
 
 ## How the code is laid out (for the next modules)
 

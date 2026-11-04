@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\InstitutionController;
 use App\Http\Controllers\Admin\ModerationController;
 use App\Http\Controllers\Admin\PeopleController;
 use App\Http\Controllers\DemoController;
@@ -22,6 +23,13 @@ Route::middleware(['auth:sanctum', 'account.ready', 'can:admin'])->prefix('admin
     Route::get('/posts', [ModerationController::class, 'posts'])->name('posts');
     Route::post('/works/{id}/remove', [ModerationController::class, 'removeWork'])->whereNumber('id')->name('works.remove');
     Route::post('/works/{id}/restore', [ModerationController::class, 'restoreWork'])->whereNumber('id')->name('works.restore');
+
+    // The schools on the site: super-admins only (docs/decisions/0002)
+    Route::middleware('can:super-admin')->prefix('institutions')->name('institutions.')->group(function () {
+        Route::get('/', [InstitutionController::class, 'index'])->name('index');
+        Route::post('/', [InstitutionController::class, 'store'])->name('store');
+        Route::put('/{id}', [InstitutionController::class, 'update'])->whereNumber('id')->name('update');
+    });
 });
 
 // Demo reset: any signed-in account, only while DEMO_MODE=true (DemoController)
