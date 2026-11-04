@@ -320,6 +320,154 @@ const chapters = {
     await shot(page, 'visitor-publication', [heading('Abstract'), heading('Methodology'), heading('Full text'), heading('Cite this research'), page.getByRole('button', { name: 'Copy link' })], { tall: true });
     await page.context().close();
   },
+
+  // Andrea Villanueva, a student (and the leader of her research group). Nothing is saved: forms are
+  // filled in for the picture, then cancelled, so the chapters can run again on the same data.
+  async students(browser) {
+    const page = await newPage(browser);
+    await logIn(page, `andrea@tu.${DOMAIN}`);
+    const accept = page.getByRole('button', { name: 'Accept and continue' });
+    await accept.or(page.getByRole('heading', { name: 'Community feed' })).first().waitFor();
+    if (await accept.isVisible()) {
+      await page.getByRole('checkbox').check();
+      await accept.click();
+    }
+    await page.waitForURL(/\/feed/);
+    await page.getByText(/^Welcome back/).waitFor({ state: 'hidden', timeout: 15000 }).catch(() => {});
+    const main = page.getByRole('main');
+    const heading = (name) => main.getByRole('heading', { name });
+    const card = (name) => heading(name).locator('xpath=ancestor::header[1]/..');
+    const button = (name, scope = main) => scope.getByRole('button', { name, exact: typeof name === 'string' });
+    const dialog = page.getByRole('dialog');
+
+    // Your portfolio
+    await page.goto(BASE + '/portfolio');
+    await heading('Andrea Villanueva').waitFor();
+    await shot(page, 'student-portfolio', [[button('Edit profile'), 'above'], [main.getByRole('link', { name: 'View public page' }), 'above'], [button('Share'), 'above'], button('Edit about')]);
+    await shot(page, 'student-portfolio-sections', [
+      card('Academic links').getByRole('button', { name: 'Edit', exact: true }), card('Academic background').getByRole('button', { name: 'Add', exact: true }),
+      card(/^Honors/).getByRole('button', { name: 'Add', exact: true }), card('Curriculum vitae').getByText('Upload PDF'),
+    ], { clip: [card('Academic links'), card('Curriculum vitae')] });
+    await button('Edit profile').click();
+    await dialog.getByLabel('Titles').waitFor();
+    await shot(page, 'student-edit-profile', [
+      dialog.getByText('Choose photo'), dialog.getByLabel('Full name'), dialog.getByLabel('Titles'), dialog.getByLabel('Program or position'),
+      dialog.getByLabel('Department'), dialog.getByLabel('Short bio'), dialog.getByLabel('Extended bio'), [button('Save', dialog), 'above'],
+    ], { clip: dialog });
+    await button('Cancel', dialog).click();
+
+    // A new work
+    await page.goto(BASE + '/research');
+    await heading('My research').waitFor();
+    await shot(page, 'student-my-research', [
+      button('New entry'), main.getByText('Approved', { exact: true }).first(), main.getByRole('link', { name: 'Open', exact: true }).first(), button('Edit draft'), heading('Reach'),
+    ], { tall: true });
+    await button('New entry').click();
+    await dialog.getByLabel('Title').fill('Rainfall Thresholds for Landslide Warnings in Upland Barangays');
+    await dialog.getByLabel('Research adviser').selectOption({ label: 'Dr. Maria Santos' });
+    await dialog.getByLabel('Keywords').fill('Disaster Risk Reduction, Landslides');
+    await dialog.getByLabel('Abstract').fill('We compare rainfall thresholds from three upland barangays with the landslides recorded there since 2015, to suggest when barangay officials should warn residents.');
+    await shot(page, 'student-new-work', [
+      dialog.getByLabel('Type'), [dialog.getByLabel('Research adviser'), 'above'], dialog.getByLabel('Title'), dialog.getByLabel('Keywords'), dialog.getByLabel('Abstract'),
+      dialog.getByLabel('How we made this (optional)'), dialog.getByLabel('Who can read it once approved'), dialog.getByLabel('Co-authors (optional)'),
+    ], { clip: dialog });
+    // The form scrolls inside its dialog: its end, with the buttons, is a picture of its own
+    await dialog.getByText('Choose PDF').scrollIntoViewIfNeeded();
+    await shot(page, 'student-new-work-end', [dialog.getByText('Choose PDF'), [button('Save draft', dialog), 'above'], [button('Submit for adviser review', dialog), 'above']], { clip: dialog });
+    await button('Cancel', dialog).click();
+
+    // A draft, and a submitted work's defense stages
+    await page.goto(BASE + '/works/8');
+    await button('Edit entry').waitFor();
+    await shot(page, 'student-draft', [[button('Edit entry'), 'above'], [button('Submit for review'), 'above'], [button('Delete draft'), 'above']]);
+    await page.goto(BASE + '/works/4');
+    await heading(/^Defense to Discovery/).waitFor();
+    await shot(page, 'student-defense-stages', [button('Add stage'), [button('Edit Proposal defense'), 'above'], [button('Remove Proposal defense'), 'right']], { clip: card(/^Defense to Discovery/) });
+
+    // Someone else's work: discussion, reactions, saving, reporting
+    await page.goto(BASE + '/works/3');
+    await heading('Discussion').waitFor();
+    await main.getByLabel('Add to the discussion').fill('Did you try the extract on second-instar larvae too? @Kim');
+    await shot(page, 'student-engage', [
+      main.getByLabel('Add to the discussion'), button('Comment'), button(/^Insightful/), button('Save to library'), button('Share link'), button('Report'),
+    ], { tall: true });
+    await main.getByLabel('Add to the discussion').fill('');
+    await button('Report').click();
+    await dialog.getByText('Plagiarism: someone else’s work').waitFor();
+    await shot(page, 'student-report', [dialog.getByText('Plagiarism: someone else’s work'), dialog.getByLabel('Anything an admin should know (optional)'), [button('Send report', dialog), 'above']], { clip: dialog });
+    await button('Cancel', dialog).click();
+
+    // The feed, following, the library
+    await page.goto(BASE + '/feed');
+    await heading('Community feed').waitFor();
+    // The type filters scroll sideways ("My library" and "Following" sit at the end), so only "All" is marked
+    const readFirst = main.getByRole('link', { name: 'Read the work' }).first();
+    await shot(page, 'student-feed', [button('All'), main.getByLabel('Department'), main.getByText('Newest', { exact: true }), [button('Save').first(), 'above'], readFirst],
+      { clip: [heading('Community feed'), readFirst] });
+    await shot(page, 'student-updates', [button('Mark all read'), card('Updates').getByRole('button').nth(1)], { clip: card('Updates') });
+    await page.goto(BASE + '/u/kim');
+    await button('Follow Kim Dela Cruz').waitFor();
+    await shot(page, 'student-follow', [button('Follow Kim Dela Cruz')]);
+    await page.goto(BASE + '/library');
+    await heading('Research library').waitFor();
+    await shot(page, 'student-library', [main.getByLabel('Search educator research'), main.getByLabel('Year', { exact: true }), main.getByLabel('Department', { exact: true }), main.getByLabel('Keyword', { exact: true }), heading('Browse by department')]);
+
+    // A research group: chat, and handing in a deliverable
+    await page.goto(BASE + '/groups/1');
+    await heading('Disaster Informatics Lab').waitFor();
+    await shot(page, 'student-group', [
+      button('Chat'), button('chapter-3-methods'), main.getByRole('textbox', { name: 'Message #general' }), main.getByText('Send a file'), heading(/^Members/), button('Leave group'),
+    ]);
+    await button(/^Deadlines/).click();
+    await button('Chapter 3 (Methodology) draft due').click();
+    const panel = card('Chapter 3 (Methodology) draft due');
+    await panel.getByRole('button', { name: 'Hand in again' }).waitFor();
+    await shot(page, 'student-deliverable', [panel.getByRole('link', { name: 'Villanueva Chapter 3 draft.pdf', exact: true }), panel.getByText('Choose file'), panel.getByLabel('Note to your reviewers (optional)'), panel.getByRole('button', { name: 'Hand in again' })],
+      { clip: panel });
+
+    // Messages
+    await page.goto(BASE + '/messages');
+    await main.getByRole('link', { name: /Kim Dela Cruz/ }).first().click();
+    const box = main.getByRole('textbox', { name: 'Message Kim Dela Cruz' });
+    await box.waitFor();
+    const lastMessage = main.getByText(/Bringing two kits/).last();
+    await lastMessage.hover();
+    await shot(page, 'student-messages', [
+      main.getByLabel('Find a chat by person, channel or group'), [button('New message'), 'below'], [button('React').filter({ visible: true }).last(), 'above'],
+      [button('Reply in thread').filter({ visible: true }).last(), 'above'], [main.getByText('Send a file'), 'above'], [box, 'inside'], [button('Send'), 'above'],
+    ]);
+
+    // Events, opportunities and announcements
+    await page.goto(BASE + '/events');
+    await heading('Academic events').waitFor();
+    await shot(page, 'student-events', [button('Research colloquium'), main.getByRole('link', { name: 'Thesis Defense Week: College of Computing' }), button('Register').first(), button('Registered').first()]);
+    await page.goto(BASE + '/feed');
+    await button('Opportunities').click();
+    await button('Apply').first().click();
+    await dialog.getByLabel(/^Message to/).fill('I have built two LoRa sensor nodes for my thesis and can help with field tests on weekends.');
+    await shot(page, 'student-apply', [dialog.getByLabel(/^Message to/), [button('Send application', dialog), 'above']], { clip: dialog });
+    await button('Cancel', dialog).click();
+    await page.goto(BASE + '/announcements');
+    await heading('Announcements').waitFor();
+    await shot(page, 'student-announcements', [button(/^All/), button('My department'), heading(/^Lab meeting moved/)]);
+    await page.context().close();
+
+    // Paolo Reyes, whose essay his adviser sent back for revision
+    const paolo = await newPage(browser);
+    await logIn(paolo, `paolo@tu.${DOMAIN}`);
+    await paolo.getByRole('button', { name: 'Accept and continue' }).waitFor();
+    await paolo.getByRole('checkbox').check();
+    await paolo.getByRole('button', { name: 'Accept and continue' }).click();
+    await paolo.waitForURL(/\/feed/);
+    await paolo.goto(BASE + '/works/5');
+    const pmain = paolo.getByRole('main');
+    await pmain.getByRole('button', { name: 'Revise & resubmit' }).waitFor();
+    await shot(paolo, 'student-revision', [
+      pmain.getByRole('heading', { name: /^Review history/ }), pmain.getByText('Return to the salt beds sooner after the opening.').locator('xpath=ancestor::label[1]'), pmain.getByLabel('Add a comment'),
+      [pmain.getByRole('button', { name: 'Revise & resubmit' }), 'above'],
+    ], { tall: true });
+    await paolo.context().close();
+  },
 };
 
 (async () => {
