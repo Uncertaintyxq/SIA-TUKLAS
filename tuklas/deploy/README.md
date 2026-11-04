@@ -75,7 +75,7 @@ can't open a shell. Until the steps below are done, the workflow skips staging w
    ```
 3. **The server's fingerprint**, so GitHub trusts only this server. On your PC:
    ```powershell
-   ssh-keyscan -t ed25519 tuklas-sia-jm.japaneast.cloudapp.azure.com
+   ssh-keyscan -t ed25519 junmm.me
    ```
    Copy the line that starts with the address (not the `#` comment).
 4. **On GitHub**: the repo → **Settings → Environments → New environment** → name it `staging`.
@@ -85,8 +85,8 @@ can't open a shell. Until the steps below are done, the workflow skips staging w
        `Get-Content $HOME\.ssh\tuklas-github-deploy` (the file without `.pub`), including the
        `-----BEGIN` and `-----END` lines.
      - `DEPLOY_KNOWN_HOSTS`: the line from step 3.
-   - **Environment variables:** `DEPLOY_HOST` = `tuklas-sia-jm.japaneast.cloudapp.azure.com`,
-     `DEPLOY_USER` = `tuklas`, `SITE_URL` = `https://tuklas-sia-jm.japaneast.cloudapp.azure.com`.
+   - **Environment variables:** `DEPLOY_HOST` = `junmm.me`,
+     `DEPLOY_USER` = `tuklas`, `SITE_URL` = `https://junmm.me`.
 5. Try it: **Actions → deploy → Run workflow** (the server must be on).
 
 The private key now lives only in GitHub's secrets: delete it from your PC if you like
