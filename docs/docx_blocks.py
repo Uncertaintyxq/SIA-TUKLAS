@@ -169,8 +169,8 @@ def figure(doc, line: str, base: Path) -> list:
     caption, src = re.fullmatch(r"!\[(.*)\]\((.*)\)", line).groups()
     with Image.open(base / src) as img:
         ratio = img.height / img.width
-    # At most 5 inches tall, so the steps above a picture fit on the same page with it
-    width = min(Inches(6.5), int(Inches(5) / ratio))
+    # At most 4.2 inches tall, so up to eight steps above a picture fit on the same page with it
+    width = min(Inches(6.5), int(Inches(4.2) / ratio))
     holder = doc.add_paragraph()  # python-docx adds pictures to a paragraph at the end; it's moved below
     holder.add_run().add_picture(str(base / src), width=width)
     picture = holder._p
