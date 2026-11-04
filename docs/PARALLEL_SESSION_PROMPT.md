@@ -63,8 +63,10 @@ rules, hooks, and the `/start-task` and `/finish-task` commands). Also read:
 **Not yours unless the user says so (don't claim):** the three rows in "Several schools on one site"
 (`feat/institutions`, `feat/institution-scoping`, `feat/institution-admins`). They must be done
 before real student data goes on a server (`docs/TODO.md`, "Before real student data"), but the user
-decides when and who builds them, and they depend on the client's answer. If the user assigns them,
-build in that order: `feat/institutions` first, the other two depend on it.
+decides when and who builds them. Several schools on one site is decided (2026-11-04); the plan is
+`docs/decisions/0002-several-schools-on-one-site.md`. If the user assigns them, build in that order:
+`feat/institutions` first, the other two depend on it. `chore/deploy-production` comes after all
+three and is the user's own (it needs the server and accounts).
 
 **Yours:** every planned feature row is built (`feat/follow` was the last, 2026-11-04). Ask the
 user what to take next: a new row they add to `docs/TODO.md`, or the institution rows above if they
