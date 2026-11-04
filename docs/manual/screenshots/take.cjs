@@ -141,6 +141,56 @@ async function logIn(page, email, password = PASSWORD) {
   await page.getByRole('button', { name: 'Log in', exact: true }).click();
 }
 
+const usedCodes = new Map();
+
+/**
+ * Logs a persona all the way in, as on a real site: their two-factor code (setting it up the
+ * first time, with the secret kept in SECRETS for later runs), then the privacy notice.
+ * Ends on the feed.
+ */
+async function signIn(browser, email, viewport = DESKTOP) {
+  const page = await newPage(browser, viewport);
+  const secrets = fs.existsSync(SECRETS) ? JSON.parse(fs.readFileSync(SECRETS, 'utf8')) : {};
+  const used = usedCodes.get(email) ?? new Set();
+  usedCodes.set(email, used);
+  await logIn(page, email);
+  const feed = page.getByRole('heading', { name: 'Community feed', exact: true });
+  const challenge = page.getByRole('heading', { name: 'Two-factor sign-in', exact: true });
+  const setup = page.getByRole('heading', { name: 'Set up two-factor sign-in', exact: true });
+  const privacy = page.getByRole('button', { name: 'Accept and continue' });
+  for (;;) {
+    await feed.or(challenge).or(setup).or(privacy).first().waitFor();
+    if (await feed.isVisible()) break;
+    if (await challenge.isVisible()) {
+      await page.getByLabel('6-digit code').fill(await freshCode(page, secrets[email], used));
+      await page.getByRole('button', { name: 'Log in', exact: true }).click();
+      await challenge.waitFor({ state: 'hidden' });
+    } else if (await setup.isVisible()) {
+      const start = page.getByRole('button', { name: 'Set up two-factor sign-in' });
+      await start.or(page.getByLabel('Your password')).first().waitFor();
+      if (await page.getByLabel('Your password').isVisible()) {
+        await page.getByLabel('Your password').fill(PASSWORD);
+        await page.getByRole('button', { name: 'Continue' }).click();
+      }
+      await start.click();
+      const key = page.locator('code').first();
+      await key.waitFor();
+      secrets[email] = (await key.textContent()).trim();
+      fs.writeFileSync(SECRETS, JSON.stringify(secrets));
+      await page.getByLabel('6-digit code').fill(await freshCode(page, secrets[email], used));
+      await page.getByRole('button', { name: 'Turn on' }).click();
+      await page.getByRole('button', { name: 'I’ve saved my codes' }).click();
+      await setup.waitFor({ state: 'hidden' });
+    } else {
+      await page.getByRole('checkbox').check();
+      await privacy.click();
+      await privacy.waitFor({ state: 'hidden' });
+    }
+  }
+  await page.getByText(/^Welcome back/).waitFor({ state: 'hidden', timeout: 15000 }).catch(() => {});
+  return page;
+}
+
 /** The newest link in the local mail log (MAIL_MAILER=log) that contains this text. */
 function lastMailedLink(contains) {
   const links = fs.readFileSync(LOG, 'utf8').match(/https?:\/\/[^\s"'<>]+/g) || [];
@@ -237,7 +287,9 @@ const chapters = {
     await codeField.fill(await freshCode(edu, secret, used));
     await codeField.press('Enter');
     await edu.waitForURL(/\/feed/);
-    fs.writeFileSync(SECRETS, JSON.stringify({ [`msantos@tu.${DOMAIN}`]: secret })); // for later chapters' sign-ins
+    // For later chapters' sign-ins, with the codes already used
+    fs.writeFileSync(SECRETS, JSON.stringify({ ...(fs.existsSync(SECRETS) ? JSON.parse(fs.readFileSync(SECRETS, 'utf8')) : {}), [`msantos@tu.${DOMAIN}`]: secret }));
+    usedCodes.set(`msantos@tu.${DOMAIN}`, used);
     await edu.context().close();
 
     // A forgotten password
@@ -468,9 +520,187 @@ const chapters = {
     ], { tall: true });
     await paolo.context().close();
   },
+
+  // Dr. Maria Santos, a verified educator who advises the Disaster Informatics Lab. As in the
+  // students' chapter, forms are filled in for the picture and cancelled; no decision is made.
+  async educators(browser) {
+    const page = await signIn(browser, `msantos@tu.${DOMAIN}`);
+    const main = page.getByRole('main');
+    const heading = (name) => main.getByRole('heading', { name });
+    const card = (name) => heading(name).locator('xpath=ancestor::header[1]/..');
+    const button = (name, scope = main) => scope.getByRole('button', { name, exact: typeof name === 'string' });
+    const dialog = page.getByRole('dialog');
+
+    // The review board, and a decision on a submitted work
+    await page.goto(BASE + '/review');
+    await heading('Awaiting review').waitFor();
+    await shot(page, 'educator-review-board', [heading('Awaiting review'), heading('Under review'), heading('Needs revision'), heading(/^Approved/)]);
+    await page.goto(BASE + '/works/4');
+    await heading('Your decision').waitFor();
+    await shot(page, 'educator-decision', [[button('Start review'), 'above'], [button('Approve & sign off'), 'above'], [button('Return with comments'), 'below'], [button('Reject'), 'below']], { clip: card('Your decision') });
+    await button('Return with comments').click();
+    await dialog.getByLabel('Comments for the author').fill('A clear question and a good data set. Before the colloquium, explain how you handled students who transferred campuses.');
+    await dialog.getByLabel(/^Revision checklist/).fill('Describe how transferees are counted\nAdd the confusion matrix for week 5');
+    await shot(page, 'educator-return', [dialog.getByLabel('Comments for the author'), dialog.getByLabel(/^Revision checklist/), [button('Send to the author', dialog), 'above']], { clip: dialog });
+    await button('Cancel', dialog).click();
+
+    // Your own research
+    await page.goto(BASE + '/publications/new');
+    await heading('New research').waitFor();
+    await main.getByLabel('Title').fill('Sensor Placement for Barangay Flood Alerts');
+    await shot(page, 'educator-publication', [
+      main.getByLabel('Title'), main.getByLabel('Abstract'), main.getByLabel('Keywords'), main.getByLabel('How the research was done'), main.getByText('Choose PDF'),
+      heading('Visibility'), main.getByLabel('Add a co-author'), button('Save draft'),
+    ], { tall: true });
+
+    // Research groups: a new one, and running one
+    await page.goto(BASE + '/groups');
+    await button('New group').click();
+    await dialog.getByLabel('Group name').fill('Coastal Ecology Lab');
+    await shot(page, 'educator-new-group', [dialog.getByLabel('Group name'), dialog.getByLabel(/^What the group works on/), [button('Create group', dialog), 'above']], { clip: dialog });
+    await button('Cancel', dialog).click();
+    await page.goto(BASE + '/groups/1');
+    await heading('Disaster Informatics Lab').waitFor();
+    await shot(page, 'educator-group', [
+      main.getByLabel('Add a member'), main.getByLabel('Role for Andrea Villanueva'), [button('Remove Andrea Villanueva'), 'right'], main.getByLabel('New channel name'), button('Delete group'),
+    ], { tall: true });
+    await button(/^Deadlines/).click();
+    const deadlines = card(/^Deadlines and deliverables/);
+    await deadlines.getByLabel('New deadline').fill('Chapter 4 (Results) draft');
+    await deadlines.getByLabel('Students hand in').selectOption({ index: 1 });
+    await shot(page, 'educator-deadline', [deadlines.getByLabel('New deadline'), [deadlines.getByLabel('Due'), 'above'], deadlines.getByLabel('Students hand in'), deadlines.getByRole('button', { name: 'Add', exact: true })],
+      { clip: deadlines });
+    await button('Chapter 3 (Methodology) draft due').click();
+    const panel = card('Chapter 3 (Methodology) draft due');
+    await panel.getByLabel('New feedback').fill('Much better. Accepting this version.');
+    await shot(page, 'educator-deliverable', [
+      panel.getByRole('link', { name: 'Villanueva Chapter 3 draft.pdf', exact: true }), panel.getByLabel('New feedback'), panel.getByRole('button', { name: 'Accept', exact: true }),
+      [panel.getByRole('button', { name: 'Ask for a revision' }), 'right'],
+    ], { clip: panel });
+
+    // Opportunities, events and their ads
+    await page.goto(BASE + '/post');
+    await heading('Post an opportunity').waitFor();
+    await main.getByLabel('Title').fill('Research Assistants: Coastal Flood Mapping');
+    await shot(page, 'educator-opportunity', [
+      main.getByLabel('Type'), main.getByLabel('Title'), main.getByLabel('Description'), main.getByLabel('Application deadline'), [main.getByLabel('Slots (optional)'), 'above'],
+      main.getByLabel('Who can see it'), button('Publish to feed'), heading(/^Your postings/),
+    ], { tall: true });
+    await page.goto(BASE + '/events');
+    await button('Propose an event').click();
+    await dialog.getByLabel('Event title').fill('Colloquium: Mapping Flood Risk with Barangays');
+    await shot(page, 'educator-event', [
+      dialog.getByLabel('Category'), dialog.getByLabel('Event title'), dialog.getByLabel('Date and time'), [dialog.getByLabel('Seats (optional)'), 'above'], dialog.getByLabel('Venue'),
+      dialog.getByLabel('Who can see it'), dialog.getByLabel('Description'), [button('Submit for approval', dialog), 'above'],
+    ], { clip: dialog });
+    await button('Cancel', dialog).click();
+    await page.goto(BASE + '/events/1');
+    await heading('Promote in the feed').waitFor();
+    await shot(page, 'educator-event-page', [
+      heading(/^Attendees/), main.getByLabel('Headline'), main.getByLabel('Show from'), [main.getByLabel('Until'), 'above'], main.getByText('Choose file'), button('Request ad slot'), [button('Cancel event'), 'right'],
+    ], { tall: true });
+
+    // Announcements
+    await page.goto(BASE + '/announcements');
+    await button('New announcement').click();
+    const composer = card('New announcement');
+    await composer.getByLabel('Title').fill('Fieldwork in Barangay Tabuc Suba this Saturday');
+    await shot(page, 'educator-announcement', [
+      composer.getByLabel('Audience'), composer.getByLabel('Title'), composer.getByRole('toolbar', { name: 'Formatting' }), composer.getByText('Attach files'),
+      composer.getByText('Pin to the top of the feed'), composer.getByRole('button', { name: 'Post announcement' }),
+    ], { clip: composer });
+    await composer.getByRole('button', { name: 'Cancel' }).click();
+    const posted = heading(/^Lab meeting moved/).locator('xpath=ancestor::article[1]');
+    await shot(page, 'educator-announcement-manage', [[posted.getByRole('button', { name: /^Seen by/ }), 'above'], [posted.getByRole('button', { name: /^(Pin|Unpin)$/ }), 'above'], [posted.getByRole('button', { name: 'Edit' }), 'above'], [posted.getByRole('button', { name: 'Delete' }), 'above']],
+      { clip: posted });
+    await page.context().close();
+  },
+
+  // Lea Mercado (Tuklas University's admin, also a super-admin) and Jose Ramos (Bayan State College's admin)
+  async admins(browser) {
+    // A report for the queue: Paolo reports a work
+    const paolo = await signIn(browser, `paolo@tu.${DOMAIN}`);
+    await paolo.goto(BASE + '/works/3');
+    await paolo.getByRole('main').getByRole('button', { name: 'Report', exact: true }).click();
+    await paolo.getByRole('dialog').getByText('Something else').click();
+    await paolo.getByRole('dialog').getByLabel('Anything an admin should know (optional)').fill('The abstract repeats a paragraph from a 2019 thesis I read in the library.');
+    await paolo.getByRole('dialog').getByRole('button', { name: 'Send report' }).click();
+    await paolo.getByRole('dialog').waitFor({ state: 'hidden' });
+    await paolo.context().close();
+
+    const page = await signIn(browser, `admin@tu.${DOMAIN}`);
+    const main = page.getByRole('main');
+    const heading = (name) => main.getByRole('heading', { name });
+    const card = (name) => heading(name).locator('xpath=ancestor::header[1]/..');
+    const button = (name, scope = main) => scope.getByRole('button', { name, exact: typeof name === 'string' });
+    const tab = (name) => main.getByRole('button', { name: new RegExp('^' + name) }).first();
+    const dialog = page.getByRole('dialog');
+    await page.goto(BASE + '/admin');
+    await heading('Approval queue').waitFor();
+
+    await shot(page, 'admin-queue', [tab('Student research'), main.getByRole('link', { name: 'Review', exact: true }).first(), [button('Panel approve').first(), 'above'], [button('Reject').first(), 'right']],
+      { clip: [tab('Student research'), card(/^Student research/)] });
+    await tab('Educators').click();
+    await heading('Educators to verify').waitFor();
+    await shot(page, 'admin-educators', [
+      button('Verify').first(), [button('Make student').first(), 'above'], main.locator('label', { hasText: 'Publish research' }).first(), main.locator('label', { hasText: 'Moderate groups' }).first(),
+      main.locator('label', { hasText: 'Post announcements' }).first(), heading('Recent educator activity'),
+    ], { tall: true });
+    for (const [name, title, approve] of [['Events', 'Events awaiting approval', 'Approve event'], ['Ad slots', 'Academic ad slots', 'Approve ad']]) {
+      await tab(name).click();
+      await heading(title).waitFor();
+      await shot(page, 'admin-' + name.toLowerCase().replace(' ', '-'), [button(approve).first(), [button('Reject').first(), 'right']], { clip: card(title) });
+    }
+    await tab('Honors').click();
+    await heading(/^Honors & grants to verify/).waitFor();
+    await shot(page, 'admin-honors', [button('Verify').first(), [button('Decline').first(), 'right']], { clip: card(/^Honors & grants to verify/) });
+    await tab('Reports').click();
+    await button('Dismiss').waitFor();
+    await shot(page, 'admin-reports', [button(/^Waiting/), [button('Handled'), 'right'], button('Dismiss'), [button(/^Warn /), 'below'], [button('Remove'), 'right']],
+      { clip: [tab('Student research'), button('Remove'), card(/^Work/)] });
+    await tab('Users & roles').click();
+    await heading('Users & roles').waitFor();
+    await shot(page, 'admin-users', [
+      main.getByLabel('Search'), main.getByLabel('Role', { exact: true }), main.getByLabel('Role for Dr. Ana Lim'), [main.getByLabel('School for Dr. Ana Lim'), 'below'], [button('Unverify').first(), 'right'],
+    ], { clip: [heading('Users & roles'), main.getByLabel('Role for Dr. Maria Santos')] });
+    await tab('Moderate posts').click();
+    await heading('Published works').waitFor();
+    await shot(page, 'admin-moderate', [heading('Published works'), button('Remove').first(), heading('Opportunities'), heading('Recent comments')], { tall: true });
+
+    // Super-admins: every school
+    await shot(page, 'super-school-filter', [main.getByLabel('School').first()], { clip: [heading('Approval queue'), tab('Moderate posts')] });
+    await tab('Users & roles').click();
+    await shot(page, 'super-make-super', [button('Make super-admin').first()], { clip: card('Users & roles') });
+    await tab('Schools').click();
+    await heading('Schools on Tuklas').waitFor();
+    await shot(page, 'super-schools', [button('Add a school'), button('Edit').first()], { clip: card('Schools on Tuklas') });
+    await button('Add a school').click();
+    await dialog.getByLabel('Name', { exact: true }).fill('University of the Immaculate Conception');
+    await dialog.getByLabel('Short name (optional)').fill('UIC');
+    await dialog.getByLabel('School email domains').fill('uic.edu.ph');
+    await shot(page, 'super-add-school', [dialog.getByLabel('Name', { exact: true }), dialog.getByLabel('Short name (optional)'), dialog.getByLabel('School email domains'), [button('Add school', dialog), 'above']], { clip: dialog });
+    await button('Cancel', dialog).click();
+    await page.context().close();
+
+    // A school's own admin: confirming sign-ups and the school's departments
+    const school = await signIn(browser, `jramos@bsc.${DOMAIN}`);
+    const smain = school.getByRole('main');
+    await school.goto(BASE + '/admin');
+    await smain.getByRole('button', { name: /^Schools/ }).first().click();
+    await smain.getByRole('heading', { name: 'People to confirm' }).waitFor();
+    const departments = smain.getByRole('heading', { name: 'Departments' }).locator('xpath=ancestor::header[1]/..');
+    await shot(school, 'admin-schools', [
+      smain.getByRole('button', { name: 'Confirm', exact: true }), departments.getByRole('button', { name: 'Add a department' }), departments.getByRole('button', { name: 'Rename' }).first(),
+      [departments.getByRole('button', { name: 'Remove' }).first(), 'right'],
+    ], { clip: [smain.getByRole('heading', { name: 'People to confirm' }), departments] });
+    await school.context().close();
+  },
 };
 
-(async () => {
+// Also used as a module, to look around the app with the same helpers
+module.exports = { BASE, DOMAIN, signIn, newPage };
+
+if (require.main === module) (async () => {
   const wanted = process.argv.slice(2).length ? process.argv.slice(2) : Object.keys(chapters);
   const browser = await chromium.launch();
   try {
