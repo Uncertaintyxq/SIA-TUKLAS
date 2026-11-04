@@ -101,8 +101,10 @@ Skipped or optional:
   "Automatic deploys" in [`tuklas/deploy/README.md`](../tuklas/deploy/README.md#automatic-deploys).
 - An off-server copy of the backups (`rclone config`, `BACKUP_RCLONE_REMOTE`): do it before real
   data goes on the server.
-- `TUKLAS_INSTITUTION=…` in `/var/www/tuklas/shared/.env`: leave it empty until the client says
-  whether Tuklas is one site per school or several schools on one site (`docs/TODO.md`, "Several schools on one site").
+- Schools (several on one site, docs/decisions/0002): the deploy that brings `feat/institutions`
+  puts every existing account in one school named after `TUKLAS_INSTITUTION` (or the app name),
+  and existing admins become super-admins. Reseeding the demo makes Tuklas University and Bayan
+  State College instead. Add real schools from the admin page's Schools tab.
 
 Staging writes emails to the log instead of sending them (`MAIL_MAILER=log`), so email settings
 and the digest can be tried there without a mail provider: read them in

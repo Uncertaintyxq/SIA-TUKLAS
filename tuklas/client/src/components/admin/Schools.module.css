@@ -1,0 +1,88 @@
+/* The admins' Schools tab: people to confirm, and the super-admins' list of schools */
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  border-top: 1px solid var(--rule);
+}
+
+.row:first-child {
+  border-top: 0;
+}
+
+.body {
+  display: grid;
+  flex: 1 1 320px;
+  justify-items: start;
+  gap: var(--s-1);
+  min-width: 0;
+}
+
+.name {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2);
+  font-family: var(--font-display);
+  font-weight: 700;
+}
+
+.short {
+  color: var(--text-soft);
+  font-weight: 500;
+}
+
+.meta {
+  color: var(--text-faint);
+  font-size: var(--fs-small);
+}
+
+.skeleton {
+  height: 160px;
+  margin: var(--s-3);
+  border-radius: var(--radius-sheet);
+}
+
+.form {
+  display: grid;
+  gap: var(--s-3);
+}
+
+.check {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-2);
+  font-size: var(--fs-small);
+  cursor: pointer;
+}
+
+.check input {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  accent-color: var(--action);
+}
+
+.error {
+  padding: var(--s-2) var(--s-3);
+  border-radius: var(--radius-control);
+  background: var(--bad-tint);
+  color: var(--bad);
+  font-size: var(--fs-small);
+  font-weight: 500;
+}
+
+@media (max-width: 560px) {
+  .row {
+    padding: var(--s-3);
+  }
+}

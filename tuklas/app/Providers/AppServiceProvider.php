@@ -59,6 +59,7 @@ class AppServiceProvider extends ServiceProvider
         // Role gates for whole screens. Rules about one record live in app/Policies.
         Gate::define('review-works', fn (User $user) => $user->isEducator() || $user->isAdmin());
         Gate::define('admin', fn (User $user) => $user->isAdmin());
+        Gate::define('super-admin', fn (User $user) => $user->isSuperAdmin());
         // Posting events, ads and opportunities: admins, and educators once an admin has verified them.
         Gate::define('organize', fn (User $user) => match (true) {
             $user->isAdmin(), $user->isEducator() && $user->verified => Response::allow(),

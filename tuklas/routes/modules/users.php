@@ -1,10 +1,14 @@
 <?php
 
 use App\Http\Controllers\Users\FollowController;
+use App\Http\Controllers\Users\InstitutionController;
 use App\Http\Controllers\Users\PeopleController;
 use App\Http\Controllers\Users\PortfolioController;
 use App\Http\Controllers\Users\ProfileController;
 use Illuminate\Support\Facades\Route;
+
+// The schools on the site, for signup: no sign-in needed
+Route::get('/institutions', [InstitutionController::class, 'index'])->name('institutions.index');
 
 // Public portfolios: no sign-in needed
 Route::prefix('users/{username}')->group(function () {

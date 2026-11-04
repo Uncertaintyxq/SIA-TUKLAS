@@ -205,6 +205,7 @@ function Cover({ p, edit, signedIn, onEdit }: { p: Portfolio; edit: boolean; sig
           <p className={styles.position}>
             {user.program}
             {user.department && <> · {user.department}</>}
+            {user.institution && <> · {user.institution.name}</>}
           </p>
           {user.headline && <p className={styles.headline}>{user.headline}</p>}
           <div className={styles.coverActions}>

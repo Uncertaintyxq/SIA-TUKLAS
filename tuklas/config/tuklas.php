@@ -14,7 +14,8 @@ return [
         'subject' => env('WEBPUSH_SUBJECT', env('APP_URL', 'https://localhost')),
     ],
 
-    // The university, for Google Scholar's citation_dissertation_institution on student research (PageMeta)
+    // Google Scholar's citation_dissertation_institution (PageMeta) on a site without schools; with
+    // schools, each author's own school is used. Also names the one school existing accounts join (docs/decisions/0002)
     'institution' => env('TUKLAS_INSTITUTION', ''),
 
     // Version of the privacy notice people accept at signup (Data Privacy Act consent).

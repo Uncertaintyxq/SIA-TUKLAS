@@ -18,11 +18,13 @@ import {
   useRemoveWork,
 } from '../api/admin';
 import { useMe } from '../api/auth';
+import { schoolLabel, useAdminInstitutions } from '../api/institutions';
 import { useDeleteOpportunity } from '../api/feed';
 import { useReportQueue } from '../api/reports';
 import { useDecision, useDeleteDiscussion } from '../api/works';
 import { EducatorMonitor } from '../components/admin/EducatorMonitor';
 import { ReportQueue } from '../components/admin/ReportQueue';
+import { SchoolManager, SchoolQueue } from '../components/admin/Schools';
 import { CalendarLeaf, categoryTone } from '../components/events/EventBits';
 import { PageHeader } from '../components/layout/PageHeader';
 import { Person } from '../components/people/Person';
@@ -39,8 +41,8 @@ import { categoryLabel, honorLabel, roleBadge } from '../lib/labels';
 import { useDebounced } from '../lib/useDebounced';
 import styles from './AdminPage.module.css';
 
-type Tab = 'research' | 'educators' | 'events' | 'ads' | 'honors' | 'reports' | 'users' | 'posts';
-const tabs: Tab[] = ['research', 'educators', 'events', 'ads', 'honors', 'reports', 'users', 'posts'];
+type Tab = 'research' | 'educators' | 'schools' | 'events' | 'ads' | 'honors' | 'reports' | 'users' | 'posts';
+const tabs: Tab[] = ['research', 'educators', 'schools', 'events', 'ads', 'honors', 'reports', 'users', 'posts'];
 
 export function AdminPage() {
   const [params, setParams] = useSearchParams();
@@ -48,14 +50,16 @@ export function AdminPage() {
   const { data: stats } = useAdminStats();
   const { data: queue, isPending } = useAdminQueue();
   const { data: reports } = useReportQueue('open');
+  const { data: me } = useMe();
 
   return (
     <>
-      <PageHeader title="Approval queue" description="Verify and monitor educators, approve research, events and academic ads, verify honors, handle reports, and moderate the feed." />
+      <PageHeader title="Approval queue" description="Verify and monitor educators, confirm people for their school, approve research, events and academic ads, verify honors, handle reports, and moderate the feed." />
 
       <dl className={styles.kpis}>
         <Kpi label="Research awaiting the panel" value={stats?.works.inReview} />
         <Kpi label="Educators to verify" value={stats?.unverifiedEducators} />
+        <Kpi label="People to confirm" value={stats?.unconfirmedSchools} />
         <Kpi label="Events pending" value={stats?.events.pending} />
         <Kpi label="Ad slots pending" value={stats?.ads.pending} />
         <Kpi label="Honors to verify" value={stats?.honorsPending} />
@@ -73,6 +77,7 @@ export function AdminPage() {
           options={[
             { value: 'research', label: 'Student research', count: queue?.works.length },
             { value: 'educators', label: 'Educators', count: queue?.educators.length },
+            { value: 'schools', label: 'Schools', count: queue?.schools.length },
             { value: 'events', label: 'Events', count: queue?.events.length },
             { value: 'ads', label: 'Ad slots', count: queue?.ads.length },
             { value: 'honors', label: 'Honors & grants', count: queue?.honors.length },
@@ -92,6 +97,12 @@ export function AdminPage() {
             <div className={styles.stack}>
               <EducatorQueue educators={queue!.educators} />
               <EducatorMonitor />
+            </div>
+          )}
+          {tab === 'schools' && (
+            <div className={styles.stack}>
+              <SchoolQueue people={queue!.schools} />
+              {me?.superAdmin && <SchoolManager />}
             </div>
           )}
           {tab === 'events' && <EventQueue events={queue!.events} />}
@@ -366,7 +377,8 @@ function Users() {
   const { data: users, isPending } = useAdminUsers(term, role, true);
   const patch = usePatchUser();
   const toast = useToast();
-  const change = (id: number, body: { role?: Role; verified?: boolean }, msg: string) =>
+  const { data: schools } = useAdminInstitutions(Boolean(me?.superAdmin));
+  const change = (id: number, body: { role?: Role; verified?: boolean; institutionId?: number }, msg: string) =>
     patch.mutate({ id, ...body }, { onSuccess: () => toast(msg, 'success'), onError: (e) => toast(e.message, 'error') });
 
   return (
@@ -402,6 +414,25 @@ function Users() {
                     <option value="educator">Educator</option>
                     <option value="admin">Admin</option>
                   </SelectField>
+                  {me?.superAdmin && (schools?.length ?? 0) > 1 && (
+                    <SelectField
+                      label={`School for ${u.name}`}
+                      value={u.institution ? String(u.institution.id) : ''}
+                      disabled={patch.isPending}
+                      onChange={(e) => {
+                        const to = schools!.find((s) => String(s.id) === e.target.value);
+                        if (to && window.confirm(`Move ${u.name} to ${to.name}?`)) change(u.id, { institutionId: to.id }, `${u.name} moved to ${to.name}.`);
+                      }}
+                      className={styles.roleSelect}
+                    >
+                      {!u.institution && <option value="">No school</option>}
+                      {schools!.map((s) => (
+                        <option key={s.id} value={String(s.id)}>
+                          {schoolLabel(s)}
+                        </option>
+                      ))}
+                    </SelectField>
+                  )}
                   {u.role === 'educator' && (
                     <Button disabled={patch.isPending} onClick={() => change(u.id, { verified: !u.verified }, u.verified ? `${u.name} is no longer verified.` : `${u.name} is verified.`)}>
                       {u.verified ? 'Unverify' : 'Verify'}
@@ -410,7 +441,7 @@ function Users() {
                 </>
               }
             >
-              <Person user={u} sub={`${roleBadge(u)} · ${u.email}`} />
+              <Person user={u} sub={`${roleBadge(u)}${u.institution ? ` · ${schoolLabel(u.institution)}` : ''}${u.superAdmin ? ' · super-admin' : ''} · ${u.email}`} />
               <span className={styles.meta}>
                 {plural(u.works, 'work')} · joined {fmtDate(u.createdAt)}
               </span>

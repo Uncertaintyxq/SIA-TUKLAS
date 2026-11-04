@@ -32,6 +32,10 @@ class AccountResource extends JsonResource
             'emailVerificationRequired' => ! $this->hasVerifiedEmail() && ! config('tuklas.demo_mode'),
             'twoFactorEnabled' => $this->hasTwoFactorEnabled(),
             'twoFactorRequired' => $this->mustUseTwoFactor() && ! config('tuklas.demo_mode'),
+            'institution' => $this->school()?->card(),
+            // Signed up without the school's email domain: waits for the school's admins (EnsureAccountReady)
+            'schoolConfirmationRequired' => $this->awaitsSchoolConfirmation() && ! config('tuklas.demo_mode'),
+            'superAdmin' => $this->isSuperAdmin(),
             'privacyAccepted' => $this->privacy_version === config('tuklas.privacy_version'),
         ];
     }
