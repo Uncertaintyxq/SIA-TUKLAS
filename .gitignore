@@ -9,3 +9,6 @@ CLAUDE.local.md
 
 # Word and Excel lock files while a document is open
 ~$*
+
+# Python bytecode (docs build scripts)
+__pycache__/
