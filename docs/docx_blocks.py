@@ -164,13 +164,13 @@ def table(rows: list[str]):
     return tbl
 
 
-def figure(doc, line: str, base: Path) -> list:
+def figure(doc, line: str, base: Path, max_height: float = 4.2) -> list:
     """'![Figure 1. Caption](diagrams/x.png)' => the picture, as wide as the text allows, and its caption."""
     caption, src = re.fullmatch(r"!\[(.*)\]\((.*)\)", line).groups()
     with Image.open(base / src) as img:
         ratio = img.height / img.width
-    # At most 4.2 inches tall, so up to eight steps above a picture fit on the same page with it
-    width = min(Inches(6.5), int(Inches(4.2) / ratio))
+    # At most max_height inches tall: in the manual, 4.2, so up to eight steps above a picture fit on its page
+    width = min(Inches(6.5), int(Inches(max_height) / ratio))
     holder = doc.add_paragraph()  # python-docx adds pictures to a paragraph at the end; it's moved below
     holder.add_run().add_picture(str(base / src), width=width)
     picture = holder._p
@@ -232,14 +232,14 @@ class Lists:
         return num_id
 
 
-def render(doc, lists: Lists, lines: list[str], base: Path) -> list:
+def render(doc, lists: Lists, lines: list[str], base: Path, max_height: float = 4.2) -> list:
     """The Word elements for these Markdown lines, in order."""
     out = []
     found = blocks(lines)
     for at, (kind, items) in enumerate(found):
         following = found[at + 1][0] if at + 1 < len(found) else None
         if kind == "img":
-            out += figure(doc, items[0], base)
+            out += figure(doc, items[0], base, max_height)
         elif kind == "table":
             out += [table(items), paragraph("", after=0)]
         elif kind == "note":
@@ -250,8 +250,8 @@ def render(doc, lists: Lists, lines: list[str], base: Path) -> list:
                 # Numbered steps stay on one page with each other and with the picture after them
                 out.append(paragraph(text, num_id=num_id, after=120 if i == len(items) - 1 else 60, keep_next=kind == "ol"))
         else:
-            # A sentence that leads into steps stays with them
-            out.append(paragraph(items[0], keep_next=following == "ol"))
+            # A sentence that leads into steps or a figure stays with them
+            out.append(paragraph(items[0], keep_next=following in ("ol", "img")))
     return out
 
 
