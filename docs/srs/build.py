@@ -5,8 +5,9 @@ of each section in docs/srs/*.md. Sections that aren't written yet keep the temp
 
 Each .md file holds one template section. A "## <heading>" line names the template heading whose
 prompt it replaces, spelled as in the template. Under it: paragraphs, "- " bullets, "| tables |",
-**bold**, *italic*, and figures as "![Figure 1. Caption](diagrams/name.png)" (the diagrams are
-drawn in Mermaid; diagrams/render.cjs turns them into the .png files). The template's styles, numbering and table of contents are kept; Word
+**bold**, *italic*, and figures as "![Figure 1. Caption](diagrams/name.png)". Each diagram's source
+is a .drawio file next to its .png: edit it in draw.io, then export it with
+    draw.io --export --format png --scale 2 --border 16 --output name.png name.drawio The template's styles, numbering and table of contents are kept; Word
 refreshes the page numbers in the table of contents when the file is opened.
 """
 

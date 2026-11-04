@@ -6,3 +6,6 @@ node_modules/
 .env
 .DS_Store
 CLAUDE.local.md
+
+# Word and Excel lock files while a document is open
+~$*
