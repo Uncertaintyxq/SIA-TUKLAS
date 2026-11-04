@@ -7,9 +7,9 @@ import { useAction } from './mutate';
 export type { PublicationCard, PublicationDetail, PublicationVisibility };
 
 export function useLibrary(p: LibraryParams) {
-  const qs = new URLSearchParams({ q: p.q.trim(), year: p.year, dept: p.dept, keyword: p.keyword });
+  const qs = new URLSearchParams({ q: p.q.trim(), year: p.year, institution: p.institution, dept: p.dept, keyword: p.keyword });
   return useQuery({
-    queryKey: ['publications', 'library', p.q.trim(), p.year, p.dept, p.keyword],
+    queryKey: ['publications', 'library', p.q.trim(), p.year, p.institution, p.dept, p.keyword],
     queryFn: () => api<PublicationCard[]>(`/publications?${qs}`),
     placeholderData: keepPreviousData,
   });

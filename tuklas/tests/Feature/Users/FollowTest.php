@@ -41,7 +41,7 @@ class FollowTest extends TestCase
 
     public function test_following_and_unfollowing(): void
     {
-        $department = User::find(1)->profile->department;
+        $department = (string) User::find(1)->profile->department_id;
         $this->follow(2, 'person', 1)->assertNoContent();
         $this->follow(2, 'person', 1)->assertNoContent();
         $this->follow(2, 'department', $department)->assertNoContent();
@@ -50,7 +50,7 @@ class FollowTest extends TestCase
         $this->assertSame(3, Follow::where('user_id', 2)->count());
 
         $this->actingAs(User::find(2))->getJson('/api/follows')->assertOk()
-            ->assertJsonPath('people.0.id', 1)->assertJsonPath('departments', [$department])->assertJsonPath('tags', ['IoT']);
+            ->assertJsonPath('people.0.id', 1)->assertJsonPath('departments.0.id', (int) $department)->assertJsonPath('departments.0.name', 'College of Computing')->assertJsonPath('tags', ['IoT']);
         $this->actingAs(User::find(2))->getJson('/api/users/andrea/portfolio')->assertJsonPath('followedByMe', true)->assertJsonPath('followers', 1);
 
         // Keywords unfollow ignoring case
@@ -64,7 +64,8 @@ class FollowTest extends TestCase
         $this->follow(2, 'person', 2)->assertStatus(400);
         $this->follow(2, 'person', 999)->assertNotFound();
         $this->follow(2, 'person', 'andrea')->assertStatus(400);
-        $this->follow(2, 'department', 'No Such Department')->assertNotFound();
+        $this->follow(2, 'department', 999)->assertNotFound();
+        $this->follow(2, 'department', 'College of Computing')->assertStatus(400);
         $this->follow(2, 'tag', str_repeat('x', 41))->assertStatus(400);
         $this->follow(2, 'group', 'x')->assertUnprocessable();
         $this->signOut()->postJson('/api/follows', ['kind' => 'tag', 'target' => 'IoT'])->assertUnauthorized();
@@ -91,7 +92,7 @@ class FollowTest extends TestCase
     public function test_followers_hear_when_a_work_is_approved_and_not_before(): void
     {
         $this->follow(2, 'person', 3);
-        $this->follow(1, 'department', User::find(3)->profile->department);
+        $this->follow(1, 'department', User::find(3)->profile->department_id);
         $this->follow(5, 'tag', 'Weather');
 
         $id = $this->actingAs(User::find(3))->postJson('/api/works', [

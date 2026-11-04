@@ -4,7 +4,7 @@
  */
 import { useQuery } from '@tanstack/react-query';
 import type { AdminInstitution, InstitutionInput } from '../types/admin';
-import type { InstitutionCard } from '../types/common';
+import type { DepartmentCard, InstitutionCard } from '../types/common';
 import { api } from './client';
 import { useAction } from './mutate';
 
@@ -40,3 +40,22 @@ export function schoolForEmail(schools: SignupInstitution[] | undefined, email: 
 
 /** How a school is labelled on cards: its short name, or its name. */
 export const schoolLabel = (s: InstitutionCard) => s.shortName || s.name;
+
+/** A department with its school, so two schools' "College of Computing" can be told apart. */
+export const departmentLabel = (d: DepartmentCard) => (d.institution ? `${d.name} · ${schoolLabel(d.institution)}` : d.name);
+
+/** My school's departments (or another school's), for the portfolio's department picker. */
+export const useDepartments = (enabled = true) => useQuery({ queryKey: ['departments'], queryFn: () => api<DepartmentCard[]>('/departments'), enabled });
+
+export type AdminDepartment = DepartmentCard & { people: number };
+export const useAdminDepartments = (institution: number) =>
+  useQuery({
+    queryKey: ['admin', 'departments', institution],
+    queryFn: () => api<AdminDepartment[]>(`/admin/departments?institution=${institution}`),
+    enabled: institution > 0,
+  });
+export const useSaveDepartment = () =>
+  useAction(({ id, institutionId, name }: { id?: number; institutionId: number; name: string }) =>
+    id ? api(`/admin/departments/${id}`, { method: 'PUT', body: { name } }) : api<{ id: number }>('/admin/departments', { body: { institutionId, name } }),
+  );
+export const useDeleteDepartment = () => useAction((id: number) => api(`/admin/departments/${id}`, { method: 'DELETE' }));

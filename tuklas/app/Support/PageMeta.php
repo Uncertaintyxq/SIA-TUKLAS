@@ -129,14 +129,14 @@ class PageMeta
 
     private static function portfolio(string $username): ?array
     {
-        $user = User::active()->with('profile:user_id,department')->where('username', $username)->first(['id', 'name', 'username', 'program', 'headline']);
+        $user = User::active()->with('profile:user_id,department_id')->where('username', $username)->first(['id', 'name', 'username', 'program', 'headline']);
         if ($user === null) {
             return null;
         }
         $works = Work::public()
             ->where(fn ($q) => $q->where('author_id', $user->id)->orWhereHas('coAuthors', fn ($c) => $c->whereKey($user->id)))
             ->latest('approved_at')->limit(20)->get(['id', 'title']);
-        $about = implode(' · ', array_filter([$user->headline, $user->program, $user->profile?->department]));
+        $about = implode(' · ', array_filter([$user->headline, $user->program, $user->profile?->departmentName()]));
         $list = $works->map(fn ($w) => '<li><a href="/works/'.$w->id.'">'.e($w->title).'</a></li>')->implode('');
 
         return [

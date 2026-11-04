@@ -2,24 +2,16 @@
 
 namespace App\Policies;
 
-use App\Enums\PublicationVisibility;
 use App\Models\Publication;
 use App\Models\User;
 
 /** Educator research. Load `coAuthors` before checking. Anyone who may not read it gets 404. */
 class PublicationPolicy
 {
-    /** Public: anyone, signed in or not. Internal: anyone signed in. Draft: its authors only. */
+    /** Public: anyone, signed in or not. School only: its school's members. Draft: its authors only (Publication::canBeReadBy). */
     public function view(?User $user, Publication $publication): bool
     {
-        if ($publication->visibility === PublicationVisibility::Public) {
-            return true;
-        }
-        if ($user === null) {
-            return false;
-        }
-
-        return $publication->visibility === PublicationVisibility::Internal || $publication->isAuthor($user);
+        return $publication->canBeReadBy($user);
     }
 
     /** Only the main author edits. */

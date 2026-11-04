@@ -1,5 +1,5 @@
 /** The community feed, its sidebar, and adviser opportunities (/api/feed, /api/opportunities). */
-import type { UserCard } from './common';
+import type { DepartmentCard, InstitutionCard, UserCard } from './common';
 import type { AdCard, EventCard } from './events';
 import type { WorkCard } from './works';
 
@@ -47,7 +47,9 @@ export interface FeedResponse {
   items: FeedItem[];
   /** People whose name, program or department matches the search */
   people: UserCard[];
-  departments: string[];
+  departments: DepartmentCard[];
+  /** Schools whose works are in the feed, for the School filter */
+  institutions: InstitutionCard[];
   /** What the year, adviser and keyword filters can offer: values public works have */
   years: number[];
   advisers: UserCard[];

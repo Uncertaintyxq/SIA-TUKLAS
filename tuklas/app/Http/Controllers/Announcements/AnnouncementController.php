@@ -8,7 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\UserCardResource;
 use App\Models\Announcement;
 use App\Models\AnnouncementAttachment;
-use App\Models\Profile;
+use App\Models\Department;
 use App\Models\ResearchGroup;
 use App\Models\User;
 use App\Notifications\AnnouncementPosted;
@@ -60,7 +60,7 @@ class AnnouncementController extends Controller
         $items = $rows->map(function (Announcement $a) use ($me, &$audiences) {
             $receipts = null;
             if ($this->canEdit($a, $me)) {
-                $key = "{$a->scope->value}:{$a->department}:{$a->research_group_id}";
+                $key = "{$a->scope->value}:{$a->department_id}:{$a->research_group_id}";
                 $ids = array_values(array_diff($audiences[$key] ??= $a->audienceIds(), [$a->author_id]));
                 $receipts = ['read' => DB::table('announcement_reads')->where('announcement_id', $a->id)->whereIn('user_id', $ids)->count(), 'total' => count($ids)];
             }
@@ -117,12 +117,12 @@ class AnnouncementController extends Controller
         ]);
     }
 
-    /** POST /api/announcements {scope, department?, groupId?, title, body, pinned?} */
+    /** POST /api/announcements {scope, departmentId?, groupId?, title, body, pinned?} */
     public function store(Request $request): JsonResponse
     {
         $input = $request->validate([
             'scope' => ['required', Rule::enum(AnnouncementScope::class)],
-            'department' => ['nullable', 'string', 'max:160'],
+            'departmentId' => ['nullable', 'integer', 'min:1'],
             'groupId' => ['nullable', 'integer', 'min:1'],
             ...$this->fieldRules(),
         ], $this->fieldMessages());
@@ -139,8 +139,8 @@ class AnnouncementController extends Controller
             if (! $me->hasRight('broadcast')) {
                 throw new HttpException(403, 'An admin has to give you the announcement right first.');
             }
-            $department = $me->isAdmin() ? trim((string) ($input['department'] ?? '')) : trim((string) $me->profile?->department);
-            if ($department === '') {
+            $department = $me->isAdmin() ? Department::find($input['departmentId'] ?? 0)?->id : $me->profile?->department_id;
+            if ($department === null) {
                 throw new HttpException(400, $me->isAdmin() ? 'Choose a department.' : 'Add your department to your portfolio first.');
             }
         }
@@ -152,7 +152,7 @@ class AnnouncementController extends Controller
         }
 
         $a = new Announcement([
-            'scope' => $scope, 'department' => $department, 'research_group_id' => $group?->id,
+            'scope' => $scope, 'department_id' => $department, 'research_group_id' => $group?->id,
             'title' => $input['title'], 'body' => $input['body'], 'pinned' => (bool) ($input['pinned'] ?? false),
         ]);
         $a->author()->associate($me)->save();
@@ -248,25 +248,25 @@ class AnnouncementController extends Controller
         return Announcement::visibleTo($me)->where('author_id', '!=', $me->id)->whereDoesntHave('readers', fn ($q) => $q->where('users.id', $me->id))->count();
     }
 
-    /** @return array{system: bool, departments: list<string>, groups: list<array{id: int, name: string}>} */
+    /** @return array{system: bool, departments: list<array{id: int, name: string, institution: array{id: int, name: string, shortName: string}|null}>, groups: list<array{id: int, name: string}>} */
     private function audiencesFor(User $me): array
     {
         if ($me->isAdmin()) {
             return [
                 'system' => true,
-                'departments' => Profile::where('department', '!=', '')->distinct()->orderBy('department')->pluck('department')->all(),
+                'departments' => Department::byId()->map->card()->sortBy(fn ($d) => [$d['institution']['name'] ?? '', $d['name']])->values()->all(),
                 'groups' => ResearchGroup::orderBy('name')->get(['id', 'name'])->map->only(['id', 'name'])->all(),
             ];
         }
         if (! $me->hasRight('broadcast')) {
             return ['system' => false, 'departments' => [], 'groups' => []];
         }
-        $department = trim((string) $me->profile?->department);
+        $department = $me->profile?->department_id !== null ? Department::byId()->get($me->profile->department_id) : null;
         $groups = ResearchGroup::where('adviser_id', $me->id)
             ->orWhereHas('members', fn ($m) => $m->where('user_id', $me->id)->where('role', GroupRole::Mentor))
             ->orderBy('name')->get(['id', 'name'])->map->only(['id', 'name'])->all();
 
-        return ['system' => false, 'departments' => $department === '' ? [] : [$department], 'groups' => $groups];
+        return ['system' => false, 'departments' => $department === null ? [] : [$department->card()], 'groups' => $groups];
     }
 
     /** @return array<string, list<string>> */
