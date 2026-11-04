@@ -60,19 +60,15 @@ rules, hooks, and the `/start-task` and `/finish-task` commands). Also read:
 
 ## 3. Assignment
 
-**Yours, in this order** (scheduled 2026-11-04; the plan and the client's answers are in
-`docs/decisions/0002-several-schools-on-one-site.md`, read it first):
-1. `feat/institution-audiences`: opportunities, events and ads for the posting school or all
-   schools, and a school announcement scope (system announcements become super-admins only).
+**Yours:** nothing is assigned. The institution rows are all built and merged (2026-11-04):
+`feat/institutions`, `feat/institution-scoping`, `feat/institution-admins` and
+`feat/institution-audiences` (plan: `docs/decisions/0002-several-schools-on-one-site.md`). Ask the
+user what to take next.
 
-(Merged: `feat/institutions` (schools, `users.institution_id`, signup by domain or admin
-confirmation, super-admins, `User::school()`, Bayan State College in `DemoSeeder`) and
-`feat/institution-scoping` (departments per school, Public or School only, `Work::readableBy()`,
-`Publication::readableBy()`, School filters) and `feat/institution-admins` (`User::administers()`,
-`AdminScope`, `notifyAdmins(..., $schoolId)`). Build on them.)
-
-Each row adds cross-school tests: someone at school B sees school A's Public research and nothing
-else of school A's. **Not yours:** `chore/deploy-production`. It comes after all of them, and it's
+Any new work that touches a school's people or content keeps the cross-school rule: someone at
+school B sees school A's Public research and nothing else of school A's. Use `User::administers()`,
+`AdminScope`, `Work::readableBy()`, `Publication::readableBy()` and `visibleTo()` rather than bare
+`isAdmin()` checks. **Not yours:** `chore/deploy-production`. It comes after all of them, and it's
 the user's own, since it needs the server and accounts.
 
 Build them **one at a time**: merge each before starting the next, so the next one starts from a

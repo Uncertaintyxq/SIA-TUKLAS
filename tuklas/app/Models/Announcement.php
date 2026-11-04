@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  *
  * @property-read bool|null $read_by_me Whether the viewer has read it (AnnouncementController)
  */
-#[Fillable(['scope', 'department_id', 'research_group_id', 'title', 'body', 'pinned'])]
+#[Fillable(['scope', 'institution_id', 'department_id', 'research_group_id', 'title', 'body', 'pinned'])]
 class Announcement extends Model
 {
     /** Column defaults, so a new model has them before it's reloaded. */
@@ -35,6 +35,7 @@ class Announcement extends Model
         if ($user->isAdmin()) {
             // A school's admins: everything posted by their school's people, and everything to everyone
             $query->where(fn ($q) => $q->where('scope', AnnouncementScope::System)
+                ->orWhere(fn ($s) => $s->where('scope', AnnouncementScope::School)->where('institution_id', $user->institution_id))
                 ->orWhereHas('author', fn ($a) => $user->institution_id === null ? $a : $a->where('institution_id', $user->institution_id)));
 
             return;
@@ -44,6 +45,7 @@ class Announcement extends Model
 
         $query->where(fn ($q) => $q
             ->where('scope', AnnouncementScope::System)
+            ->when($user->institution_id !== null, fn ($w) => $w->orWhere(fn ($s) => $s->where('scope', AnnouncementScope::School)->where('institution_id', $user->institution_id)))
             ->when($department !== null, fn ($w) => $w->orWhere(fn ($d) => $d->where('scope', AnnouncementScope::Department)->where('department_id', $department)))
             ->orWhere(fn ($g) => $g->where('scope', AnnouncementScope::Group)->whereIn('research_group_id', $groupIds))
             ->orWhere('author_id', $user->id));
@@ -54,16 +56,18 @@ class Announcement extends Model
     {
         return match ($this->scope) {
             AnnouncementScope::System => User::active()->pluck('id')->all(),
+            AnnouncementScope::School => User::active()->where('institution_id', $this->institution_id)->pluck('id')->all(),
             AnnouncementScope::Department => $this->department_id === null ? [] : Profile::where('department_id', $this->department_id)->pluck('user_id')->all(),
             AnnouncementScope::Group => ResearchGroup::with('members')->find($this->research_group_id)?->participantIds() ?? [],
         };
     }
 
-    /** "Everyone", the department, or the group's name. Needs `group` loaded. */
+    /** "Everyone", the school, the department, or the group's name. Needs `group` loaded. */
     public function audienceLabel(): string
     {
         return match ($this->scope) {
             AnnouncementScope::System => 'Everyone',
+            AnnouncementScope::School => 'Everyone at '.(Institution::byId()->get((int) $this->institution_id)->name ?? 'the school'),
             AnnouncementScope::Department => $this->department_id !== null ? (string) Department::byId()->get($this->department_id)?->name : 'Department',
             AnnouncementScope::Group => $this->group->name ?? 'Research group',
         };

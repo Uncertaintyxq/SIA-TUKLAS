@@ -16,6 +16,7 @@ type Filter = 'all' | AnnouncementScope;
 const emptyText: Record<Filter, string> = {
   all: 'Updates from the Office of Research, your department and your research groups will show up here.',
   system: 'Nothing has been announced to everyone yet.',
+  school: 'Your school hasn’t posted anything to everyone there yet.',
   department: 'Your department hasn’t posted anything yet.',
   group: 'Your research groups haven’t posted anything yet.',
 };
@@ -48,6 +49,7 @@ export function AnnouncementsPage() {
           options={[
             { value: 'all', label: 'All', count: data?.unread || undefined },
             { value: 'system', label: 'Everyone' },
+            { value: 'school', label: 'My school' },
             { value: 'department', label: 'My department' },
             { value: 'group', label: 'My groups' },
           ]}

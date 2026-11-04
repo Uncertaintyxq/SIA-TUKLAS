@@ -1,5 +1,5 @@
 /** Academic events and their ad slots (/api/events, /api/ads). */
-import type { UserCard } from './common';
+import type { Audience, InstitutionCard, UserCard } from './common';
 
 /** Advertising and events are limited to academic ones. */
 export type EventCategory = 'colloquium' | 'defense' | 'fair' | 'innovation' | 'cpgarcia';
@@ -13,6 +13,8 @@ export interface EventInput {
   /** In the future */
   date: string | Date;
   capacity?: number | null;
+  /** The posting school only (the default), or every school */
+  audience?: Audience;
 }
 
 export interface AdInput {
@@ -23,6 +25,8 @@ export interface AdInput {
 }
 
 export interface EventCard {
+  audience: Audience;
+  institution: InstitutionCard | null;
   id: number;
   category: EventCategory;
   title: string;

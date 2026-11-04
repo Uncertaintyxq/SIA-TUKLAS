@@ -9,6 +9,7 @@ import type { AdCard, EventCard as EventData, EventCategory } from '../../types/
 import { useRegister } from '../../api/events';
 import { fmtDateTime, monthShort, plural } from '../../lib/format';
 import { categoryLabel } from '../../lib/labels';
+import { schoolLabel } from '../../api/institutions';
 import { Badge, type BadgeTone } from '../ui/Badge';
 import { Button } from '../ui/Button';
 import { useToast } from '../ui/Toast';
@@ -66,6 +67,7 @@ export function EventCard({ event, showRegister = true }: { event: EventData; sh
           <CalendarLeaf date={event.date} />
           <div className={styles.cardTitle}>
             <Badge tone={categoryTone[event.category]}>{categoryLabel[event.category]}</Badge>
+            {event.audience === 'school' && event.institution && <Badge tone="neutral">{schoolLabel(event.institution)} only</Badge>}
             <h3 className={styles.title}>
               <Link to={`/events/${event.id}`} className={styles.titleLink}>
                 {event.title}

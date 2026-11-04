@@ -3,6 +3,7 @@
  * Verified educators propose events for admin approval; admins post them directly.
  */
 import { useState, type FormEvent } from 'react';
+import type { Audience } from '../types/common';
 import { Link, useNavigate } from 'react-router-dom';
 import { CalendarPlus, ShieldCheck } from 'lucide-react';
 import type { EventCategory } from '../types/events';
@@ -15,6 +16,7 @@ import { Button } from '../components/ui/Button';
 import { Chips } from '../components/ui/Chips';
 import { EmptyState } from '../components/ui/EmptyState';
 import { SelectField, TextAreaField, TextField } from '../components/ui/Field';
+import { AudienceField } from '../components/feed/AudienceField';
 import { Modal } from '../components/ui/Modal';
 import { Notice } from '../components/ui/Notice';
 import { Sheet } from '../components/ui/Sheet';
@@ -148,6 +150,7 @@ function EventForm({ open, onClose, isAdmin }: { open: boolean; onClose: () => v
   });
   const [venue, setVenue] = useState('');
   const [capacity, setCapacity] = useState('');
+  const [audience, setAudience] = useState<Audience>('school');
   const [description, setDescription] = useState('');
   const create = useCreateEvent();
   const toast = useToast();
@@ -156,7 +159,7 @@ function EventForm({ open, onClose, isAdmin }: { open: boolean; onClose: () => v
   const submit = (e: FormEvent) => {
     e.preventDefault();
     create.mutate(
-      { category, title, venue, description, date: new Date(date).toISOString(), capacity: capacity ? Number(capacity) : null },
+      { category, title, venue, description, date: new Date(date).toISOString(), capacity: capacity ? Number(capacity) : null, audience },
       {
         onSuccess: ({ id }) => {
           toast(isAdmin ? 'Event published.' : 'Submitted. An admin will review it before it’s listed.', 'success');
@@ -198,6 +201,7 @@ function EventForm({ open, onClose, isAdmin }: { open: boolean; onClose: () => v
           <TextField label="Seats (optional)" type="number" min={1} max={5000} value={capacity} onChange={(e) => setCapacity(e.target.value)} />
         </div>
         <TextField label="Venue" value={venue} onChange={(e) => setVenue(e.target.value)} required maxLength={160} />
+        <AudienceField value={audience} onChange={setAudience} />
         <TextAreaField label="Description" value={description} onChange={(e) => setDescription(e.target.value)} required minLength={20} rows={4} />
         {create.error && (
           <p className={styles.error} role="alert">
