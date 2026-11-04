@@ -151,9 +151,10 @@ is settled, update that text, delete its line here and in Appendix C, and keep t
 - [ ] **TBD-2, domain:** the site's address (Section 3, communications). Planned: a free `.me` domain from the GitHub Student Pack.
 - [ ] **TBD-3, email provider:** who sends the site's email (2.7). Planned: Brevo's free SMTP plan.
 - [ ] **TBD-5, approved privacy notice:** the client's final text replaces the draft (2.7; runbook step 8).
-- [ ] **TBD-6, data protection paperwork:** a Data Protection Officer and a signed data processing agreement per school (2.5, 2.7).
+- [ ] **TBD-6, data protection paperwork:** a Data Protection Officer and a signed data processing agreement per school, whether NPC registration is needed, and a breach plan (2.5, 2.7, 6 LEG-1 and LEG-2).
 - [ ] **TBD-7, support contact:** who the user manual tells people to contact for help (manual 1.6, 2.7).
 - [ ] **TBD-8, performance measured:** check PERF-1 to PERF-3 (SRS 5.1) on the production server under realistic load, and record the results.
+- [ ] **TBD-9, terms of use:** who keeps the rights to uploaded works and how they may be reused, approved by the client (SRS 6, LEG-6).
 
 ## Not tied to a branch
 
