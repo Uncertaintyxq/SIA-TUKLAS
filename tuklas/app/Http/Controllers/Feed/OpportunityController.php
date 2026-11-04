@@ -9,6 +9,7 @@ use App\Http\Resources\UserCardResource;
 use App\Models\Opportunity;
 use App\Models\OpportunityApplication;
 use App\Models\User;
+use App\Support\AdminScope;
 use App\Support\Cards;
 use App\Support\Notifier;
 use Illuminate\Http\JsonResponse;
@@ -47,12 +48,14 @@ class OpportunityController extends Controller
         return response()->json(['id' => $o->id], 201);
     }
 
-    /** DELETE /api/opportunities/{id} — its adviser, or an admin */
+    /** DELETE /api/opportunities/{id} — its adviser, or an admin of their school */
     public function destroy(Request $request, int $id): Response
     {
         /** @var User $me */
         $me = $request->user();
-        $deleted = Opportunity::whereKey($id)->when(! $me->isAdmin(), fn ($q) => $q->where('adviser_id', $me->id))->delete();
+        $deleted = Opportunity::whereKey($id)
+            ->when(! $me->isAdmin(), fn ($q) => $q->where('adviser_id', $me->id), fn ($q) => AdminScope::apply($q, $me->adminSchool(), through: 'adviser'))
+            ->delete();
         if ($deleted === 0) {
             throw new HttpException(404, 'Not found');
         }

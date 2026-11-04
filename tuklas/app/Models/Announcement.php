@@ -26,10 +26,17 @@ class Announcement extends Model
         'pinned' => 'boolean',
     ];
 
-    /** What someone may read: everything for admins; otherwise system-wide, their department, their groups, their own. */
+    /** What someone may read: everything for super-admins, their school's for its admins; otherwise system-wide, their department, their groups, their own. */
     public function scopeVisibleTo(Builder $query, User $user): void
     {
+        if ($user->isSuperAdmin()) {
+            return;
+        }
         if ($user->isAdmin()) {
+            // A school's admins: everything posted by their school's people, and everything to everyone
+            $query->where(fn ($q) => $q->where('scope', AnnouncementScope::System)
+                ->orWhereHas('author', fn ($a) => $user->institution_id === null ? $a : $a->where('institution_id', $user->institution_id)));
+
             return;
         }
         $department = $user->profile?->department_id;

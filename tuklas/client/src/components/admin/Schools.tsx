@@ -7,6 +7,7 @@
 import { useState, type FormEvent } from 'react';
 import { CircleCheck, Pencil, Plus, Trash2 } from 'lucide-react';
 import { usePatchUser } from '../../api/admin';
+import { useMe } from '../../api/auth';
 import {
   useAdminDepartments,
   useAdminInstitutions,
@@ -189,7 +190,10 @@ function SchoolForm({ school, onClose }: { school: AdminInstitution | null; onCl
 
 /** Each school's departments: people pick theirs on their portfolio; feeds, follows and announcements use them. */
 export function DepartmentManager() {
-  const { data: schools } = useInstitutions();
+  const { data: me } = useMe();
+  const { data: allSchools } = useInstitutions();
+  // A school's admins keep their own school's list; super-admins pick any school
+  const schools = me?.superAdmin ? allSchools : allSchools?.filter((s) => s.id === me?.institution?.id);
   const [picked, setPicked] = useState('');
   const school = Number(picked || schools?.[0]?.id || 0);
   const { data, isPending } = useAdminDepartments(school);

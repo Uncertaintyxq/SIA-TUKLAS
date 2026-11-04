@@ -92,7 +92,7 @@ class ProfileController extends Controller
         $honor->save();
 
         if (! $me->isAdmin()) {
-            Notifier::notifyAdmins('honor_claimed', "{$me->name} added “{$honor->title}” and it needs verification.", '/admin?tab=honors');
+            Notifier::notifyAdmins('honor_claimed', "{$me->name} added “{$honor->title}” and it needs verification.", '/admin?tab=honors', $me->id, $me->institution_id);
         }
 
         return response()->json($honor->only(['id', 'kind', 'title', 'issuer', 'year', 'verified']), 201);

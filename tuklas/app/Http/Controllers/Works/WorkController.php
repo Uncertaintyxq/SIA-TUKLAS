@@ -17,6 +17,7 @@ use App\Models\Comment;
 use App\Models\Reaction;
 use App\Models\User;
 use App\Models\Work;
+use App\Support\AdminScope;
 use App\Support\Cards;
 use App\Support\Reach;
 use App\Support\Topics;
@@ -58,14 +59,14 @@ class WorkController extends Controller
         return MyWorkResource::collection($works);
     }
 
-    /** GET /api/works/review-queue — everything submitted to me. Admins see all submitted work. */
+    /** GET /api/works/review-queue — everything submitted to me. Admins see their school's submitted work (super-admins every school's). */
     public function reviewQueue(Request $request): AnonymousResourceCollection
     {
         /** @var User $me */
         $me = $request->user();
         $works = Cards::myWorks(Work::query(), $me->id)
             ->where('status', '!=', WorkStatus::Draft)
-            ->when(! $me->isAdmin(), fn ($q) => $q->where('adviser_id', $me->id))
+            ->when(! $me->isAdmin(), fn ($q) => $q->where('adviser_id', $me->id), fn ($q) => AdminScope::apply($q, $me->adminSchool()))
             ->latest('updated_at')
             ->limit(200)
             ->get();
@@ -137,7 +138,7 @@ class WorkController extends Controller
             'author' => new UserCardResource($c->author),
             'text' => $c->text,
             'createdAt' => $c->created_at->toISOString(),
-            'canDelete' => $viewer !== null && ($viewer->id === $c->author_id || $viewer->isAdmin()),
+            'canDelete' => $viewer !== null && ($viewer->id === $c->author_id || $viewer->administers($work->institution_id)),
         ];
 
         return response()->json([

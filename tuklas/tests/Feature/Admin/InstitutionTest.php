@@ -88,7 +88,7 @@ class InstitutionTest extends TestCase
         $this->assertSame(1, User::find(8)->institution_id);
         $this->assertTrue(Notification::where('user_id', 8)->where('type', 'school_changed')->exists());
         $this->actingAs(User::find(6))->getJson('/api/admin/institutions')->assertOk()
-            ->assertJsonPath('0.name', 'Bayan State College')->assertJsonPath('0.people', 2)->assertJsonPath('1.people', 8);
+            ->assertJsonPath('0.name', 'Bayan State College')->assertJsonPath('0.people', 3)->assertJsonPath('1.people', 8);
     }
 
     public function test_super_admins_add_and_edit_schools(): void

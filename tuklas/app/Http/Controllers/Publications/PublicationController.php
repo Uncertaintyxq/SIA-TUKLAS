@@ -113,7 +113,7 @@ class PublicationController extends Controller
             'pdfName' => $p->pdf_file ? ($p->pdf_name ?? 'research.pdf') : null,
             'can' => [
                 'edit' => $viewer?->id === $p->author_id,
-                'delete' => $viewer !== null && ($viewer->id === $p->author_id || $viewer->isAdmin()),
+                'delete' => $viewer !== null && Gate::forUser($viewer)->allows('delete', $p),
                 'publish' => $viewer?->id === $p->author_id && $viewer->hasRight('publish'),
             ],
         ]);
