@@ -71,7 +71,7 @@ class DecideOnWork
         };
         Notifier::notify($work->authorIds(), $type, $message, "/works/{$work->id}", $me->id);
         if ($decision === ReviewDecision::Approve) {
-            Followers::tellAboutWork($work);
+            Followers::tellAboutWork($work, $me->id);
         }
     }
 }

@@ -6,7 +6,8 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Bookmark, BookmarkCheck, Download, ExternalLink, EyeOff, Flag, Link2, PenLine, Send, Trash2 } from 'lucide-react';
 import { useMe } from '../api/auth';
-import { useDeleteDiscussion, useDeleteWork, useDiscuss, useSave, useSubmitWork, useWork, type WorkDetail } from '../api/works';
+import { schoolLabel } from '../api/institutions';
+import { useDeleteDiscussion, useDeleteWork, useDiscuss, useSave, useSetVisibility, useSubmitWork, useWork, type WorkDetail } from '../api/works';
 import { Tuko } from '../components/brand/Tuko';
 import { Person } from '../components/people/Person';
 import { reachLabel } from '../components/portfolio/Reach';
@@ -20,7 +21,7 @@ import { StatusBadge, TypeTag } from '../components/works/WorkBadges';
 import { useShare } from '../components/works/WorkEntry';
 import { Button, ButtonLink } from '../components/ui/Button';
 import { EmptyState } from '../components/ui/EmptyState';
-import { TextAreaField } from '../components/ui/Field';
+import { SelectField, TextAreaField } from '../components/ui/Field';
 import { useMentionPicker } from '../components/ui/MentionInput';
 import { withMentions } from '../components/ui/MentionText';
 import { Notice } from '../components/ui/Notice';
@@ -67,6 +68,7 @@ export function WorkPage() {
           <TypeTag type={work.type} />
           {!isPublic && <StatusBadge status={work.status} removed={work.removed} />}
           {work.department && <span className={styles.dept}>{work.department}</span>}
+          {work.visibility === 'school' && <span className={styles.dept}>{work.institution ? `${schoolLabel(work.institution)} only` : 'School only'}</span>}
         </div>
         <h1 className={styles.title}>{work.title}</h1>
         <ul className={styles.authors} aria-label="Authors">
@@ -103,6 +105,7 @@ export function WorkPage() {
             )}
           </Sheet>
 
+          {work.can.visibility && <WhoCanRead work={work} />}
           {work.story && (
             <Sheet title="How we made this">
               <p className={styles.story}>{work.story}</p>
@@ -341,6 +344,32 @@ function Discussion({ work }: { work: WorkDetail }) {
           </p>
         )}
       </div>
+    </Sheet>
+  );
+}
+
+/** Its authors choose who may read it, before and after approval (docs/decisions/0002). */
+function WhoCanRead({ work }: { work: WorkDetail }) {
+  const set = useSetVisibility();
+  const toast = useToast();
+  const school = work.institution ? schoolLabel(work.institution) : 'your school';
+  return (
+    <Sheet title="Who can read it">
+      <SelectField
+        label="Readers once approved"
+        value={work.visibility}
+        disabled={set.isPending}
+        onChange={(e) =>
+          set.mutate(
+            { id: work.id, visibility: e.target.value as WorkDetail['visibility'] },
+            { onSuccess: () => toast(e.target.value === 'school' ? `Now only ${school} can read it.` : 'Now everyone can read it.', 'success'), onError: (err) => toast(err.message, 'error') },
+          )
+        }
+        hint={work.visibility === 'school' ? `Signed-in people from ${school}, your co-authors and adviser. It stays off Google Scholar.` : 'Anyone, signed in or not, and Google Scholar.'}
+      >
+        <option value="public">Everyone (Public)</option>
+        <option value="school">{school} only</option>
+      </SelectField>
     </Sheet>
   );
 }

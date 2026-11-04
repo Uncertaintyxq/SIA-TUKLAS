@@ -12,6 +12,7 @@ use App\Models\ConversationMember;
 use App\Models\DefenseStage;
 use App\Models\DeliverableSubmission;
 use App\Models\DeliverableVersion;
+use App\Models\Department;
 use App\Models\Event;
 use App\Models\GroupActivity;
 use App\Models\GroupDeadline;
@@ -81,7 +82,7 @@ class DemoSeeder extends Seeder
         'group_files', 'group_members', 'research_groups', 'ads', 'event_registrations', 'events',
         'opportunity_applications', 'opportunities', 'saved_works', 'reactions', 'comments', 'revision_items',
         'reviews', 'defense_stages', 'work_versions', 'work_authors', 'works', 'academic_links', 'profiles',
-        'backgrounds', 'honors', 'audit_logs', 'password_reset_tokens', 'users', 'institutions',
+        'backgrounds', 'honors', 'audit_logs', 'password_reset_tokens', 'users', 'departments', 'institutions',
     ];
 
     private CarbonImmutable $now;
@@ -177,8 +178,10 @@ class DemoSeeder extends Seeder
             self::CRUZ => ['', 'College of Agriculture', null],
         ];
         foreach ($profiles as $userId => [$titles, $department, $bio]) {
-            Profile::create(['user_id' => $userId, 'titles' => $titles, 'department' => $department, 'bio_long' => $bio]);
+            Profile::create(['user_id' => $userId, 'titles' => $titles, 'department_id' => $this->department($userId >= self::TORRES ? self::BAYAN : self::TUKLAS_U, $department), 'bio_long' => $bio]);
         }
+        // Each school keeps its own list (docs/decisions/0002): Bayan has a College of Computing too, a different department
+        $this->department(self::BAYAN, 'College of Computing');
 
         foreach ([
             [self::ANDREA, 'orcid', 'https://orcid.org/0000-0002-1825-0097'],
@@ -189,6 +192,14 @@ class DemoSeeder extends Seeder
         ] as [$userId, $type, $url]) {
             AcademicLink::create(['user_id' => $userId, 'type' => $type, 'url' => $url]);
         }
+    }
+
+    /** @var array<string, int> "school|name" => department id */
+    private array $departments = [];
+
+    private function department(int $school, string $name): int
+    {
+        return $this->departments["{$school}|{$name}"] ??= Department::create(['institution_id' => $school, 'name' => $name])->id;
     }
 
     private function works(): void
@@ -218,6 +229,10 @@ class DemoSeeder extends Seeder
             [8, self::ANDREA, self::SANTOS, 'innovation', 'Evacuation Route Finder for Barangay Tanods',
                 'A phone app draft that suggests evacuation routes from crowd-reported road blockages during floods. Still being scoped with the barangay DRRM office.',
                 ['Mobile', 'Disaster Risk Reduction'], 'draft', 1, null, null],
+            // Bayan State College, School only: Bayan's people read it; Tuklas University's don't see it
+            [9, self::TORRES, self::LIM, 'innovation', 'Offline Crop Price Board for Upland Farmers',
+                'A low-cost e-ink board for barangay halls that shows the week’s crop prices from the provincial agriculture office, updated by SMS when there is no internet. Piloted with two farmer cooperatives.',
+                ['Agriculture', 'IoT', 'Rural Connectivity'], 'approved', 20, 5, self::LIM],
         ];
         foreach ($works as [$id, $author, $adviser, $type, $title, $abstract, $tags, $status, $createdDaysAgo, $approvedDaysAgo, $approvedBy]) {
             $created = $this->ago($createdDaysAgo);
@@ -227,6 +242,7 @@ class DemoSeeder extends Seeder
                 'submitted_at' => $status === 'draft' ? null : $created,
                 'approved_at' => $approvedDaysAgo === null ? null : $this->ago($approvedDaysAgo),
                 'approved_by_id' => $approvedBy,
+                'institution_id' => $author >= self::TORRES ? self::BAYAN : self::TUKLAS_U, 'visibility' => $id === 9 ? 'school' : 'public',
             ]);
             if ($status !== 'draft') {
                 WorkVersion::create(['work_id' => $id, 'version' => 1, 'title' => $title, 'abstract' => $abstract, 'tags' => $tags, 'submitted_at' => $created]);
@@ -460,7 +476,7 @@ class DemoSeeder extends Seeder
         ];
         foreach ($pubs as [$id, $author, $visibility, $publishedDaysAgo, $createdDaysAgo, $title, $abstract, $keywords, $methodology, $fullText]) {
             $created = $this->ago($createdDaysAgo);
-            Publication::create(['id' => $id, 'author_id' => $author, 'visibility' => $visibility, 'title' => $title, 'abstract' => $abstract,
+            Publication::create(['id' => $id, 'author_id' => $author, 'institution_id' => self::TUKLAS_U, 'visibility' => $visibility, 'title' => $title, 'abstract' => $abstract,
                 'keywords' => $keywords, 'methodology' => $methodology, 'full_text' => $fullText, 'created_at' => $created, 'updated_at' => $created,
                 'published_at' => $publishedDaysAgo === null ? null : $this->ago($publishedDaysAgo)]);
         }
@@ -481,7 +497,7 @@ class DemoSeeder extends Seeder
             [5, self::AQUINO, 'group', null, 2, false, $this->hoursAgo(26), 'Workshop: revising the middle of an essay',
                 'Next session we’ll workshop the middle sections of your essays. Bring a printed draft and mark the paragraph where you think the thread gets lost.'],
         ] as [$id, $author, $scope, $department, $group, $pinned, $at, $title, $body]) {
-            Announcement::create(['id' => $id, 'author_id' => $author, 'scope' => $scope, 'department' => $department, 'research_group_id' => $group,
+            Announcement::create(['id' => $id, 'author_id' => $author, 'scope' => $scope, 'department_id' => $department === null ? null : $this->department(self::TUKLAS_U, $department), 'research_group_id' => $group,
                 'pinned' => $pinned, 'title' => $title, 'body' => $body, 'created_at' => $at, 'updated_at' => $at]);
         }
         DB::table('announcement_reads')->insert([

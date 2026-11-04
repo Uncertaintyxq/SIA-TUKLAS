@@ -62,16 +62,17 @@ rules, hooks, and the `/start-task` and `/finish-task` commands). Also read:
 
 **Yours, in this order** (scheduled 2026-11-04; the plan and the client's answers are in
 `docs/decisions/0002-several-schools-on-one-site.md`, read it first):
-1. `feat/institution-scoping`: department lists per school, a school on every piece of content,
-   Public or School only for educators' research and student works, and the rest of the
-   visibility table.
-2. `feat/institution-admins`: admins per school, super-admins over all, admin queues per school.
+1. `feat/institution-admins`: admins per school, super-admins over all, admin queues per school.
+2. `feat/institution-audiences`: opportunities, events and ads for the posting school or all
+   schools, and a school announcement scope.
 
-(`feat/institutions` is merged: schools, `users.institution_id`, signup by domain or admin
-confirmation, super-admins, `User::school()`, and Bayan State College in `DemoSeeder`. Build on it.)
+(Merged: `feat/institutions` (schools, `users.institution_id`, signup by domain or admin
+confirmation, super-admins, `User::school()`, Bayan State College in `DemoSeeder`) and
+`feat/institution-scoping` (departments per school, Public or School only, `Work::readableBy()`,
+`Publication::readableBy()`, School filters). Build on them.)
 
 Each row adds cross-school tests: someone at school B sees school A's Public research and nothing
-else of school A's. **Not yours:** `chore/deploy-production`. It comes after all three, and it's
+else of school A's. **Not yours:** `chore/deploy-production`. It comes after all of them, and it's
 the user's own, since it needs the server and accounts.
 
 Build them **one at a time**: merge each before starting the next, so the next one starts from a

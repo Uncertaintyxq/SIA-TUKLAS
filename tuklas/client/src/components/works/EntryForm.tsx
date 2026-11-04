@@ -5,7 +5,7 @@
 import { useState, type FormEvent } from 'react';
 import { ShieldCheck, X } from 'lucide-react';
 import type { UserCard } from '../../types/common';
-import type { WorkStatus, WorkType } from '../../types/works';
+import type { WorkStatus, WorkType, WorkVisibility } from '../../types/works';
 import { useMe } from '../../api/auth';
 import { useAdvisers } from '../../api/portfolio';
 import { useCreateWork, useSubmitWork, useUpdateWork, useUploadWorkPdf, type WorkCard } from '../../api/works';
@@ -18,10 +18,12 @@ import { Modal } from '../ui/Modal';
 import { Notice } from '../ui/Notice';
 import { useToast } from '../ui/Toast';
 import { TopicOverlap } from './TopicOverlap';
+import { schoolLabel } from '../../api/institutions';
 import styles from './EntryForm.module.css';
 
 /** What the form needs from an existing work to edit it. */
 export type EditableWork = Pick<WorkCard, 'id' | 'type' | 'title' | 'abstract' | 'tags' | 'authors' | 'adviser' | 'status'> & {
+  visibility?: WorkVisibility;
   pdfName?: string | null;
   hasPdf?: boolean;
   story?: string | null;
@@ -45,6 +47,7 @@ export function EntryForm({ open, onClose, work, onSaved }: { open: boolean; onC
   const [title, setTitle] = useState(work?.title ?? '');
   const [abstract, setAbstract] = useState(work?.abstract ?? '');
   const [story, setStory] = useState(work?.story ?? '');
+  const [visibility, setVisibility] = useState<WorkVisibility>(work?.visibility ?? 'public');
   const [keywords, setKeywords] = useState(work?.tags.join(', ') ?? '');
   const [coAuthors, setCoAuthors] = useState<UserCard[]>(work?.authors.slice(1) ?? []);
   const [pdf, setPdf] = useState<File | null>(null);
@@ -65,7 +68,7 @@ export function EntryForm({ open, onClose, work, onSaved }: { open: boolean; onC
     }
     setBusy(submit ? 'submit' : 'draft');
     try {
-      const payload = { type, title, abstract, story, tags, adviserId, coAuthorIds: coAuthors.map((c) => c.id) };
+      const payload = { type, title, abstract, story, tags, adviserId, coAuthorIds: coAuthors.map((c) => c.id), visibility };
       let id = work?.id;
       if (id) await update.mutateAsync({ id, ...payload });
       else id = (await create.mutateAsync({ ...payload, submit: false })).id;
@@ -155,8 +158,21 @@ export function EntryForm({ open, onClose, work, onSaved }: { open: boolean; onC
           onChange={(e) => setStory(e.target.value)}
           maxLength={3000}
           rows={4}
-          hint="In your own words: how the idea started, what went wrong along the way, what you’d tell the next student. Your panel reads it with the work; it’s public once the work is approved."
+          hint="In your own words: how the idea started, what went wrong along the way, what you’d tell the next student. Your panel reads it with the work; its readers see it once the work is approved."
         />
+        <SelectField
+          label="Who can read it once approved"
+          value={visibility}
+          onChange={(e) => setVisibility(e.target.value as WorkVisibility)}
+          hint={
+            visibility === 'school'
+              ? `Only people signed in from ${me?.institution?.name ?? 'your school'}, plus your co-authors and adviser. It stays off Google Scholar. You can change this later.`
+              : 'Anyone, signed in or not, and Google Scholar. You can change this later.'
+          }
+        >
+          <option value="public">Everyone (Public)</option>
+          <option value="school">{me?.institution ? `${schoolLabel(me.institution)} only` : 'My school only'}</option>
+        </SelectField>
 
         <div className={styles.coauthors}>
           <PeoplePicker

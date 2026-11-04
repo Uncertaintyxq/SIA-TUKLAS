@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Users;
 use App\Enums\FollowKind;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserCardResource;
+use App\Models\Department;
 use App\Models\Follow;
-use App\Models\Profile;
 use App\Models\User;
 use App\Support\Followers;
 use Illuminate\Database\Eloquent\Builder;
@@ -25,7 +25,9 @@ class FollowController extends Controller
         $mine = Followers::of($request->user());
         $people = User::with('profile')->active()->whereIn('id', $mine['people'])->orderBy('name')->get();
 
-        return response()->json(['people' => UserCardResource::collection($people), 'departments' => $mine['departments'], 'tags' => $mine['tags']]);
+        $departments = Department::byId()->only($mine['departments'])->map->card()->values();
+
+        return response()->json(['people' => UserCardResource::collection($people), 'departments' => $departments, 'tags' => $mine['tags']]);
     }
 
     /** POST /api/follows {kind, target} — following twice is fine */
@@ -41,8 +43,8 @@ class FollowController extends Controller
                 throw new HttpException(404, 'That person couldn’t be found.');
             }
         }
-        if ($kind === FollowKind::Department && ! Profile::where('department', $target)->exists()) {
-            throw new HttpException(404, 'There’s no department by that name.');
+        if ($kind === FollowKind::Department && ! Department::whereKey((int) $target)->exists()) {
+            throw new HttpException(404, 'That department couldn’t be found.');
         }
         if ($this->existing($me->id, $kind, $target)->exists()) {
             return response()->noContent();
@@ -73,14 +75,14 @@ class FollowController extends Controller
         ]);
         $kind = FollowKind::from($data['kind']);
         $target = trim($data['target']);
-        if ($kind === FollowKind::Person && ! ctype_digit($target)) {
-            throw new HttpException(400, 'That person couldn’t be found.');
+        if (in_array($kind, [FollowKind::Person, FollowKind::Department], true) && ! ctype_digit($target)) {
+            throw new HttpException(400, $kind === FollowKind::Person ? 'That person couldn’t be found.' : 'That department couldn’t be found.');
         }
         if ($kind === FollowKind::Tag && mb_strlen($target) > 40) {
             throw new HttpException(400, 'Keywords are at most 40 characters.');
         }
 
-        return [$kind, $kind === FollowKind::Person ? (string) (int) $target : $target];
+        return [$kind, $kind === FollowKind::Tag ? $target : (string) (int) $target];
     }
 
     /** @return Builder<Follow> Keywords match ignoring case */

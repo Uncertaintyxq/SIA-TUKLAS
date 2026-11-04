@@ -1,11 +1,12 @@
 /**
  * FeedPage — the community feed of approved works, opportunities and events ("/feed").
- * Filters, department, search and sort live in the URL query string.
+ * Filters, school, department, search and sort live in the URL query string.
  */
 import { Link, useSearchParams } from 'react-router-dom';
 import { ShieldCheck, X } from 'lucide-react';
 import { useFeed, useSidebar, type FeedFilter, type FeedParams } from '../api/feed';
 import { useFollows, useUnfollow } from '../api/follows';
+import { departmentLabel, schoolLabel } from '../api/institutions';
 import { AdSlot, CalendarLeaf, EventCard } from '../components/events/EventBits';
 import { OpportunityEntry } from '../components/feed/OpportunityEntry';
 import { PageHeader } from '../components/layout/PageHeader';
@@ -40,6 +41,7 @@ export function FeedPage() {
   const [params, setParams] = useSearchParams();
   const p: FeedParams = {
     type: (filters.find((f) => f.value === params.get('type'))?.value ?? 'all') as FeedFilter,
+    institution: params.get('institution') ?? '',
     dept: params.get('dept') ?? '',
     year: params.get('year') ?? '',
     adviser: params.get('adviser') ?? '',
@@ -48,14 +50,15 @@ export function FeedPage() {
     sort: params.get('sort') === 'discussed' ? 'discussed' : 'newest',
   };
   const { data, isPending, isFetching, error } = useFeed(p);
-  const narrowed = Boolean(p.dept || p.year || p.adviser || p.tag);
+  const narrowed = Boolean(p.institution || p.dept || p.year || p.adviser || p.tag);
+  const deptCard = data?.departments.find((d) => String(d.id) === p.dept);
   // A keyword reached from a work's tag may be outside the most-used list: keep it selectable
   const tags = data ? (p.tag && !data.tags.some((t) => t.name === p.tag) ? [{ name: p.tag, count: 0 }, ...data.tags] : data.tags) : [];
   const clearFilters = () =>
     setParams(
       (prev) => {
         const next = new URLSearchParams(prev);
-        ['dept', 'year', 'adviser', 'tag'].forEach((k) => next.delete(k));
+        ['institution', 'dept', 'year', 'adviser', 'tag'].forEach((k) => next.delete(k));
         return next;
       },
       { replace: true },
@@ -79,13 +82,25 @@ export function FeedPage() {
           <div className={styles.toolbar}>
             <Chips label="Filter the feed" value={p.type} options={filters} onChange={(v) => set('type', v)} />
             <div className={styles.controls}>
+              {(data?.institutions.length ?? 0) > 1 && (
+                <SelectField label="School" value={p.institution} onChange={(e) => set('institution', e.target.value)} className={styles.filter}>
+                  <option value="">Every school</option>
+                  {data!.institutions.map((s) => (
+                    <option key={s.id} value={String(s.id)}>
+                      {schoolLabel(s)}
+                    </option>
+                  ))}
+                </SelectField>
+              )}
               <SelectField label="Department" value={p.dept} onChange={(e) => set('dept', e.target.value)} className={styles.dept}>
                 <option value="">All departments</option>
-                {data?.departments.map((d) => (
-                  <option key={d} value={d}>
-                    {d}
-                  </option>
-                ))}
+                {data?.departments
+                  .filter((d) => !p.institution || String(d.institution?.id ?? '') === p.institution)
+                  .map((d) => (
+                    <option key={d.id} value={String(d.id)}>
+                      {departmentLabel(d)}
+                    </option>
+                  ))}
               </SelectField>
               <SelectField label="Year" value={p.year} onChange={(e) => set('year', e.target.value)} className={styles.filter}>
                 <option value="">Any year</option>
@@ -135,7 +150,7 @@ export function FeedPage() {
 
           {(p.dept || p.tag) && (
             <div className={styles.follows}>
-              {p.dept && <FollowButton kind="department" target={p.dept} label={p.dept} />}
+              {p.dept && <FollowButton kind="department" target={p.dept} label={deptCard ? departmentLabel(deptCard) : 'this department'} />}
               {p.tag && <FollowButton kind="tag" target={p.tag} label={`the keyword “${p.tag}”`} />}
               <span className={styles.followsHint}>See new works from {p.dept && p.tag ? 'these' : 'it'} under Following.</span>
             </div>
@@ -218,7 +233,7 @@ function YouFollow() {
   if (!data) return null;
   const items = [
     ...data.people.map((u) => ({ key: `p${u.id}`, kind: 'person' as const, target: String(u.id), label: u.name, to: `/u/${u.username}` })),
-    ...data.departments.map((d) => ({ key: `d${d}`, kind: 'department' as const, target: d, label: d, to: `/feed?dept=${encodeURIComponent(d)}` })),
+    ...data.departments.map((d) => ({ key: `d${d.id}`, kind: 'department' as const, target: String(d.id), label: departmentLabel(d), to: `/feed?dept=${d.id}` })),
     ...data.tags.map((t) => ({ key: `t${t}`, kind: 'tag' as const, target: t, label: t, to: `/feed?tag=${encodeURIComponent(t)}` })),
   ];
   if (items.length === 0) return null;

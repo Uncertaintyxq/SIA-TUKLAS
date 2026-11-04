@@ -8,6 +8,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\Feed\FeedController;
 use App\Http\Requests\Publications\PublicationRequest;
 use App\Http\Resources\PublicationCardResource;
+use App\Models\Department;
+use App\Models\Institution;
 use App\Models\Publication;
 use App\Models\User;
 use App\Models\Work;
@@ -33,16 +35,18 @@ class PublicationController extends Controller
 {
     private const NOT_FOUND = 'That research doesn’t exist or isn’t published.';
 
-    /** GET /api/publications?q=&year=&dept=&keyword= — the library: published research the viewer may read, newest first. */
+    /** GET /api/publications?q=&year=&institution=&dept=&keyword= — the library: published research the viewer may read, newest first (dept and institution are ids). */
     public function index(Request $request): AnonymousResourceCollection
     {
         $term = mb_strtolower(mb_substr(trim((string) $request->query('q', '')), 0, 80));
         $year = FeedController::year($request->query('year'));
-        $dept = mb_substr(trim((string) $request->query('dept', '')), 0, 160);
+        $school = max(0, (int) $request->query('institution', 0));
+        $dept = max(0, (int) $request->query('dept', 0));
         $keyword = mb_substr(trim((string) $request->query('keyword', '')), 0, 40);
         $rows = Cards::publications($this->readable($request))
             ->when($year !== null, fn ($q) => $q->whereYear('published_at', $year))
-            ->when($dept !== '', fn ($q) => $q->whereHas('author.profile', fn ($p) => $p->where('department', $dept)))
+            ->when($school > 0, fn ($q) => $q->where('institution_id', $school))
+            ->when($dept > 0, fn ($q) => $q->whereHas('author.profile', fn ($p) => $p->where('department_id', $dept)))
             ->when($keyword !== '', fn ($q) => $q->whereJsonContains('keywords', $keyword))
             ->orderByDesc('published_at')
             ->limit(200)
@@ -56,29 +60,31 @@ class PublicationController extends Controller
 
     /**
      * GET /api/publications/browse — what the library can be browsed by: every department with how
-     * much research and how many student works it has, and the years and keywords research has.
-     * Counts only what the viewer may read (internal research needs an account).
+     * much research and how many student works it has, the schools, and the years and keywords
+     * research has. Counts only what the viewer may read (School only research is for its school).
      */
     public function browse(Request $request): JsonResponse
     {
-        $research = $this->readable($request)->with('author.profile:user_id,department')->get(['id', 'author_id', 'keywords', 'published_at']);
-        $works = Work::public()->with('author.profile:user_id,department')->get(['id', 'author_id']);
-        $departmentOf = fn ($item) => $item->author?->profile?->department ?: null;
+        $research = $this->readable($request)->with('author.profile:user_id,department_id')->get(['id', 'author_id', 'keywords', 'published_at', 'institution_id']);
+        $works = Work::readableBy($request->user())->with('author.profile:user_id,department_id')->get(['id', 'author_id']);
+        $departmentOf = fn ($item) => $item->author?->profile?->department_id;
         $researchBy = $research->map($departmentOf)->filter()->countBy();
         $worksBy = $works->map($departmentOf)->filter()->countBy();
 
         return response()->json([
-            'departments' => $researchBy->keys()->merge($worksBy->keys())->unique()->sort()->values()
-                ->map(fn (string $d) => ['name' => $d, 'research' => (int) ($researchBy[$d] ?? 0), 'works' => (int) ($worksBy[$d] ?? 0)]),
+            'departments' => Department::byId()->only($researchBy->keys()->merge($worksBy->keys())->unique()->all())
+                ->map(fn (Department $d) => [...$d->card(), 'research' => (int) ($researchBy[$d->id] ?? 0), 'works' => (int) ($worksBy[$d->id] ?? 0)])
+                ->sortBy(fn ($d) => [$d['name'], $d['institution']['name'] ?? ''])->values(),
+            'institutions' => Institution::byId()->only($research->pluck('institution_id')->filter()->unique()->all())->sortBy('name')->map->card()->values(),
             'years' => $research->map(fn (Publication $p) => $p->published_at?->year)->filter()->unique()->sortDesc()->values(),
             'keywords' => FeedController::topKeywords($research->pluck('keywords')),
         ]);
     }
 
-    /** @return Builder<Publication> Published research the viewer may read: public, plus internal when signed in */
+    /** @return Builder<Publication> Published research the viewer may read: public, plus School only research of their school */
     private function readable(Request $request): Builder
     {
-        return Publication::query()->whereIn('visibility', $request->user() ? [PublicationVisibility::Internal, PublicationVisibility::Public] : [PublicationVisibility::Public]);
+        return Publication::readableBy($request->user());
     }
 
     /** GET /api/publications/mine — everything I wrote or co-wrote, drafts included. */
@@ -136,6 +142,8 @@ class PublicationController extends Controller
 
         $p = DB::transaction(function () use ($request, $me) {
             $p = new Publication($request->fields());
+            // The school it belongs to: the main author's, kept if they move (docs/decisions/0002)
+            $p->institution_id = $me->institution_id;
             $p->published_at = $request->visibility() === PublicationVisibility::Draft ? null : now();
             $p->author()->associate($me)->save();
             $p->coAuthors()->sync($request->byline());

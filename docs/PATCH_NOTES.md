@@ -44,6 +44,14 @@ Merged into `main` but not on <https://tuklas-sia-jm.japaneast.cloudapp.azure.co
 - Tuklas can hold several schools. Everyone belongs to one, and it shows on their portfolio.
 - Signing up with your school email puts you in your school straight away. Without one, pick your
   school: its admins confirm your account before you can use Tuklas.
+- Research a school publishes can be read from the others. When you publish (or submit a work),
+  choose **Public** (everyone) or **School only** (people signed in from your school, plus your
+  co-authors and adviser). Authors can change it any time, even after approval. "Internal" research
+  is now called School only.
+- Each school has its own list of departments; pick yours on your portfolio. Filters, follows and
+  department announcements use it, so two schools' "College of Computing" stay apart.
+- The feed and the research library have a **School** filter.
+- Pick a research adviser from your own school; co-authors can come from any school.
 
 **Follow people and topics**
 - **Follow** a person from their portfolio, or a department or keyword from the feed's filters

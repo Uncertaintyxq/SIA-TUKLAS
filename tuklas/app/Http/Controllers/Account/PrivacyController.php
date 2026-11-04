@@ -37,7 +37,7 @@ class PrivacyController extends Controller
             'account' => $me->only(['id', 'name', 'username', 'email', 'program', 'headline', 'verified', 'created_at', 'email_verified_at', 'privacy_accepted_at', 'privacy_version'])
                 + ['institution' => $me->school()?->name, 'institutionConfirmedAt' => $me->institution_confirmed_at?->toISOString()]
                 + ['role' => $me->role->value, 'twoFactorEnabled' => $me->hasTwoFactorEnabled(), 'notificationSettings' => NotificationPrefs::for($me)],
-            'profile' => $me->profile?->only(['titles', 'department', 'bio_long', 'cv_name']),
+            'profile' => $me->profile ? [...$me->profile->only(['titles', 'bio_long', 'cv_name']), 'department' => $me->profile->departmentName()] : null,
             'links' => $me->links->map->only(['type', 'url', 'label']),
             'background' => $me->backgrounds->map->only(['degree', 'school', 'year']),
             'honors' => $me->honors->map->only(['kind', 'title', 'issuer', 'year', 'verified']),

@@ -7,6 +7,7 @@ use App\Actions\Works\SubmitWork;
 use App\Enums\CommentScope;
 use App\Enums\ReactionKind;
 use App\Enums\WorkStatus;
+use App\Enums\WorkVisibility;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Works\WorkRequest;
 use App\Http\Resources\MyWorkResource;
@@ -26,6 +27,7 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /** Student works at /api/works: lists, one work, and writing a work. */
@@ -79,7 +81,7 @@ class WorkController extends Controller
             return response()->json([]);
         }
 
-        $ranked = Work::public()
+        $ranked = Work::readableBy($request->user())
             ->when($request->integer('exclude'), fn ($q, $id) => $q->whereKeyNot($id))
             ->with(['author:id,name', 'coAuthors:id,name'])
             ->get(['id', 'author_id', 'title', 'type', 'tags', 'abstract', 'approved_at'])
@@ -127,7 +129,7 @@ class WorkController extends Controller
         $insider = Gate::allows('insider', $work);
         $reviewer = Gate::allows('review', $work);
         $author = $work->isAuthor($viewer);
-        $open = $work->isPublic();
+        $open = $work->isPublished();
         $final = $work->status->isFinal();
         $counts = Reaction::where('work_id', $work->id)->selectRaw('kind, count(*) as n')->groupBy('kind')->pluck('n', 'kind');
         $comment = fn (Comment $c) => [
@@ -141,7 +143,7 @@ class WorkController extends Controller
         return response()->json([
             ...(new WorkCardResource($work))->resolve($request),
             'pdfName' => $work->pdf_file ? ($work->pdf_name ?? 'work.pdf') : null,
-            // "How we made this": the panel reads it during review; everyone once the work is public
+            // "How we made this": the panel reads it during review; its readers once it's published
             'story' => $open || $insider ? $work->story : null,
             'submittedAt' => $work->submitted_at?->toISOString(),
             'createdAt' => $work->created_at->toISOString(),
@@ -176,6 +178,8 @@ class WorkController extends Controller
                 'manageStages' => $insider && $work->removed_at === null,
                 'tickItems' => $author && ! $final,
                 'confirmItems' => $reviewer && ! $final,
+                // Who may read it stays the authors' choice, even after approval
+                'visibility' => $author,
                 'discuss' => $viewer !== null && $open,
             ],
         ]);
@@ -196,7 +200,10 @@ class WorkController extends Controller
             $work = new Work([
                 'type' => $request->validated('type'), 'title' => $request->validated('title'),
                 'abstract' => $request->validated('abstract'), 'story' => $request->story(), 'tags' => $request->tags(), 'adviser_id' => $request->integer('adviserId'),
+                'visibility' => $request->visibility(),
             ]);
+            // The school it belongs to: the submitting author's, kept if they move (docs/decisions/0002)
+            $work->institution_id = $me->institution_id;
             $work->author()->associate($me)->save();
             $work->coAuthors()->sync(self::bylineOrder($coAuthors));
 
@@ -224,9 +231,26 @@ class WorkController extends Controller
             $work->update([
                 'type' => $request->validated('type'), 'title' => $request->validated('title'),
                 'abstract' => $request->validated('abstract'), 'story' => $request->story(), 'tags' => $request->tags(), 'adviser_id' => $request->integer('adviserId'),
+                'visibility' => $request->visibility(),
             ]);
             $work->coAuthors()->sync(self::bylineOrder($coAuthors));
         });
+
+        return response()->noContent();
+    }
+
+    /**
+     * PUT /api/works/{id}/visibility {visibility: public|school} — any of its authors, at any time:
+     * once approved, the form is locked, but who may read it stays theirs to choose.
+     */
+    public function visibility(Request $request, int $id): Response
+    {
+        $value = WorkVisibility::from($request->validate(['visibility' => ['required', Rule::enum(WorkVisibility::class)]])['visibility']);
+        $work = self::visible($id);
+        if (! $work->isAuthor($request->user())) {
+            throw new HttpException(403, 'Only its authors choose who may read a work.');
+        }
+        $work->update(['visibility' => $value]);
 
         return response()->noContent();
     }

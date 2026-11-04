@@ -28,7 +28,7 @@ class PeopleController extends Controller
                 ->where('name', 'like', $like)
                 ->orWhere('username', 'like', $like)
                 ->orWhere('program', 'like', $like)
-                ->orWhereHas('profile', fn ($p) => $p->where('department', 'like', $like)))
+                ->orWhereHas('profile.department', fn ($d) => $d->where('name', 'like', $like)))
             ->orderBy('name')
             ->limit(10)
             ->get();
@@ -36,9 +36,13 @@ class PeopleController extends Controller
         return UserCardResource::collection($users);
     }
 
-    /** GET /api/people/advisers — advisers a student can pick: verified educators only. */
-    public function advisers(): AnonymousResourceCollection
+    /** GET /api/people/advisers — advisers a student can pick: verified educators of their own school (docs/decisions/0002). */
+    public function advisers(Request $request): AnonymousResourceCollection
     {
-        return UserCardResource::collection(User::with('profile')->active()->where('role', Role::Educator)->where('verified', true)->orderBy('name')->get());
+        $school = $request->user()->institution_id;
+
+        return UserCardResource::collection(User::with('profile')->active()->where('role', Role::Educator)->where('verified', true)
+            ->when($school !== null, fn ($q) => $q->where('institution_id', $school))
+            ->orderBy('name')->get());
     }
 }

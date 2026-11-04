@@ -11,9 +11,10 @@ use App\Http\Resources\OpportunityCardResource;
 use App\Http\Resources\UserCardResource;
 use App\Http\Resources\WorkCardResource;
 use App\Models\Ad;
+use App\Models\Department;
 use App\Models\Event;
+use App\Models\Institution;
 use App\Models\Opportunity;
-use App\Models\Profile;
 use App\Models\User;
 use App\Models\Work;
 use App\Support\Cards;
@@ -32,12 +33,13 @@ class FeedController extends Controller
 {
     private const FILTERS = ['all', 'research', 'literary', 'innovation', 'opportunities', 'events', 'saved', 'following'];
 
-    /** GET /api/feed?type=(…|saved|following)&dept=&year=&adviser=&tag=&q=&sort=newest|discussed */
+    /** GET /api/feed?type=(…|saved|following)&institution=&dept=&year=&adviser=&tag=&q=&sort=newest|discussed — dept and institution are ids */
     public function index(Request $request): JsonResponse
     {
         $me = $request->user();
         $type = in_array($request->query('type'), self::FILTERS, true) ? $request->query('type') : 'all';
-        $dept = mb_substr(trim((string) $request->query('dept', '')), 0, 160);
+        $school = max(0, (int) $request->query('institution', 0));
+        $dept = max(0, (int) $request->query('dept', 0));
         $year = self::year($request->query('year'));
         $adviser = max(0, (int) $request->query('adviser', 0));
         $tag = mb_substr(trim((string) $request->query('tag', '')), 0, 40);
@@ -45,16 +47,17 @@ class FeedController extends Controller
         $sort = $request->query('sort') === 'discussed' ? 'discussed' : 'newest';
         $like = '%'.addcslashes($q, '%_\\').'%';
         $workType = WorkType::tryFrom($type);
-        // Department, year, adviser and keyword describe works; opportunities and events have none of them
-        $worksOnly = $dept !== '' || $year !== null || $adviser > 0 || $tag !== '';
+        // School, department, year, adviser and keyword describe works; opportunities and events have none of them
+        $worksOnly = $school > 0 || $dept > 0 || $year !== null || $adviser > 0 || $tag !== '';
         $items = collect();
 
         if ($type === 'all' || $type === 'saved' || $type === 'following' || $workType) {
-            $works = Cards::works(Work::public(), $me->id)
+            $works = Cards::works(Work::readableBy($me), $me->id)
                 ->when($workType, fn ($query) => $query->where('type', $workType))
                 ->when($type === 'saved', fn ($query) => $query->whereHas('savedBy', fn ($s) => $s->where('users.id', $me->id)))
                 ->when($type === 'following', fn ($query) => $this->followedBy($query, $me))
-                ->when($dept !== '', fn ($query) => $query->whereHas('author.profile', fn ($p) => $p->where('department', $dept)))
+                ->when($school > 0, fn ($query) => $query->where('institution_id', $school))
+                ->when($dept > 0, fn ($query) => $query->whereHas('author.profile', fn ($p) => $p->where('department_id', $dept)))
                 ->when($year !== null, fn ($query) => $query->whereYear('approved_at', $year))
                 ->when($adviser > 0, fn ($query) => $query->where('adviser_id', $adviser))
                 ->when($tag !== '', fn ($query) => $query->whereJsonContains('tags', $tag))
@@ -72,7 +75,7 @@ class FeedController extends Controller
             }
         }
 
-        // Opportunities and events have no department, year, adviser or keyword: those filters show works only.
+        // Opportunities and events have no school, department, year, adviser or keyword: those filters show works only.
         if (($type === 'all' && ! $worksOnly) || $type === 'opportunities') {
             $opportunities = Cards::opportunities(Opportunity::query(), $me->id)
                 ->where('deadline', '>=', now()->subDay())
@@ -106,25 +109,24 @@ class FeedController extends Controller
 
         $people = $q === '' ? collect() : User::with('profile')->active()
             ->where(fn ($u) => $u->where('name', 'like', $like)->orWhere('username', 'like', $like)->orWhere('program', 'like', $like)
-                ->orWhere('headline', 'like', $like)->orWhereHas('profile', fn ($p) => $p->where('department', 'like', $like)))
+                ->orWhere('headline', 'like', $like)->orWhereHas('profile.department', fn ($d) => $d->where('name', 'like', $like)))
+            ->when($school > 0, fn ($u) => $u->where('institution_id', $school))
             ->orderBy('name')
             ->limit(6)
             ->get();
 
-        $departments = Profile::where('department', '!=', '')
-            ->whereHas('user.works', fn ($w) => $w->public())
-            ->distinct()
-            ->orderBy('department')
-            ->pluck('department');
-
-        // What the other filters can offer: only values that public works actually have
-        $public = Work::public()->get(['approved_at', 'adviser_id', 'tags']);
+        // What the filters can offer: only values that works this person may read actually have
+        $readable = Work::readableBy($me)->with('author.profile:user_id,department_id')->get(['id', 'author_id', 'approved_at', 'adviser_id', 'tags', 'institution_id']);
+        $departments = Department::byId()->only($readable->map(fn (Work $w) => $w->author?->profile?->department_id)->filter()->unique()->all())
+            ->map->card()->sortBy(fn ($d) => [$d['name'], $d['institution']['name'] ?? ''])->values();
+        $public = $readable;
         $advisers = User::with('profile')->whereIn('id', $public->pluck('adviser_id')->unique())->orderBy('name')->get();
 
         return response()->json([
             'items' => $items,
             'people' => UserCardResource::collection($people),
             'departments' => $departments,
+            'institutions' => Institution::byId()->only($readable->pluck('institution_id')->filter()->unique()->all())->sortBy('name')->map->card()->values(),
             'years' => $public->map(fn (Work $w) => (int) $w->approved_at->year)->unique()->sortDesc()->values(),
             'advisers' => UserCardResource::collection($advisers),
             'tags' => self::topKeywords($public->pluck('tags')),
@@ -191,7 +193,7 @@ class FeedController extends Controller
         $query->where(function (Builder $w) use ($f) {
             $w->whereRaw('1 = 0')
                 ->when($f['people'] !== [], fn ($q) => $q->orWhereIn('author_id', $f['people'])->orWhereHas('coAuthors', fn ($a) => $a->whereIn('users.id', $f['people'])))
-                ->when($f['departments'] !== [], fn ($q) => $q->orWhereHas('author.profile', fn ($p) => $p->whereIn('department', $f['departments'])));
+                ->when($f['departments'] !== [], fn ($q) => $q->orWhereHas('author.profile', fn ($p) => $p->whereIn('department_id', $f['departments'])));
             foreach ($f['tags'] as $tag) {
                 $w->orWhereJsonContains('tags', $tag);
             }

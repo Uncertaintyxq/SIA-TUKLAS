@@ -1,6 +1,7 @@
 /** Educator research and the research library (/api/publications). */
-import type { UserCard } from './common';
+import type { DepartmentCard, InstitutionCard, UserCard } from './common';
 
+/** internal is School only: signed-in members of the research's school (docs/decisions/0002) */
 export type PublicationVisibility = 'draft' | 'internal' | 'public';
 
 export interface PublicationInput {
@@ -25,6 +26,7 @@ export interface PublicationCard {
   /** Main author first, then co-authors in byline order */
   authors: UserCard[];
   department: string;
+  institution: InstitutionCard | null;
   hasPdf: boolean;
   /** Reach: each reader counts once a day; only grows once it's published */
   views: number;
@@ -38,13 +40,16 @@ export interface PublicationCard {
 export interface LibraryParams {
   q: string;
   year: string;
+  /** School and department ids ('' = any) */
+  institution: string;
   dept: string;
   keyword: string;
 }
 
 /** What the library can be browsed by (GET /api/publications/browse) */
 export interface LibraryBrowse {
-  departments: { name: string; research: number; works: number }[];
+  departments: (DepartmentCard & { research: number; works: number })[];
+  institutions: InstitutionCard[];
   years: number[];
   keywords: { name: string; count: number }[];
 }
@@ -56,7 +61,7 @@ export interface PublicationDetail extends PublicationCard {
   can: {
     edit: boolean;
     delete: boolean;
-    /** Holds the publishing right, so may choose Internal or Public */
+    /** Holds the publishing right, so may choose School only or Public */
     publish: boolean;
   };
 }

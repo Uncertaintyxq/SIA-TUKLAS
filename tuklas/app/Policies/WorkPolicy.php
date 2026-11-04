@@ -13,10 +13,13 @@ use App\Models\Work;
  */
 class WorkPolicy
 {
-    /** Public once approved and not removed. Drafts are the authors' alone; from submission on, the adviser and admins too. */
+    /**
+     * Once approved and not removed: everyone, or its school for School only (Work::canBeReadBy).
+     * Drafts are the authors' alone; from submission on, the adviser and admins too.
+     */
     public function view(?User $user, Work $work): bool
     {
-        if ($work->isPublic()) {
+        if ($work->canBeReadBy($user)) {
             return true;
         }
         if ($user === null) {
