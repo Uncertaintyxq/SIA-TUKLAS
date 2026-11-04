@@ -9,9 +9,11 @@ use App\Http\Resources\UserCardResource;
 use App\Models\Announcement;
 use App\Models\AnnouncementAttachment;
 use App\Models\Department;
+use App\Models\Institution;
 use App\Models\ResearchGroup;
 use App\Models\User;
 use App\Notifications\AnnouncementPosted;
+use App\Support\AdminScope;
 use App\Support\Cards;
 use App\Support\Groups;
 use App\Support\NotificationPrefs;
@@ -29,7 +31,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /**
- * Announcements: system-wide (admins), one department, or one research group (educators with the
+ * Announcements: every school (super-admins), one school (its admins), one department, or one research group (educators with the
  * broadcast right, and admins). Posting sends an in-app notification and an email; readers leave a
  * read receipt. /api/announcements/…
  */
@@ -60,7 +62,7 @@ class AnnouncementController extends Controller
         $items = $rows->map(function (Announcement $a) use ($me, &$audiences) {
             $receipts = null;
             if ($this->canEdit($a, $me)) {
-                $key = "{$a->scope->value}:{$a->department_id}:{$a->research_group_id}";
+                $key = "{$a->scope->value}:{$a->institution_id}:{$a->department_id}:{$a->research_group_id}";
                 $ids = array_values(array_diff($audiences[$key] ??= $a->audienceIds(), [$a->author_id]));
                 $receipts = ['read' => DB::table('announcement_reads')->where('announcement_id', $a->id)->whereIn('user_id', $ids)->count(), 'total' => count($ids)];
             }
@@ -117,11 +119,12 @@ class AnnouncementController extends Controller
         ]);
     }
 
-    /** POST /api/announcements {scope, departmentId?, groupId?, title, body, pinned?} */
+    /** POST /api/announcements {scope, institutionId?, departmentId?, groupId?, title, body, pinned?} */
     public function store(Request $request): JsonResponse
     {
         $input = $request->validate([
             'scope' => ['required', Rule::enum(AnnouncementScope::class)],
+            'institutionId' => ['nullable', 'integer', 'min:1'],
             'departmentId' => ['nullable', 'integer', 'min:1'],
             'groupId' => ['nullable', 'integer', 'min:1'],
             ...$this->fieldRules(),
@@ -130,16 +133,28 @@ class AnnouncementController extends Controller
         $me = $request->user()->load('profile');
         $scope = AnnouncementScope::from($input['scope']);
         $department = null;
+        $school = null;
         $group = null;
 
-        if ($scope === AnnouncementScope::System && ! $me->isAdmin()) {
-            throw new HttpException(403, 'Only admins can post to everyone.');
+        // Every school: super-admins (and the admins of a site without schools) (docs/decisions/0002)
+        if ($scope === AnnouncementScope::System && ! ($me->isAdmin() && $me->adminSchool() === null)) {
+            throw new HttpException(403, $me->isAdmin() ? 'Only super-admins post to every school. Post to your school instead.' : 'Only admins can post to everyone.');
+        }
+        if ($scope === AnnouncementScope::School) {
+            $school = $me->isSuperAdmin() ? (int) ($input['institutionId'] ?? 0) : (int) $me->institution_id;
+            if (! $me->isAdmin() || $school === 0 || ! Institution::whereKey($school)->exists()) {
+                throw new HttpException(403, 'Only a school’s admins post to the whole school.');
+            }
         }
         if ($scope === AnnouncementScope::Department) {
             if (! $me->hasRight('broadcast')) {
                 throw new HttpException(403, 'An admin has to give you the announcement right first.');
             }
-            $department = $me->isAdmin() ? Department::find($input['departmentId'] ?? 0)?->id : $me->profile?->department_id;
+            $picked = $me->isAdmin() ? Department::find($input['departmentId'] ?? 0) : null;
+            if ($picked !== null) {
+                AdminScope::check($me, $picked->institution_id);
+            }
+            $department = $me->isAdmin() ? $picked?->id : $me->profile?->department_id;
             if ($department === null) {
                 throw new HttpException(400, $me->isAdmin() ? 'Choose a department.' : 'Add your department to your portfolio first.');
             }
@@ -152,7 +167,7 @@ class AnnouncementController extends Controller
         }
 
         $a = new Announcement([
-            'scope' => $scope, 'department_id' => $department, 'research_group_id' => $group?->id,
+            'scope' => $scope, 'institution_id' => $school, 'department_id' => $department, 'research_group_id' => $group?->id,
             'title' => $input['title'], 'body' => $input['body'], 'pinned' => (bool) ($input['pinned'] ?? false),
         ]);
         $a->author()->associate($me)->save();
@@ -248,25 +263,33 @@ class AnnouncementController extends Controller
         return Announcement::visibleTo($me)->where('author_id', '!=', $me->id)->whereDoesntHave('readers', fn ($q) => $q->where('users.id', $me->id))->count();
     }
 
-    /** @return array{system: bool, departments: list<array{id: int, name: string, institution: array{id: int, name: string, shortName: string}|null}>, groups: list<array{id: int, name: string}>} */
+    /**
+     * Where I may post: every school (super-admins), my school or every school's (admins), departments, groups.
+     *
+     * @return array{system: bool, schools: list<array{id: int, name: string, shortName: string}>, departments: list<array{id: int, name: string, institution: array{id: int, name: string, shortName: string}|null}>, groups: list<array{id: int, name: string}>}
+     */
     private function audiencesFor(User $me): array
     {
         if ($me->isAdmin()) {
+            $school = $me->adminSchool();
+
             return [
-                'system' => true,
-                'departments' => Department::byId()->map->card()->sortBy(fn ($d) => [$d['institution']['name'] ?? '', $d['name']])->values()->all(),
-                'groups' => ResearchGroup::orderBy('name')->get(['id', 'name'])->map->only(['id', 'name'])->all(),
+                'system' => $school === null,
+                'schools' => Institution::byId()->filter(fn (Institution $i) => $i->active && $me->administers($i->id))->sortBy('name')->map->card()->values()->all(),
+                'departments' => Department::byId()->filter(fn (Department $d) => $me->administers($d->institution_id))
+                    ->map->card()->sortBy(fn ($d) => [$d['institution']['name'] ?? '', $d['name']])->values()->all(),
+                'groups' => AdminScope::apply(ResearchGroup::query(), $school, through: 'adviser')->orderBy('name')->get(['id', 'name'])->map->only(['id', 'name'])->all(),
             ];
         }
         if (! $me->hasRight('broadcast')) {
-            return ['system' => false, 'departments' => [], 'groups' => []];
+            return ['system' => false, 'schools' => [], 'departments' => [], 'groups' => []];
         }
         $department = $me->profile?->department_id !== null ? Department::byId()->get($me->profile->department_id) : null;
         $groups = ResearchGroup::where('adviser_id', $me->id)
             ->orWhereHas('members', fn ($m) => $m->where('user_id', $me->id)->where('role', GroupRole::Mentor))
             ->orderBy('name')->get(['id', 'name'])->map->only(['id', 'name'])->all();
 
-        return ['system' => false, 'departments' => $department === null ? [] : [$department->card()], 'groups' => $groups];
+        return ['system' => false, 'schools' => [], 'departments' => $department === null ? [] : [$department->card()], 'groups' => $groups];
     }
 
     /** @return array<string, list<string>> */

@@ -51,7 +51,7 @@ class EventController extends Controller
         /** @var User $me */
         $me = $request->user();
         $organizes = ! $me->isStudent();
-        $approved = fn () => Cards::events(Event::where('status', ApprovalStatus::Approved), $me->id);
+        $approved = fn () => Cards::events(Event::visibleTo($me)->where('status', ApprovalStatus::Approved), $me->id);
 
         return response()->json([
             'upcoming' => EventCardResource::collection($approved()->where('date', '>=', now())->orderBy('date')->get()),
@@ -62,13 +62,13 @@ class EventController extends Controller
         ]);
     }
 
-    /** GET /api/events/{id} — pending and rejected events only for their organizer and admins. */
+    /** GET /api/events/{id} — pending and rejected events only for their organizer and admins; a school's own events for that school. */
     public function show(Request $request, int $id): JsonResponse
     {
         /** @var User $me */
         $me = $request->user();
         $event = Cards::events(Event::query(), $me->id)->find($id);
-        if ($event === null || ($event->status !== ApprovalStatus::Approved && ! self::canManage($event, $me))) {
+        if ($event === null || (($event->status !== ApprovalStatus::Approved || ! $event->canBeSeenBy($me)) && ! self::canManage($event, $me))) {
             throw new HttpException(404, self::NOT_FOUND);
         }
         $manage = self::canManage($event, $me);
@@ -91,7 +91,9 @@ class EventController extends Controller
         Gate::authorize('organize');
         /** @var User $me */
         $me = $request->user();
-        $event = new Event($request->validated());
+        $event = new Event([...$request->validated(), 'audience' => $request->validated('audience') ?? 'school']);
+        // The poster's school (docs/decisions/0002)
+        $event->institution_id = $me->institution_id;
         $event->status = $me->isAdmin() ? ApprovalStatus::Approved : ApprovalStatus::Pending;
         $event->postedBy()->associate($me)->save();
 
@@ -124,7 +126,7 @@ class EventController extends Controller
     {
         $me = $request->user();
         $event = Event::withCount('attendees')->find($id);
-        if ($event === null || $event->status !== ApprovalStatus::Approved) {
+        if ($event === null || $event->status !== ApprovalStatus::Approved || ! $event->canBeSeenBy($me)) {
             throw new HttpException(404, self::NOT_FOUND);
         }
         if ($event->date->isPast()) {

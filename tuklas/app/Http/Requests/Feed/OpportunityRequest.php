@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Feed;
 
+use App\Enums\Audience;
 use App\Enums\OpportunityKind;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -16,6 +17,8 @@ class OpportunityRequest extends FormRequest
             'description' => ['required', 'string', 'min:20', 'max:4000'],
             'deadline' => ['required', 'date', 'after:-1 day'],
             'slots' => ['nullable', 'integer', 'min:1', 'max:99'],
+            // The posting school only (the default), or every school (docs/decisions/0002)
+            'audience' => ['nullable', Rule::enum(Audience::class)],
         ];
     }
 

@@ -3,7 +3,9 @@
 namespace App\Models;
 
 use App\Enums\ApprovalStatus;
+use App\Enums\Audience;
 use App\Enums\EventCategory;
+use App\Models\Concerns\HasAudience;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -16,15 +18,18 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  *
  * @property-read bool|null $registered Whether the viewer registered (Cards::events)
  */
-#[Fillable(['category', 'title', 'description', 'venue', 'date', 'capacity'])]
+#[Fillable(['category', 'title', 'description', 'venue', 'date', 'capacity', 'audience'])]
 class Event extends Model
 {
+    use HasAudience;
+
     public const UPDATED_AT = null;
 
     /** Column defaults, so a new model has them before it's reloaded. */
     protected $attributes = ['status' => 'pending'];
 
     protected $casts = [
+        'audience' => Audience::class,
         'category' => EventCategory::class,
         'status' => ApprovalStatus::class,
         'date' => 'datetime',
@@ -46,5 +51,10 @@ class Event extends Model
     public function ads(): HasMany
     {
         return $this->hasMany(Ad::class);
+    }
+
+    protected function posterKey(): string
+    {
+        return 'posted_by_id';
     }
 }

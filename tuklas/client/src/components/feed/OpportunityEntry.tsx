@@ -3,6 +3,7 @@
  * Admins and the posting adviser see the entry without the apply controls.
  */
 import { useState, type FormEvent } from 'react';
+import { schoolLabel } from '../../api/institutions';
 import { CalendarClock, Check, Users } from 'lucide-react';
 import type { OpportunityCard } from '../../types/feed';
 import { useMe } from '../../api/auth';
@@ -30,6 +31,7 @@ export function OpportunityEntry({ opportunity: o }: { opportunity: OpportunityC
       <div className={styles.head}>
         <Person user={o.adviser} sub={`posted an opportunity · ${relTime(o.createdAt)}`} />
         <Badge tone="blue">{opportunityLabel[o.kind]}</Badge>
+        {o.audience === 'school' && o.institution && <Badge tone="neutral">{schoolLabel(o.institution)} only</Badge>}
       </div>
       <h3 className={styles.title}>{o.title}</h3>
       <p className={styles.description}>{o.description}</p>

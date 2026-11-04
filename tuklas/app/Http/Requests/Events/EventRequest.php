@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Events;
 
+use App\Enums\Audience;
 use App\Enums\EventCategory;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -18,6 +19,8 @@ class EventRequest extends FormRequest
             'venue' => ['required', 'string', 'min:2', 'max:160'],
             'date' => ['required', 'date', 'after:-1 minute'],
             'capacity' => ['nullable', 'integer', 'min:1', 'max:5000'],
+            // The posting school only (the default), or every school (docs/decisions/0002)
+            'audience' => ['nullable', Rule::enum(Audience::class)],
         ];
     }
 

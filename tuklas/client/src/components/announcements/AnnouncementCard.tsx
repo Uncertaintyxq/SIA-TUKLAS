@@ -24,7 +24,7 @@ import { RichText } from './RichText';
 import { RichTextEditor } from './RichTextEditor';
 import styles from './AnnouncementCard.module.css';
 
-const scopeTone: Record<AnnouncementView['scope'], BadgeTone> = { system: 'purple', department: 'blue', group: 'gold' };
+const scopeTone: Record<AnnouncementView['scope'], BadgeTone> = { system: 'purple', school: 'purple', department: 'blue', group: 'gold' };
 
 export function AnnouncementCard({ item: a }: { item: AnnouncementView }) {
   const [editing, setEditing] = useState(false);
