@@ -16,12 +16,13 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 /** Ad images and removing ads. /api/ads/… */
 class AdController extends Controller
 {
-    /** GET /api/ads/{id}/image — approved ads for anyone; pending ones only for their requester and admins. */
+    /** GET /api/ads/{id}/image — approved ads for whoever may see their event; pending ones only for their requester and admins. */
     public function image(Request $request, int $id): StreamedResponse
     {
-        $ad = Ad::find($id);
+        $ad = Ad::with('event')->find($id);
         $me = $request->user();
-        if ($ad === null || ($ad->status !== ApprovalStatus::Approved && ! ($me && $this->owns($ad, $me)))) {
+        $visible = $ad !== null && $ad->status === ApprovalStatus::Approved && $ad->event?->canBeSeenBy($me);
+        if ($ad === null || (! $visible && ! ($me && $this->owns($ad, $me)))) {
             throw new HttpException(404, 'Not found');
         }
 

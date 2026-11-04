@@ -52,6 +52,10 @@ Merged into `main` but not on <https://tuklas-sia-jm.japaneast.cloudapp.azure.co
   department announcements use it, so two schools' "College of Computing" stay apart.
 - The feed and the research library have a **School** filter.
 - Pick a research adviser from your own school; co-authors can come from any school.
+- Opportunities and events are for your school unless you choose **Every school** when posting;
+  school-only ones show a "TU only" style badge.
+- Announcements can go to **everyone at a school** (that school's admins), and posting to every
+  school at once is for super-admins.
 
 **Follow people and topics**
 - **Follow** a person from their portfolio, or a department or keyword from the feed's filters

@@ -17,10 +17,11 @@ import styles from './AnnouncementComposer.module.css';
 
 const MAX_FILES = 5;
 
-/** Audience options as select values: "system", "department:<id>", "group:<id>". */
+/** Audience options as select values: "system", "school:<id>", "department:<id>", "group:<id>". */
 function audienceOptions(a: AnnouncementsResponse['audiences']) {
   return [
-    ...(a.system ? [{ value: 'system', label: 'Everyone on Tuklas' }] : []),
+    ...(a.system ? [{ value: 'system', label: 'Everyone on Tuklas (every school)' }] : []),
+    ...a.schools.map((s) => ({ value: `school:${s.id}`, label: `Everyone at ${s.name}` })),
     ...a.departments.map((d) => ({ value: `department:${d.id}`, label: `Department · ${departmentLabel(d)}` })),
     ...a.groups.map((g) => ({ value: `group:${g.id}`, label: `Research group · ${g.name}` })),
   ];
@@ -53,11 +54,12 @@ export function AnnouncementComposer({
     const problems = { title: title.trim().length < 3 ? 'Give the announcement a title.' : undefined, body: body.trim() ? undefined : 'Write the announcement.' };
     setError(problems);
     if (problems.title || problems.body) return;
-    const [scope, target] = audience.split(/:(.*)/s) as ['system' | 'department' | 'group', string | undefined];
+    const [scope, target] = audience.split(/:(.*)/s) as ['system' | 'school' | 'department' | 'group', string | undefined];
     let id: number;
     try {
       ({ id } = await create.mutateAsync({
         scope,
+        institutionId: scope === 'school' ? Number(target) : undefined,
         departmentId: scope === 'department' ? Number(target) : undefined,
         groupId: scope === 'group' ? Number(target) : undefined,
         title,

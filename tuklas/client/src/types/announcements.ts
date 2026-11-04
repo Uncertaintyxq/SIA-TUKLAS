@@ -1,10 +1,13 @@
 /** Announcements and read receipts (/api/announcements). */
-import type { DepartmentCard, UserCard } from './common';
+import type { DepartmentCard, InstitutionCard, UserCard } from './common';
 
-export type AnnouncementScope = 'system' | 'department' | 'group';
+/** system: every school (super-admins). school: one school (its admins). */
+export type AnnouncementScope = 'system' | 'school' | 'department' | 'group';
 
 export interface AnnouncementInput {
   scope: AnnouncementScope;
+  /** school scope: which school (super-admins pick; a school's admins post to their own) */
+  institutionId?: number;
   /** department scope: which department (admins pick; educators always post to their own) */
   departmentId?: number;
   /** group scope */
@@ -45,7 +48,7 @@ export interface AnnouncementsResponse {
   items: AnnouncementView[];
   unread: number;
   /** Where I may post */
-  audiences: { system: boolean; departments: DepartmentCard[]; groups: { id: number; name: string }[] };
+  audiences: { system: boolean; schools: InstitutionCard[]; departments: DepartmentCard[]; groups: { id: number; name: string }[] };
 }
 
 export interface ReceiptsView {

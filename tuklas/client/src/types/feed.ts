@@ -1,5 +1,5 @@
 /** The community feed, its sidebar, and adviser opportunities (/api/feed, /api/opportunities). */
-import type { DepartmentCard, InstitutionCard, UserCard } from './common';
+import type { Audience, DepartmentCard, InstitutionCard, UserCard } from './common';
 import type { AdCard, EventCard } from './events';
 import type { WorkCard } from './works';
 
@@ -13,9 +13,13 @@ export interface OpportunityInput {
   /** Not in the past */
   deadline: string | Date;
   slots?: number | null;
+  /** The posting school only (the default), or every school */
+  audience?: Audience;
 }
 
 export interface OpportunityCard {
+  audience: Audience;
+  institution: InstitutionCard | null;
   id: number;
   kind: OpportunityKind;
   title: string;

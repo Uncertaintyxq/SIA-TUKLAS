@@ -20,6 +20,9 @@ export interface UserCard {
   photoUrl: string | null;
 }
 
+/** Who sees an opportunity or event: the posting school, or every school. */
+export type Audience = 'school' | 'all';
+
 /** One school's department (each school keeps its own list). */
 export interface DepartmentCard {
   id: number;

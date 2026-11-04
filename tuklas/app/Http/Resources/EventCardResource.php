@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use App\Models\Event;
+use App\Models\Institution;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -16,6 +17,9 @@ class EventCardResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
+            // The posting school only, or every school (docs/decisions/0002)
+            'audience' => $this->audience->value,
+            'institution' => $this->institution_id !== null ? Institution::byId()->get($this->institution_id)?->card() : null,
             'id' => $this->id,
             'category' => $this->category->value,
             'title' => $this->title,
