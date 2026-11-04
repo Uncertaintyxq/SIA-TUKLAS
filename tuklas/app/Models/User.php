@@ -76,6 +76,21 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->isAdmin() && $this->is_super_admin;
     }
 
+    /**
+     * Admins act for their own school, super-admins for every school (docs/decisions/0002). Anything
+     * without a school, and every admin on a site without schools, stays any admin's.
+     */
+    public function administers(?int $institutionId): bool
+    {
+        return $this->isAdmin() && ($this->is_super_admin || $institutionId === null || $this->institution_id === null || $this->institution_id === $institutionId);
+    }
+
+    /** The school this admin acts for, or null for every school (super-admins; sites without schools). */
+    public function adminSchool(): ?int
+    {
+        return $this->isSuperAdmin() ? null : $this->institution_id;
+    }
+
     /** Signed up without the school's email domain and not confirmed by its admins yet. Admins never wait. */
     public function awaitsSchoolConfirmation(): bool
     {

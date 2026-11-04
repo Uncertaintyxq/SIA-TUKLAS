@@ -71,13 +71,13 @@ class ReadingController extends Controller
         return response()->noContent(201);
     }
 
-    /** DELETE /api/works/{id}/discussion/{commentId} — the comment's author, or an admin. */
+    /** DELETE /api/works/{id}/discussion/{commentId} — the comment's author, or an admin of the work's school. */
     public function deleteComment(Request $request, int $id, int $commentId): Response
     {
         /** @var User $me */
         $me = $request->user();
         $deleted = Comment::whereKey($commentId)->where('work_id', $id)->where('scope', CommentScope::Public)
-            ->when(! $me->isAdmin(), fn ($q) => $q->where('author_id', $me->id))
+            ->when(! $me->administers(Work::whereKey($id)->value('institution_id')), fn ($q) => $q->where('author_id', $me->id))
             ->delete();
         if ($deleted === 0) {
             throw new HttpException(404, 'Not found');

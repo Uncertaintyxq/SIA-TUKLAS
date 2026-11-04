@@ -32,7 +32,7 @@ class WorkPolicy
             return false;
         }
 
-        return $work->adviser_id === $user->id || $user->isAdmin();
+        return $work->adviser_id === $user->id || $user->administers($work->institution_id);
     }
 
     /** Authors, the adviser and admins: the people who see versions, reviews and the private thread. */
@@ -43,17 +43,17 @@ class WorkPolicy
         }
 
         return $work->isAuthor($user)
-            || ($work->status !== WorkStatus::Draft && ($work->adviser_id === $user->id || $user->isAdmin()));
+            || ($work->status !== WorkStatus::Draft && ($work->adviser_id === $user->id || $user->administers($work->institution_id)));
     }
 
-    /** The assigned adviser once an admin has verified them, or an admin acting as the panel. Never on your own work. */
+    /** The assigned adviser once an admin has verified them, or an admin of its school acting as the panel. Never on your own work. */
     public function review(?User $user, Work $work): bool
     {
         if ($user === null || $work->isAuthor($user)) {
             return false;
         }
         if ($user->isAdmin()) {
-            return true;
+            return $user->administers($work->institution_id);
         }
 
         return $user->role === Role::Educator && $user->verified && $work->adviser_id === $user->id;

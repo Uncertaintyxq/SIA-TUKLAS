@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Department;
+use App\Support\AdminScope;
 use App\Support\Audit;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -12,7 +13,7 @@ use Illuminate\Validation\Rule;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /**
- * Each school's list of departments (docs/decisions/0002). Admins add and rename them; one is
+ * Each school's list of departments (docs/decisions/0002). Its admins (and super-admins) add and rename them; one is
  * removed only while nobody has picked it and no announcement points at it.
  */
 class DepartmentController extends Controller
@@ -20,7 +21,8 @@ class DepartmentController extends Controller
     /** GET /api/admin/departments?institution= — a school's departments with how many people picked each */
     public function index(Request $request): JsonResponse
     {
-        $school = $request->integer('institution');
+        $me = $request->user();
+        $school = $me->isSuperAdmin() ? $request->integer('institution') : (int) $me->institution_id;
         $rows = Department::withCount('profiles')->where('institution_id', $school ?: null)->orderBy('name')->get();
 
         return response()->json($rows->map(fn (Department $d) => [...$d->card(), 'people' => (int) $d->profiles_count]));
@@ -33,6 +35,7 @@ class DepartmentController extends Controller
             'institutionId' => ['required', 'integer', Rule::exists('institutions', 'id')],
             'name' => ['required', 'string', 'min:2', 'max:160', Rule::unique('departments', 'name')->where('institution_id', $request->integer('institutionId'))],
         ], ['name.unique' => 'That school has a department with that name already.']);
+        AdminScope::check($request->user(), (int) $data['institutionId']);
         $department = Department::create(['institution_id' => (int) $data['institutionId'], 'name' => trim($data['name'])]);
         Audit::log('department_created', $request->user(), $department);
 
@@ -43,6 +46,7 @@ class DepartmentController extends Controller
     public function update(Request $request, int $id): Response
     {
         $department = Department::findOrFail($id);
+        AdminScope::check($request->user(), $department->institution_id);
         $data = $request->validate([
             'name' => ['required', 'string', 'min:2', 'max:160', Rule::unique('departments', 'name')->where('institution_id', $department->institution_id)->ignore($department->id)],
         ], ['name.unique' => 'That school has a department with that name already.']);
@@ -56,6 +60,7 @@ class DepartmentController extends Controller
     public function destroy(Request $request, int $id): Response
     {
         $department = Department::withCount('profiles')->findOrFail($id);
+        AdminScope::check($request->user(), $department->institution_id);
         if ($department->profiles_count > 0 || $department->announcements()->exists()) {
             throw new HttpException(409, 'People or announcements use this department. Rename it instead, or move them first.');
         }

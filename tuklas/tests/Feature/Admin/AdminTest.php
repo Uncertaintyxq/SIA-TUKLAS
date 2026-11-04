@@ -95,6 +95,6 @@ class AdminTest extends TestCase
         config(['tuklas.demo_mode' => true]);
         User::factory()->create(['email' => 'someone@new.edu']);
         $this->actingAs(User::find(1))->postJson('/api/demo/reset')->assertNoContent();
-        $this->assertSame(10, User::count());
+        $this->assertSame(11, User::count());
     }
 }

@@ -71,6 +71,9 @@ class DemoSeeder extends Seeder
 
     private const CRUZ = 10;
 
+    /** Bayan State College's own admin (docs/decisions/0002): sees and decides only Bayan's queue */
+    private const RAMOS = 11;
+
     private const TUKLAS_U = 1;
 
     private const BAYAN = 2;
@@ -152,6 +155,7 @@ class DemoSeeder extends Seeder
             [self::LIM, 'Dr. Ana Lim', 'alim', 'educator', 'alim@bayan.edu.ph', 'Research Adviser · Professor', 'Agricultural informatics and rural connectivity.'],
             // Signed up with a personal email and picked Bayan; waits for its admins to confirm her.
             [self::CRUZ, 'Rina Cruz', 'rcruz', 'student', 'rina.cruz.demo@gmail.com', 'BS Agriculture · 2nd year', ''],
+            [self::RAMOS, 'Jose Ramos', 'jramos', 'admin', 'jramos@bayan.edu.ph', 'Research Office · Bayan State College', 'Keeping Bayan’s research on Tuklas in order.'],
         ];
         foreach ($people as [$id, $name, $username, $role, $email, $program, $headline]) {
             User::create([
@@ -176,6 +180,7 @@ class DemoSeeder extends Seeder
             self::TORRES => ['', 'College of Information Technology', null],
             self::LIM => ['PhD', 'College of Information Technology', 'I lead the Rural Connectivity Lab at Bayan State College.'],
             self::CRUZ => ['', 'College of Agriculture', null],
+            self::RAMOS => ['', 'Research Office', null],
         ];
         foreach ($profiles as $userId => [$titles, $department, $bio]) {
             Profile::create(['user_id' => $userId, 'titles' => $titles, 'department_id' => $this->department($userId >= self::TORRES ? self::BAYAN : self::TUKLAS_U, $department), 'bio_long' => $bio]);

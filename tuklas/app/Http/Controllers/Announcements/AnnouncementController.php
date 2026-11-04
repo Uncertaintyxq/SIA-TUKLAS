@@ -240,7 +240,7 @@ class AnnouncementController extends Controller
 
     private function canEdit(Announcement $a, User $me): bool
     {
-        return $a->author_id === $me->id || $me->isAdmin();
+        return $a->author_id === $me->id || ($me->isAdmin() && $me->administers($a->author?->institution_id));
     }
 
     private function unreadCount(User $me): int

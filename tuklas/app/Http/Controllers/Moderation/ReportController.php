@@ -7,6 +7,7 @@ use App\Enums\ReportStatus;
 use App\Enums\ReportTarget;
 use App\Http\Controllers\Controller;
 use App\Models\Report;
+use App\Models\User;
 use App\Support\Notifier;
 use App\Support\Reportables;
 use Illuminate\Http\JsonResponse;
@@ -47,7 +48,9 @@ class ReportController extends Controller
         ])->save();
 
         if ($firstReport) {
-            Notifier::notifyAdmins('report_new', 'Something was reported and needs a look.', '/admin?tab=reports', $me->id);
+            // The admins of the reported person's school (docs/decisions/0002)
+            $school = $target['owner'] !== null ? User::whereKey($target['owner'])->value('institution_id') : null;
+            Notifier::notifyAdmins('report_new', 'Something was reported and needs a look.', '/admin?tab=reports', $me->id, $school);
         }
 
         return response()->json(['id' => $report->id], 201);

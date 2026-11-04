@@ -30,7 +30,7 @@ class Publication extends Model
     {
         return match ($this->visibility) {
             PublicationVisibility::Public => true,
-            PublicationVisibility::Internal => $user !== null && ($user->isAdmin() || $user->institution_id === $this->institution_id || $this->isAuthor($user)),
+            PublicationVisibility::Internal => $user !== null && ($user->administers($this->institution_id) || $user->institution_id === $this->institution_id || $this->isAuthor($user)),
             PublicationVisibility::Draft => $this->isAuthor($user),
         };
     }
@@ -38,7 +38,7 @@ class Publication extends Model
     /** Published research this person may read (canBeReadBy() for lists; drafts never). */
     public function scopeReadableBy(Builder $query, ?User $user): void
     {
-        if ($user?->isAdmin()) {
+        if ($user?->isSuperAdmin()) {
             $query->whereIn('visibility', [PublicationVisibility::Internal, PublicationVisibility::Public]);
 
             return;

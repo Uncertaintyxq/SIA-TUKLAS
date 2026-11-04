@@ -63,9 +63,14 @@ class Notifier
         }
     }
 
-    /** Notifies every admin account, skipping the actor. */
-    public static function notifyAdmins(string $type, string $message, string $link, ?int $actorId = null): void
+    /**
+     * Tell the admins: of one school (plus super-admins) when it's about that school's people or
+     * content, or every admin when $institutionId is null (docs/decisions/0002).
+     */
+    public static function notifyAdmins(string $type, string $message, string $link, ?int $actorId = null, ?int $institutionId = null): void
     {
-        self::notify(User::active()->where('role', Role::Admin)->pluck('id')->all(), $type, $message, $link, $actorId);
+        $admins = User::active()->where('role', Role::Admin)
+            ->when($institutionId !== null, fn ($q) => $q->where(fn ($w) => $w->where('is_super_admin', true)->orWhereNull('institution_id')->orWhere('institution_id', $institutionId)));
+        self::notify($admins->pluck('id')->all(), $type, $message, $link, $actorId);
     }
 }
